@@ -66,19 +66,27 @@ export const RichTextEditor = ({
     ],
     content: '',
     onUpdate: ({ editor }) => {
-      // Ensure editor is valid before processing
-      if (!editor || !editor.getHTML) return
-      
-      // Convert TipTap content to markdown-like syntax for storage
-      const html = editor.getHTML()
-      const text = convertHtmlToMarkdown(html)
-      onUpdate(text)
-      // Force re-render to update button states
-      forceUpdate({})
+      try {
+        // Ensure editor is valid before processing
+        if (!editor || !editor.getHTML || !editor.view) return
+        
+        // Convert TipTap content to markdown-like syntax for storage
+        const html = editor.getHTML()
+        const text = convertHtmlToMarkdown(html)
+        onUpdate(text)
+        // Force re-render to update button states
+        forceUpdate({})
+      } catch (error) {
+        console.warn('Editor update error:', error)
+      }
     },
     onSelectionUpdate: () => {
-      // Force re-render when selection changes to update button states
-      forceUpdate({})
+      try {
+        // Force re-render when selection changes to update button states
+        forceUpdate({})
+      } catch (error) {
+        console.warn('Editor selection update error:', error)
+      }
     },
     editorProps: {
       attributes: {
@@ -89,47 +97,82 @@ export const RichTextEditor = ({
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (!editor || !editor.view || !editor.view.dom) return
+    if (!editor) return
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        onSubmit()
-        // Clear content after a small delay to ensure the message is processed
-        setTimeout(() => {
-          if (editor && editor.commands) {
-            editor.commands.clearContent()
+    // Wait for editor to be fully mounted
+    const addKeyboardListener = () => {
+      try {
+        if (!editor.view || !editor.view.dom) return
+
+        const handleKeyDown = (event: KeyboardEvent) => {
+          if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault()
+            onSubmit()
+            // Clear content after a small delay to ensure the message is processed
+            setTimeout(() => {
+              safeEditorAction(() => editor.commands.clearContent())
+            }, 10)
           }
-        }, 10)
+        }
+
+        const editorElement = editor.view.dom
+        editorElement.addEventListener('keydown', handleKeyDown)
+
+        return () => {
+          if (editorElement) {
+            editorElement.removeEventListener('keydown', handleKeyDown)
+          }
+        }
+      } catch (error) {
+        console.warn('Editor view not yet available:', error)
+        return undefined
       }
     }
 
-    const editorElement = editor.view.dom
-    editorElement.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      if (editorElement) {
-        editorElement.removeEventListener('keydown', handleKeyDown)
+    // Try immediately, then with a small delay if needed
+    let cleanup = addKeyboardListener()
+    
+    if (!cleanup) {
+      const timeout = setTimeout(() => {
+        cleanup = addKeyboardListener()
+      }, 100)
+      
+      return () => {
+        clearTimeout(timeout)
+        if (cleanup) cleanup()
       }
     }
+
+    return cleanup
   }, [editor, onSubmit])
 
   // Clear content when content prop changes to empty
   useEffect(() => {
     if (editor && content === '') {
-      editor.commands.clearContent()
+      safeEditorAction(() => editor.commands.clearContent())
     }
   }, [editor, content])
+
+  const safeEditorAction = (action: () => void) => {
+    try {
+      if (editor && editor.commands && editor.view) {
+        action()
+        forceUpdate({})
+      }
+    } catch (error) {
+      console.warn('Editor action error:', error)
+    }
+  }
 
   if (!editor) {
     return null
   }
 
   const insertEmoji = (emoji: string) => {
-    if (editor && editor.commands) {
+    safeEditorAction(() => {
       editor.chain().focus().insertContent(emoji).run()
       onEmojiPickerToggle(false)
-    }
+    })
   }
 
   return (
@@ -140,12 +183,7 @@ export const RichTextEditor = ({
           <Button
             variant={(editor?.isActive && editor.isActive('bold')) ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              if (editor && editor.commands) {
-                editor.chain().focus().toggleBold().run()
-                forceUpdate({})
-              }
-            }}
+            onClick={() => safeEditorAction(() => editor.chain().focus().toggleBold().run())}
             className={`h-8 w-8 p-0 ${
               (editor?.isActive && editor.isActive('bold'))
                 ? 'bg-accent text-accent-foreground' 
@@ -158,12 +196,7 @@ export const RichTextEditor = ({
           <Button
             variant={(editor?.isActive && editor.isActive('italic')) ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              if (editor && editor.commands) {
-                editor.chain().focus().toggleItalic().run()
-                forceUpdate({})
-              }
-            }}
+            onClick={() => safeEditorAction(() => editor.chain().focus().toggleItalic().run())}
             className={`h-8 w-8 p-0 ${
               (editor?.isActive && editor.isActive('italic'))
                 ? 'bg-accent text-accent-foreground' 
@@ -176,12 +209,7 @@ export const RichTextEditor = ({
           <Button
             variant={(editor?.isActive && editor.isActive('strike')) ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              if (editor && editor.commands) {
-                editor.chain().focus().toggleStrike().run()
-                forceUpdate({})
-              }
-            }}
+            onClick={() => safeEditorAction(() => editor.chain().focus().toggleStrike().run())}
             className={`h-8 w-8 p-0 ${
               (editor?.isActive && editor.isActive('strike'))
                 ? 'bg-accent text-accent-foreground' 
@@ -194,12 +222,7 @@ export const RichTextEditor = ({
           <Button
             variant={(editor?.isActive && editor.isActive('blockquote')) ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              if (editor && editor.commands) {
-                editor.chain().focus().toggleBlockquote().run()
-                forceUpdate({})
-              }
-            }}
+            onClick={() => safeEditorAction(() => editor.chain().focus().toggleBlockquote().run())}
             className={`h-8 w-8 p-0 ${
               (editor?.isActive && editor.isActive('blockquote'))
                 ? 'bg-accent text-accent-foreground' 
@@ -212,12 +235,7 @@ export const RichTextEditor = ({
           <Button
             variant={(editor?.isActive && editor.isActive('code')) ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => {
-              if (editor && editor.commands) {
-                editor.chain().focus().toggleCode().run()
-                forceUpdate({})
-              }
-            }}
+            onClick={() => safeEditorAction(() => editor.chain().focus().toggleCode().run())}
             className={`h-8 w-8 p-0 ${
               (editor?.isActive && editor.isActive('code'))
                 ? 'bg-accent text-accent-foreground' 
@@ -253,9 +271,7 @@ export const RichTextEditor = ({
           <Button 
             onClick={() => {
               onSubmit()
-              if (editor && editor.commands) {
-                editor.commands.clearContent()
-              }
+              safeEditorAction(() => editor.commands.clearContent())
             }} 
             disabled={!content.trim()}
             size="sm"
