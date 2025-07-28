@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { TextB, TextItalic, Minus, Quotes, Code, Smiley } from '@phosphor-icons/react'
 import { EmojiPicker } from './EmojiPicker'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 // Convert TipTap HTML output to markdown-like syntax for storage
 const convertHtmlToMarkdown = (html: string): string => {
@@ -46,6 +46,8 @@ export const RichTextEditor = ({
   onEmojiPickerToggle,
   onSubmit
 }: RichTextEditorProps) => {
+  const [, forceUpdate] = useState({})
+  
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -66,6 +68,12 @@ export const RichTextEditor = ({
       const html = editor.getHTML()
       const text = convertHtmlToMarkdown(html)
       onUpdate(text)
+      // Force re-render to update button states
+      forceUpdate({})
+    },
+    onSelectionUpdate: () => {
+      // Force re-render when selection changes to update button states
+      forceUpdate({})
     },
     editorProps: {
       attributes: {
@@ -118,7 +126,10 @@ export const RichTextEditor = ({
           <Button
             variant={editor.isActive('bold') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleBold().run()}
+            onClick={() => {
+              editor.chain().focus().toggleBold().run()
+              forceUpdate({})
+            }}
             className={`h-8 w-8 p-0 ${
               editor.isActive('bold') 
                 ? 'bg-accent text-accent-foreground' 
@@ -131,7 +142,10 @@ export const RichTextEditor = ({
           <Button
             variant={editor.isActive('italic') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
+            onClick={() => {
+              editor.chain().focus().toggleItalic().run()
+              forceUpdate({})
+            }}
             className={`h-8 w-8 p-0 ${
               editor.isActive('italic') 
                 ? 'bg-accent text-accent-foreground' 
@@ -144,7 +158,10 @@ export const RichTextEditor = ({
           <Button
             variant={editor.isActive('strike') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleStrike().run()}
+            onClick={() => {
+              editor.chain().focus().toggleStrike().run()
+              forceUpdate({})
+            }}
             className={`h-8 w-8 p-0 ${
               editor.isActive('strike') 
                 ? 'bg-accent text-accent-foreground' 
@@ -157,7 +174,10 @@ export const RichTextEditor = ({
           <Button
             variant={editor.isActive('blockquote') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
+            onClick={() => {
+              editor.chain().focus().toggleBlockquote().run()
+              forceUpdate({})
+            }}
             className={`h-8 w-8 p-0 ${
               editor.isActive('blockquote') 
                 ? 'bg-accent text-accent-foreground' 
@@ -170,7 +190,10 @@ export const RichTextEditor = ({
           <Button
             variant={editor.isActive('code') ? 'default' : 'ghost'}
             size="sm"
-            onClick={() => editor.chain().focus().toggleCode().run()}
+            onClick={() => {
+              editor.chain().focus().toggleCode().run()
+              forceUpdate({})
+            }}
             className={`h-8 w-8 p-0 ${
               editor.isActive('code') 
                 ? 'bg-accent text-accent-foreground' 
