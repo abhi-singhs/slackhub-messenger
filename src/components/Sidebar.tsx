@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -40,7 +40,6 @@ export const Sidebar = ({
   onChannelDelete,
   onSidebarToggle
 }: SidebarProps) => {
-  const navigate = useNavigate()
   const { channelId } = useParams<{ channelId: string }>()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
@@ -91,8 +90,7 @@ export const Sidebar = ({
     if ((e.target as HTMLElement).closest('[data-menu-trigger]')) {
       return
     }
-    navigate(`/channel/${channelId}`)
-    onSidebarToggle(false) // Close sidebar on mobile
+    onChannelSelect(channelId)
   }
 
   return (

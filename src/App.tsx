@@ -84,8 +84,18 @@ function AppContent() {
   }
 
   const handleChannelCreate = (name: string) => {
+    const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     createChannel(name)
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
+    navigate(`/channel/${channelId}`)
+  }
+
+  const handleChannelDelete = (channelId: string) => {
+    // If we're deleting the current channel, we need to navigate to general first
+    if (channelId === currentChannel) {
+      navigate('/channel/general')
+    }
+    deleteChannel(channelId)
   }
 
   const handleSendMessage = () => {
@@ -140,7 +150,7 @@ function AppContent() {
         onChannelSelect={handleChannelSelect}
         onChannelCreate={handleChannelCreate}
         onChannelUpdate={updateChannel}
-        onChannelDelete={deleteChannel}
+        onChannelDelete={handleChannelDelete}
         onSidebarToggle={setSidebarOpen}
       />
       
