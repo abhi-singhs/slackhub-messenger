@@ -88,10 +88,17 @@ export const Sidebar = ({
   const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
     // Prevent channel selection if clicking on the menu button or its children
     const target = e.target as HTMLElement
-    if (target.closest('[data-menu-trigger]') || target.closest('.dropdown-menu')) {
+    
+    // Check if the click is on the menu trigger or inside the dropdown menu
+    if (target.closest('[data-menu-trigger]') || 
+        target.closest('.dropdown-menu') ||
+        target.hasAttribute('data-menu-trigger')) {
+      e.preventDefault()
+      e.stopPropagation()
       return
     }
     
+    // Proceed with channel selection
     onChannelSelect(channelId)
   }
 

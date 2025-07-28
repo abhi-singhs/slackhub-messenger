@@ -34,15 +34,19 @@ function AppContent() {
   const [searchParams] = useSearchParams()
   const targetMessageId = searchParams.get('message')
 
-  // Sync current channel with URL
+  // Sync current channel with URL parameter
   useEffect(() => {
-    if (channelId) {
+    if (channelId && channelId !== currentChannel) {
       setCurrentChannel(channelId)
     }
-  }, [channelId, setCurrentChannel])
+  }, [channelId, currentChannel, setCurrentChannel])
 
-  // Redirect to general channel if no channel is selected and channels are loaded
+  // Handle initial navigation when channels are loaded
   useEffect(() => {
+    // Only navigate if:
+    // 1. We have channels loaded
+    // 2. We're not already on a channel route (no channelId in URL)
+    // 3. We haven't already navigated
     if (channels && channels.length > 0 && !channelId) {
       const generalChannel = channels.find(c => c.id === 'general') || channels[0]
       if (generalChannel) {
@@ -94,8 +98,7 @@ function AppContent() {
   }
 
   const handleChannelCreate = (name: string) => {
-    const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    createChannel(name)
+    const channelId = createChannel(name)
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
     navigate(`/channel/${channelId}`)
   }
@@ -109,8 +112,10 @@ function AppContent() {
   }
 
   const handleSendMessage = () => {
-    sendMessage(messageInput)
-    setMessageInput('')
+    if (channelId) {
+      sendMessage(messageInput, channelId)
+      setMessageInput('')
+    }
   }
 
   const handleEmojiPickerToggle = (messageId: string, open: boolean) => {
@@ -137,12 +142,12 @@ function AppContent() {
     }
   }
 
-  if (!user) {
+  if (!user || !channels) {
     return (
       <div className="flex items-center justify-center h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading user data...</p>
+          <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
     )
@@ -205,6 +210,19 @@ function AppContent() {
                 onEmojiPickerToggle={handleEmojiPickerToggle}
                 onReactionAdd={addReaction}
               />
+            } 
+          />
+          <Route 
+            path="/" 
+            element={
+              channels && channels.length > 0 
+                ? <Navigate to="/channel/general" replace />
+                : <div className="flex-1 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">Loading channels...</p>
+                    </div>
+                  </div>
             } 
           />
           <Route path="*" element={<Navigate to="/channel/general" replace />} />

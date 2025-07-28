@@ -59,9 +59,13 @@ export const useSlackData = () => {
 
   // Don't auto-mark channels as read here - let App.tsx handle it when route changes
 
-  const sendMessage = useCallback((content: string) => {
+  const sendMessage = useCallback((content: string, channelId?: string) => {
     try {
       if (!content.trim() || !user) return
+
+      // Use provided channelId or fall back to currentChannel
+      const targetChannelId = channelId || currentChannel
+      if (!targetChannelId) return
 
       const newMessage: Message = {
         id: Date.now().toString(),
@@ -70,7 +74,7 @@ export const useSlackData = () => {
         userName: user.login,
         userAvatar: user.avatarUrl,
         timestamp: Date.now(),
-        channelId: currentChannel
+        channelId: targetChannelId
       }
 
       setMessages((current) => [...(current || []), newMessage])
@@ -91,7 +95,7 @@ export const useSlackData = () => {
       }
     ])
     
-    // Don't set current channel here - let the router handle navigation
+    return channelId
   }, [])
 
   const addReaction = useCallback((messageId: string, emoji: string) => {

@@ -13,7 +13,7 @@ interface HeaderProps {
   onSearchChange: (query: string) => void
 }
 
-export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
+export const Header = ({ channels, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
   const { channelId } = useParams<{ channelId: string }>()
   const [searchParams] = useSearchParams()
   const queryFromUrl = searchParams.get('q') || ''
@@ -32,11 +32,11 @@ export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle,
       </Button>
       <Hash className="h-5 w-5 text-muted-foreground" />
       <h2 className="font-semibold text-foreground truncate">
-        {currentChannelData?.name || channelId}
+        {currentChannelData?.name || channelId || 'Loading...'}
       </h2>
       <Separator orientation="vertical" className="h-6 hidden sm:block" />
       <p className="text-sm text-muted-foreground hidden sm:block truncate">
-        {currentChannelData?.description}
+        {currentChannelData?.description || ''}
       </p>
       
       {/* Search input - takes remaining space */}
