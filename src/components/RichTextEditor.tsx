@@ -66,6 +66,9 @@ export const RichTextEditor = ({
     ],
     content: '',
     onUpdate: ({ editor }) => {
+      // Ensure editor is valid before processing
+      if (!editor || !editor.getHTML) return
+      
       // Convert TipTap content to markdown-like syntax for storage
       const html = editor.getHTML()
       const text = convertHtmlToMarkdown(html)
@@ -86,13 +89,18 @@ export const RichTextEditor = ({
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    if (!editor) return
+    if (!editor || !editor.view || !editor.view.dom) return
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault()
         onSubmit()
-        editor.commands.clearContent()
+        // Clear content after a small delay to ensure the message is processed
+        setTimeout(() => {
+          if (editor && editor.commands) {
+            editor.commands.clearContent()
+          }
+        }, 10)
       }
     }
 
@@ -100,7 +108,9 @@ export const RichTextEditor = ({
     editorElement.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      editorElement.removeEventListener('keydown', handleKeyDown)
+      if (editorElement) {
+        editorElement.removeEventListener('keydown', handleKeyDown)
+      }
     }
   }, [editor, onSubmit])
 
@@ -116,8 +126,10 @@ export const RichTextEditor = ({
   }
 
   const insertEmoji = (emoji: string) => {
-    editor.chain().focus().insertContent(emoji).run()
-    onEmojiPickerToggle(false)
+    if (editor && editor.commands) {
+      editor.chain().focus().insertContent(emoji).run()
+      onEmojiPickerToggle(false)
+    }
   }
 
   return (
@@ -126,14 +138,16 @@ export const RichTextEditor = ({
       <div className="flex items-center justify-between gap-1 p-2 border-b border-border">
         <div className="flex items-center gap-1">
           <Button
-            variant={editor.isActive('bold') ? 'default' : 'ghost'}
+            variant={(editor?.isActive && editor.isActive('bold')) ? 'default' : 'ghost'}
             size="sm"
             onClick={() => {
-              editor.chain().focus().toggleBold().run()
-              forceUpdate({})
+              if (editor && editor.commands) {
+                editor.chain().focus().toggleBold().run()
+                forceUpdate({})
+              }
             }}
             className={`h-8 w-8 p-0 ${
-              editor.isActive('bold') 
+              (editor?.isActive && editor.isActive('bold'))
                 ? 'bg-accent text-accent-foreground' 
                 : 'hover:bg-secondary'
             }`}
@@ -142,14 +156,16 @@ export const RichTextEditor = ({
             <TextB className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive('italic') ? 'default' : 'ghost'}
+            variant={(editor?.isActive && editor.isActive('italic')) ? 'default' : 'ghost'}
             size="sm"
             onClick={() => {
-              editor.chain().focus().toggleItalic().run()
-              forceUpdate({})
+              if (editor && editor.commands) {
+                editor.chain().focus().toggleItalic().run()
+                forceUpdate({})
+              }
             }}
             className={`h-8 w-8 p-0 ${
-              editor.isActive('italic') 
+              (editor?.isActive && editor.isActive('italic'))
                 ? 'bg-accent text-accent-foreground' 
                 : 'hover:bg-secondary'
             }`}
@@ -158,14 +174,16 @@ export const RichTextEditor = ({
             <TextItalic className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive('strike') ? 'default' : 'ghost'}
+            variant={(editor?.isActive && editor.isActive('strike')) ? 'default' : 'ghost'}
             size="sm"
             onClick={() => {
-              editor.chain().focus().toggleStrike().run()
-              forceUpdate({})
+              if (editor && editor.commands) {
+                editor.chain().focus().toggleStrike().run()
+                forceUpdate({})
+              }
             }}
             className={`h-8 w-8 p-0 ${
-              editor.isActive('strike') 
+              (editor?.isActive && editor.isActive('strike'))
                 ? 'bg-accent text-accent-foreground' 
                 : 'hover:bg-secondary'
             }`}
@@ -174,14 +192,16 @@ export const RichTextEditor = ({
             <Minus className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive('blockquote') ? 'default' : 'ghost'}
+            variant={(editor?.isActive && editor.isActive('blockquote')) ? 'default' : 'ghost'}
             size="sm"
             onClick={() => {
-              editor.chain().focus().toggleBlockquote().run()
-              forceUpdate({})
+              if (editor && editor.commands) {
+                editor.chain().focus().toggleBlockquote().run()
+                forceUpdate({})
+              }
             }}
             className={`h-8 w-8 p-0 ${
-              editor.isActive('blockquote') 
+              (editor?.isActive && editor.isActive('blockquote'))
                 ? 'bg-accent text-accent-foreground' 
                 : 'hover:bg-secondary'
             }`}
@@ -190,14 +210,16 @@ export const RichTextEditor = ({
             <Quotes className="h-4 w-4" />
           </Button>
           <Button
-            variant={editor.isActive('code') ? 'default' : 'ghost'}
+            variant={(editor?.isActive && editor.isActive('code')) ? 'default' : 'ghost'}
             size="sm"
             onClick={() => {
-              editor.chain().focus().toggleCode().run()
-              forceUpdate({})
+              if (editor && editor.commands) {
+                editor.chain().focus().toggleCode().run()
+                forceUpdate({})
+              }
             }}
             className={`h-8 w-8 p-0 ${
-              editor.isActive('code') 
+              (editor?.isActive && editor.isActive('code'))
                 ? 'bg-accent text-accent-foreground' 
                 : 'hover:bg-secondary'
             }`}
@@ -229,7 +251,12 @@ export const RichTextEditor = ({
         {/* Send Button */}
         {showSendButton && (
           <Button 
-            onClick={onSubmit} 
+            onClick={() => {
+              onSubmit()
+              if (editor && editor.commands) {
+                editor.commands.clearContent()
+              }
+            }} 
             disabled={!content.trim()}
             size="sm"
             className="h-8 px-3"
