@@ -690,7 +690,7 @@ function App() {
                                   )}
                                   {index < array.length - 1 && <br />}
                                 </span>
-                              )
+                              );
                             })}
                           </div>
                           
@@ -856,7 +856,7 @@ function App() {
                         )}
                         {index < array.length - 1 && <br />}
                       </span>
-                    )
+                    );
                   })}
                 </div>
               </div>
