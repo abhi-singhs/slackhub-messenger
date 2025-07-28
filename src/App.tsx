@@ -469,161 +469,163 @@ function App() {
         </div>
 
         {/* Messages */}
-        <ScrollArea className="flex-1 p-2 sm:p-4">
-          <div className="space-y-4">
-            {currentChannelMessages.length === 0 ? (
-              <div className="text-center py-12">
-                <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-foreground mb-2">
-                  Welcome to #{channels.find(c => c.id === currentChannel)?.name}
-                </h3>
-                <p className="text-muted-foreground px-4">
-                  This is the beginning of your conversation. Start chatting!
-                </p>
-              </div>
-            ) : (
-              <TooltipProvider>
-                {currentChannelMessages.map((message) => (
-                  <div key={message.id} className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
-                    <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
-                      <AvatarImage src={message.userAvatar} alt={message.userName} />
-                      <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-baseline gap-2 mb-1">
-                        <span className="font-medium text-sm text-foreground truncate">
-                          {message.userName}
-                        </span>
-                        <span className="text-xs text-muted-foreground flex-shrink-0">
-                          {formatTime(message.timestamp)}
-                        </span>
-                        <div className="flex-1"></div>
-                        
-                        {/* Add Reaction Button - Top Right */}
-                        <Popover 
-                          open={openEmojiPickers.has(message.id)}
-                          onOpenChange={(open) => {
-                            setOpenEmojiPickers(prev => {
-                              const newSet = new Set(prev)
-                              if (open) {
-                                newSet.add(message.id)
-                              } else {
-                                newSet.delete(message.id)
-                              }
-                              return newSet
-                            })
-                          }}
-                        >
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground text-4xl font-bold"
-                            >
-                              <Smiley className="h-4 w-4" />
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0 border-accent/20" side="top" align="end">
-                            <div className="relative">
-                              {/* Connecting line to message */}
-                              <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
-                              <EmojiPicker onEmojiSelect={(emoji) => {
-                                addReaction(message.id, emoji)
-                                setOpenEmojiPickers(prev => {
-                                  const newSet = new Set(prev)
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full p-2 sm:p-4">
+            <div className="space-y-4">
+              {currentChannelMessages.length === 0 ? (
+                <div className="text-center py-12">
+                  <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-foreground mb-2">
+                    Welcome to #{channels.find(c => c.id === currentChannel)?.name}
+                  </h3>
+                  <p className="text-muted-foreground px-4">
+                    This is the beginning of your conversation. Start chatting!
+                  </p>
+                </div>
+              ) : (
+                <TooltipProvider>
+                  {currentChannelMessages.map((message) => (
+                    <div key={message.id} className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
+                      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
+                        <AvatarImage src={message.userAvatar} alt={message.userName} />
+                        <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-baseline gap-2 mb-1">
+                          <span className="font-medium text-sm text-foreground truncate">
+                            {message.userName}
+                          </span>
+                          <span className="text-xs text-muted-foreground flex-shrink-0">
+                            {formatTime(message.timestamp)}
+                          </span>
+                          <div className="flex-1"></div>
+                          
+                          {/* Add Reaction Button - Top Right */}
+                          <Popover 
+                            open={openEmojiPickers.has(message.id)}
+                            onOpenChange={(open) => {
+                              setOpenEmojiPickers(prev => {
+                                const newSet = new Set(prev)
+                                if (open) {
+                                  newSet.add(message.id)
+                                } else {
                                   newSet.delete(message.id)
-                                  return newSet
-                                })
-                              }} />
-                            </div>
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div className="relative">
-                        <div className="text-sm text-foreground leading-relaxed break-words mb-2">
-                          {message.content.split('\n').map((line, index, array) => {
-                            // Handle different formatting
-                            let formattedLine = line
-                            
-                            // Bold formatting
-                            formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            
-                            // Italic formatting
-                            formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
-                            
-                            // Strikethrough formatting
-                            formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
-                            
-                            // Inline code formatting
-                            formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-                            
-                            // Quote formatting
-                            const isQuote = line.startsWith('> ')
-                            if (isQuote) {
-                              formattedLine = formattedLine.substring(2) // Remove '> '
-                            }
-                            
-                            // Code block formatting
-                            const isCodeBlock = line.startsWith('```')
-                            
-                            return (
-                              <span key={index}>
-                                {isQuote ? (
-                                  <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
-                                    <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-                                  </span>
-                                ) : isCodeBlock ? (
-                                  <span className="bg-muted p-2 rounded font-mono text-xs block">
-                                    {line.replace(/```/g, '')}
-                                  </span>
-                                ) : (
-                                  <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-                                )}
-                                {index < array.length - 1 && <br />}
-                              </span>
-                            )
-                          })}
+                                }
+                                return newSet
+                              })
+                            }}
+                          >
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground text-4xl font-bold"
+                              >
+                                <Smiley className="h-4 w-4" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 border-accent/20" side="top" align="end">
+                              <div className="relative">
+                                {/* Connecting line to message */}
+                                <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
+                                <EmojiPicker onEmojiSelect={(emoji) => {
+                                  addReaction(message.id, emoji)
+                                  setOpenEmojiPickers(prev => {
+                                    const newSet = new Set(prev)
+                                    newSet.delete(message.id)
+                                    return newSet
+                                  })
+                                }} />
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </div>
-                        
-                        {/* Reactions */}
-                        <div className="flex items-center gap-1 flex-wrap mb-1">
-                          {message.reactions?.map((reaction) => (
-                            <Tooltip key={reaction.emoji}>
-                              <TooltipTrigger asChild>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary ${
-                                    reaction.users.includes(user?.id || '') 
-                                      ? 'bg-accent/20 border-accent text-accent-foreground' 
-                                      : ''
-                                  }`}
-                                  onClick={() => addReaction(message.id, reaction.emoji)}
-                                >
-                                  <span className="mr-1">{reaction.emoji}</span>
-                                  <span className="text-black text-sm font-medium">{reaction.count}</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p className="text-xs">
-                                  {reaction.users.length === 1 
-                                    ? `${getUserName(reaction.users[0])} reacted with ${reaction.emoji}` 
-                                    : `${reaction.users.map(userId => getUserName(userId)).join(', ')} reacted with ${reaction.emoji}`
-                                  }
-                                </p>
-                              </TooltipContent>
-                            </Tooltip>
-                          ))}
+                        <div className="relative">
+                          <div className="text-sm text-foreground leading-relaxed break-words mb-2">
+                            {message.content.split('\n').map((line, index, array) => {
+                              // Handle different formatting
+                              let formattedLine = line
+                              
+                              // Bold formatting
+                              formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                              
+                              // Italic formatting
+                              formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
+                              
+                              // Strikethrough formatting
+                              formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
+                              
+                              // Inline code formatting
+                              formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+                              
+                              // Quote formatting
+                              const isQuote = line.startsWith('> ')
+                              if (isQuote) {
+                                formattedLine = formattedLine.substring(2) // Remove '> '
+                              }
+                              
+                              // Code block formatting
+                              const isCodeBlock = line.startsWith('```')
+                              
+                              return (
+                                <span key={index}>
+                                  {isQuote ? (
+                                    <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
+                                      <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                                    </span>
+                                  ) : isCodeBlock ? (
+                                    <span className="bg-muted p-2 rounded font-mono text-xs block">
+                                      {line.replace(/```/g, '')}
+                                    </span>
+                                  ) : (
+                                    <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                                  )}
+                                  {index < array.length - 1 && <br />}
+                                </span>
+                              )
+                            })}
+                          </div>
+                          
+                          {/* Reactions */}
+                          <div className="flex items-center gap-1 flex-wrap mb-1">
+                            {message.reactions?.map((reaction) => (
+                              <Tooltip key={reaction.emoji}>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary ${
+                                      reaction.users.includes(user?.id || '') 
+                                        ? 'bg-accent/20 border-accent text-accent-foreground' 
+                                        : ''
+                                    }`}
+                                    onClick={() => addReaction(message.id, reaction.emoji)}
+                                  >
+                                    <span className="mr-1">{reaction.emoji}</span>
+                                    <span className="text-black text-sm font-medium">{reaction.count}</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p className="text-xs">
+                                    {reaction.users.length === 1 
+                                      ? `${getUserName(reaction.users[0])} reacted with ${reaction.emoji}` 
+                                      : `${reaction.users.map(userId => getUserName(userId)).join(', ')} reacted with ${reaction.emoji}`
+                                    }
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </TooltipProvider>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+                  ))}
+                </TooltipProvider>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </ScrollArea>
+        </div>
 
         {/* Message Input */}
         <div className="p-2 sm:p-4 border-t border-border bg-card">
