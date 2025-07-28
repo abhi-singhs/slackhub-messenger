@@ -55,6 +55,7 @@ function App() {
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -409,7 +410,20 @@ function App() {
                         <div className="flex-1"></div>
                         
                         {/* Add Reaction Button - Top Right */}
-                        <Popover>
+                        <Popover 
+                          open={openEmojiPickers.has(message.id)}
+                          onOpenChange={(open) => {
+                            setOpenEmojiPickers(prev => {
+                              const newSet = new Set(prev)
+                              if (open) {
+                                newSet.add(message.id)
+                              } else {
+                                newSet.delete(message.id)
+                              }
+                              return newSet
+                            })
+                          }}
+                        >
                           <PopoverTrigger asChild>
                             <Button
                               variant="ghost"
@@ -423,7 +437,14 @@ function App() {
                             <div className="relative">
                               {/* Connecting line to message */}
                               <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
-                              <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
+                              <EmojiPicker onEmojiSelect={(emoji) => {
+                                addReaction(message.id, emoji)
+                                setOpenEmojiPickers(prev => {
+                                  const newSet = new Set(prev)
+                                  newSet.delete(message.id)
+                                  return newSet
+                                })
+                              }} />
                             </div>
                           </PopoverContent>
                         </Popover>
