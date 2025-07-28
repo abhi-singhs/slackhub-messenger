@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Hash, PaperPlaneRight, Plus, List, X, Smiley } from '@phosphor-icons/react'
+import { Hash, PaperPlaneRight, Plus, List, X, Smiley, TextB, TextItalic, Minus, Quotes, Code } from '@phosphor-icons/react'
 
 interface Message {
   id: string
@@ -56,6 +56,7 @@ function App() {
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
+  const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -65,6 +66,7 @@ function App() {
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messageInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -263,6 +265,75 @@ function App() {
       ))}
     </div>
   )
+
+  // Text formatting functions
+  const formatText = (format: 'bold' | 'italic' | 'strikethrough' | 'quote' | 'code') => {
+    const input = messageInputRef.current
+    if (!input) return
+
+    const start = input.selectionStart || 0
+    const end = input.selectionEnd || 0
+    const selectedText = input.value.substring(start, end)
+    
+    let formattedText = ''
+    let cursorOffset = 0
+
+    switch (format) {
+      case 'bold':
+        formattedText = `**${selectedText}**`
+        cursorOffset = selectedText ? 0 : 2
+        break
+      case 'italic':
+        formattedText = `*${selectedText}*`
+        cursorOffset = selectedText ? 0 : 1
+        break
+      case 'strikethrough':
+        formattedText = `~~${selectedText}~~`
+        cursorOffset = selectedText ? 0 : 2
+        break
+      case 'quote':
+        formattedText = `> ${selectedText}`
+        cursorOffset = selectedText ? 0 : 2
+        break
+      case 'code':
+        if (selectedText.includes('\n')) {
+          formattedText = `\`\`\`\n${selectedText}\n\`\`\``
+          cursorOffset = selectedText ? 0 : 4
+        } else {
+          formattedText = `\`${selectedText}\``
+          cursorOffset = selectedText ? 0 : 1
+        }
+        break
+    }
+
+    const newValue = input.value.substring(0, start) + formattedText + input.value.substring(end)
+    setMessageInput(newValue)
+
+    // Set cursor position
+    setTimeout(() => {
+      const newCursorPos = selectedText ? end + formattedText.length - selectedText.length : start + cursorOffset
+      input.focus()
+      input.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
+
+  const insertEmoji = (emoji: string) => {
+    const input = messageInputRef.current
+    if (!input) return
+
+    const start = input.selectionStart || 0
+    const end = input.selectionEnd || 0
+    
+    const newValue = input.value.substring(0, start) + emoji + input.value.substring(end)
+    setMessageInput(newValue)
+
+    // Set cursor position after emoji
+    setTimeout(() => {
+      const newCursorPos = start + emoji.length
+      input.focus()
+      input.setSelectionRange(newCursorPos, newCursorPos)
+    }, 0)
+  }
 
   if (!user) {
     return (
@@ -467,9 +538,50 @@ function App() {
                         </Popover>
                       </div>
                       <div className="relative">
-                        <p className="text-sm text-foreground leading-relaxed break-words mb-2">
-                          {message.content}
-                        </p>
+                        <div className="text-sm text-foreground leading-relaxed break-words mb-2">
+                          {message.content.split('\n').map((line, index, array) => {
+                            // Handle different formatting
+                            let formattedLine = line
+                            
+                            // Bold formatting
+                            formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            
+                            // Italic formatting
+                            formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            
+                            // Strikethrough formatting
+                            formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
+                            
+                            // Inline code formatting
+                            formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+                            
+                            // Quote formatting
+                            const isQuote = line.startsWith('> ')
+                            if (isQuote) {
+                              formattedLine = formattedLine.substring(2) // Remove '> '
+                            }
+                            
+                            // Code block formatting
+                            const isCodeBlock = line.startsWith('```')
+                            
+                            return (
+                              <span key={index}>
+                                {isQuote ? (
+                                  <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
+                                    <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                                  </span>
+                                ) : isCodeBlock ? (
+                                  <span className="bg-muted p-2 rounded font-mono text-xs block">
+                                    {line.replace(/```/g, '')}
+                                  </span>
+                                ) : (
+                                  <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                                )}
+                                {index < array.length - 1 && <br />}
+                              </span>
+                            )
+                          })}
+                        </div>
                         
                         {/* Reactions */}
                         <div className="flex items-center gap-1 flex-wrap mb-1">
@@ -513,8 +625,80 @@ function App() {
 
         {/* Message Input */}
         <div className="p-2 sm:p-4 border-t border-border bg-card">
+          {/* Formatting Toolbar */}
+          <div className="flex items-center gap-1 mb-2 pb-2 border-b border-border">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('bold')}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Bold"
+            >
+              <TextB className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('italic')}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Italic"
+            >
+              <TextItalic className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('strikethrough')}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Strikethrough"
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('quote')}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Quote"
+            >
+              <Quotes className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => formatText('code')}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Code"
+            >
+              <Code className="h-4 w-4" />
+            </Button>
+            <div className="h-4 w-px bg-border mx-1"></div>
+            <Popover 
+              open={showInputEmojiPicker}
+              onOpenChange={setShowInputEmojiPicker}
+            >
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 hover:bg-secondary"
+                  title="Add Emoji"
+                >
+                  <Smiley className="h-4 w-4" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" side="top" align="start">
+                <EmojiPicker onEmojiSelect={(emoji) => {
+                  insertEmoji(emoji)
+                  setShowInputEmojiPicker(false)
+                }} />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
           <div className="flex gap-2">
             <Input
+              ref={messageInputRef}
               placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || currentChannel}`}
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
