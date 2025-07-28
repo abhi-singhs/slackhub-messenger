@@ -163,6 +163,12 @@ function App() {
     })
   }
 
+  const getUserName = (userId: string) => {
+    // Find the username from messages or return userId if not found
+    const userMessage = messages.find(msg => msg.userId === userId)
+    return userMessage?.userName || userId
+  }
+
   const getChannelMessageCount = (channelId: string) => {
     return messages.filter(msg => msg.channelId === channelId).length
   }
@@ -476,8 +482,8 @@ function App() {
                               <TooltipContent>
                                 <p className="text-xs">
                                   {reaction.users.length === 1 
-                                    ? `Reacted with ${reaction.emoji}` 
-                                    : `${reaction.users.length} people reacted with ${reaction.emoji}`
+                                    ? `${getUserName(reaction.users[0])} reacted with ${reaction.emoji}` 
+                                    : `${reaction.users.map(userId => getUserName(userId)).join(', ')} reacted with ${reaction.emoji}`
                                   }
                                 </p>
                               </TooltipContent>
