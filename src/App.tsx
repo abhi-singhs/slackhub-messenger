@@ -386,8 +386,8 @@ function App() {
           </div>
         </div>
         
-        <div className="flex-1 overflow-hidden">
-          <div className="p-4">
+        <div className="flex-1 flex flex-col min-h-0">
+          <div className="p-4 flex-shrink-0">
             <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold text-foreground">Channels</h2>
               <Button
@@ -417,7 +417,9 @@ function App() {
                 />
               </div>
             )}
-            
+          </div>
+          
+          <div className="flex-1 min-h-0 px-4 pb-4">
             <ScrollArea className="h-full">
               <div className="space-y-1">
                 {channels.map((channel) => (
