@@ -86,10 +86,12 @@ export const Sidebar = ({
   }
 
   const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
-    // Prevent channel selection if clicking on the menu button
-    if ((e.target as HTMLElement).closest('[data-menu-trigger]')) {
+    // Prevent channel selection if clicking on the menu button or its children
+    const target = e.target as HTMLElement
+    if (target.closest('[data-menu-trigger]') || target.closest('.dropdown-menu')) {
       return
     }
+    
     onChannelSelect(channelId)
   }
 
@@ -177,9 +179,9 @@ export const Sidebar = ({
                     onMouseEnter={() => setHoveredChannel(channel.id)}
                     onMouseLeave={() => setHoveredChannel(null)}
                   >
-                    <button
+                    <div
                       onClick={(e) => handleChannelClick(channel.id, e)}
-                      className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
                         channelId === channel.id
                           ? 'bg-accent text-accent-foreground'
                           : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
@@ -199,7 +201,7 @@ export const Sidebar = ({
                           {getChannelUnreadCount(channel.id, messages, lastReadTimestamps)}
                         </Badge>
                       )}
-                    </button>
+                    </div>
                     
                     {/* Three-dot menu - show on hover or when menu is open, but not for general channel */}
                     {(hoveredChannel === channel.id || openMenuChannel === channel.id) && channel.id !== 'general' && (

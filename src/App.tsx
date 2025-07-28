@@ -49,6 +49,13 @@ function AppContent() {
     }
   }, [channels, channelId, navigate])
 
+  // Mark current channel as read when it changes
+  useEffect(() => {
+    if (currentChannel) {
+      markChannelAsRead(currentChannel)
+    }
+  }, [currentChannel, markChannelAsRead])
+
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleResize = () => {
@@ -78,9 +85,10 @@ function AppContent() {
   }, [targetMessageId])
 
   const handleChannelSelect = (channelId: string) => {
+    // Just navigate - let the useEffect handle state sync
     navigate(`/channel/${channelId}`)
-    setSidebarOpen(false) // Close sidebar on mobile when channel is selected
-    setSearchQuery('') // Clear search when switching channels
+    setSidebarOpen(false)
+    setSearchQuery('')
   }
 
   const handleChannelCreate = (name: string) => {
@@ -197,7 +205,7 @@ function AppContent() {
               />
             } 
           />
-          <Route path="/" element={<Navigate to={channels && channels.length > 0 ? `/channel/${channels.find(c => c.name === 'general')?.id || channels[0]?.id}` : "/channel/general"} replace />} />
+          <Route path="*" element={<Navigate to="/channel/general" replace />} />
         </Routes>
       </div>
     </div>

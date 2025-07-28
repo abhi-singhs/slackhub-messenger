@@ -34,19 +34,12 @@ export function ChannelView({
   targetMessageId
 }: ChannelViewProps) {
   const { channelId } = useParams<{ channelId: string }>()
-  const navigate = useNavigate()
 
-  // Redirect to first available channel if current channelId doesn't exist
-  if (channelId && channels.length > 0 && !channels.find(c => c.id === channelId)) {
-    const firstChannel = channels.find(c => c.name === 'general') || channels[0]
-    if (firstChannel && channelId !== firstChannel.id) {
-      navigate(`/channel/${firstChannel.id}`, { replace: true })
-      return null
-    }
-  }
+  // Find the current channel
+  const currentChannel = channels.find(c => c.id === channelId)
 
-  // Show loading state if no channels are loaded yet
-  if (!channelId || channels.length === 0) {
+  // Show loading state if no channels are loaded yet or channel not found
+  if (!channelId || channels.length === 0 || !currentChannel) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">

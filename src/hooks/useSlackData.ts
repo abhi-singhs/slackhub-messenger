@@ -57,12 +57,7 @@ export const useSlackData = () => {
     fetchUser()
   }, [])
 
-  // Mark initial channel as read when user is loaded
-  useEffect(() => {
-    if (user && currentChannel) {
-      markChannelAsRead(currentChannel)
-    }
-  }, [user, currentChannel])
+  // Don't auto-mark channels as read here - let App.tsx handle it when route changes
 
   const sendMessage = (content: string) => {
     try {
@@ -186,15 +181,10 @@ export const useSlackData = () => {
     }
   }
 
-  const setCurrentChannelAndMarkRead = (channelId: string) => {
-    setCurrentChannel(channelId)
-    markChannelAsRead(channelId)
-  }
-
   return {
     user,
     currentChannel,
-    setCurrentChannel: setCurrentChannelAndMarkRead,
+    setCurrentChannel,
     messages: safeMessages,
     channels: safeChannels,
     lastReadTimestamps: safeLastReadTimestamps,
