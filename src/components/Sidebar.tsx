@@ -63,9 +63,11 @@ export const Sidebar = ({
   }
 
   const handleEditChannel = (channel: Channel) => {
-    setEditingChannel(channel)
-    setEditChannelName(channel.name)
-    setEditChannelDescription(channel.description || '')
+    // Find the current channel data to ensure we have the latest name
+    const currentChannelData = channels.find(c => c.id === channel.id) || channel
+    setEditingChannel(currentChannelData)
+    setEditChannelName(currentChannelData.name)
+    setEditChannelDescription(currentChannelData.description || '')
   }
 
   const handleUpdateChannel = () => {
