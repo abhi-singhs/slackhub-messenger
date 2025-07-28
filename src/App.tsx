@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Hash, PaperPlaneRight, Plus, List, X, Smiley, TextB, TextItalic, Minus, Quotes, Code } from '@phosphor-icons/react'
+import { Hash, PaperPlaneRight, Plus, List, X, Smiley, TextB, TextItalic, Minus, Quotes, Code, Eye, PencilSimple } from '@phosphor-icons/react'
 
 interface Message {
   id: string
@@ -57,6 +57,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -333,6 +334,52 @@ function App() {
       input.focus()
       input.setSelectionRange(newCursorPos, newCursorPos)
     }, 0)
+  }
+
+  // Render formatted text preview
+  const renderFormattedText = (text: string) => {
+    return text.split('\n').map((line, index, array) => {
+      // Handle different formatting
+      let formattedLine = line
+      
+      // Bold formatting
+      formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      
+      // Italic formatting
+      formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
+      
+      // Strikethrough formatting
+      formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
+      
+      // Inline code formatting
+      formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+      
+      // Quote formatting
+      const isQuote = line.startsWith('> ')
+      if (isQuote) {
+        formattedLine = formattedLine.substring(2) // Remove '> '
+      }
+      
+      // Code block formatting
+      const isCodeBlock = line.startsWith('```')
+      
+      return (
+        <span key={index}>
+          {isQuote ? (
+            <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
+              <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+            </span>
+          ) : isCodeBlock ? (
+            <span className="bg-muted p-2 rounded font-mono text-xs block">
+              {line.replace(/```/g, '')}
+            </span>
+          ) : (
+            <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+          )}
+          {index < array.length - 1 && <br />}
+        </span>
+      )
+    })
   }
 
   if (!user) {
@@ -630,75 +677,113 @@ function App() {
         {/* Message Input */}
         <div className="p-2 sm:p-4 border-t border-border bg-card">
           {/* Formatting Toolbar */}
-          <div className="flex items-center gap-1 mb-2 pb-2 border-b border-border">
+          <div className="flex items-center justify-between gap-1 mb-2 pb-2 border-b border-border">
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => formatText('bold')}
+                className="h-8 w-8 p-0 hover:bg-secondary"
+                title="Bold"
+              >
+                <TextB className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => formatText('italic')}
+                className="h-8 w-8 p-0 hover:bg-secondary"
+                title="Italic"
+              >
+                <TextItalic className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => formatText('strikethrough')}
+                className="h-8 w-8 p-0 hover:bg-secondary"
+                title="Strikethrough"
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => formatText('quote')}
+                className="h-8 w-8 p-0 hover:bg-secondary"
+                title="Quote"
+              >
+                <Quotes className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => formatText('code')}
+                className="h-8 w-8 p-0 hover:bg-secondary"
+                title="Code"
+              >
+                <Code className="h-4 w-4" />
+              </Button>
+              <div className="h-4 w-px bg-border mx-1"></div>
+              <Popover 
+                open={showInputEmojiPicker}
+                onOpenChange={setShowInputEmojiPicker}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 hover:bg-secondary"
+                    title="Add Emoji"
+                  >
+                    <Smiley className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" side="top" align="start">
+                  <EmojiPicker onEmojiSelect={(emoji) => {
+                    insertEmoji(emoji)
+                    setShowInputEmojiPicker(false)
+                  }} />
+                </PopoverContent>
+              </Popover>
+            </div>
+            
+            {/* Preview Toggle */}
             <Button
-              variant="ghost"
+              variant={showPreview ? "secondary" : "ghost"}
               size="sm"
-              onClick={() => formatText('bold')}
-              className="h-8 w-8 p-0 hover:bg-secondary"
-              title="Bold"
+              onClick={() => setShowPreview(!showPreview)}
+              className="h-8 px-3 text-xs"
+              title={showPreview ? "Edit" : "Preview"}
             >
-              <TextB className="h-4 w-4" />
+              {showPreview ? (
+                <>
+                  <PencilSimple className="h-3 w-3 mr-1" />
+                  Edit
+                </>
+              ) : (
+                <>
+                  <Eye className="h-3 w-3 mr-1" />
+                  Preview
+                </>
+              )}
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => formatText('italic')}
-              className="h-8 w-8 p-0 hover:bg-secondary"
-              title="Italic"
-            >
-              <TextItalic className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => formatText('strikethrough')}
-              className="h-8 w-8 p-0 hover:bg-secondary"
-              title="Strikethrough"
-            >
-              <Minus className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => formatText('quote')}
-              className="h-8 w-8 p-0 hover:bg-secondary"
-              title="Quote"
-            >
-              <Quotes className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => formatText('code')}
-              className="h-8 w-8 p-0 hover:bg-secondary"
-              title="Code"
-            >
-              <Code className="h-4 w-4" />
-            </Button>
-            <div className="h-4 w-px bg-border mx-1"></div>
-            <Popover 
-              open={showInputEmojiPicker}
-              onOpenChange={setShowInputEmojiPicker}
-            >
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 hover:bg-secondary"
-                  title="Add Emoji"
-                >
-                  <Smiley className="h-4 w-4" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" side="top" align="start">
-                <EmojiPicker onEmojiSelect={(emoji) => {
-                  insertEmoji(emoji)
-                  setShowInputEmojiPicker(false)
-                }} />
-              </PopoverContent>
-            </Popover>
           </div>
+          
+          {showPreview ? (
+            /* Preview Mode */
+            <div className="mb-2">
+              <div className="min-h-[40px] p-3 bg-muted/30 border border-border rounded-md text-sm">
+                {messageInput.trim() ? (
+                  <div className="text-foreground leading-relaxed break-words">
+                    {renderFormattedText(messageInput)}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground italic">Nothing to preview</span>
+                )}
+              </div>
+            </div>
+          ) : null}
           
           <div className="flex gap-2">
             <Input
@@ -707,7 +792,7 @@ function App() {
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyPress={(e) => handleKeyPress(e, 'message')}
-              className="flex-1 text-sm"
+              className={`flex-1 text-sm ${showPreview ? 'hidden' : ''}`}
               id="message-input"
             />
             <Button 
