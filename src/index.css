@@ -10,6 +10,13 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     @apply bg-background text-foreground;
   }
+
+  /* ContentEditable placeholder styling */
+  [contenteditable][data-placeholder]:empty::before {
+    content: attr(data-placeholder);
+    color: var(--muted-foreground);
+    pointer-events: none;
+  }
 }
 
 :root {

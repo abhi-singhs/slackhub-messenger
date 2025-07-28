@@ -66,7 +66,7 @@ function App() {
   ])
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const messageInputRef = useRef<HTMLInputElement>(null)
+  const messageInputRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -120,6 +120,12 @@ function App() {
 
     setMessages((current) => [...current, newMessage])
     setMessageInput('')
+    
+    // Clear the contentEditable div
+    if (messageInputRef.current) {
+      messageInputRef.current.innerHTML = ''
+      messageInputRef.current.focus()
+    }
   }
 
   const selectChannel = (channelId: string) => {
@@ -148,7 +154,7 @@ function App() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent, action: 'message' | 'channel') => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       if (action === 'message') {
         sendMessage()
@@ -266,119 +272,138 @@ function App() {
     </div>
   )
 
-  // Text formatting functions
+  // Text formatting functions for contentEditable
   const formatText = (format: 'bold' | 'italic' | 'strikethrough' | 'quote' | 'code') => {
     const input = messageInputRef.current
     if (!input) return
 
-    const start = input.selectionStart || 0
-    const end = input.selectionEnd || 0
-    const selectedText = input.value.substring(start, end)
+    const selection = window.getSelection()
+    if (!selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    const selectedText = range.toString()
     
-    let formattedText = ''
-    let cursorOffset = 0
+    let formattedHTML = ''
 
     switch (format) {
       case 'bold':
-        formattedText = `**${selectedText}**`
-        cursorOffset = selectedText ? 0 : 2
+        if (selectedText) {
+          formattedHTML = `<strong>${selectedText}</strong>`
+        } else {
+          formattedHTML = '<strong></strong>'
+        }
         break
       case 'italic':
-        formattedText = `*${selectedText}*`
-        cursorOffset = selectedText ? 0 : 1
+        if (selectedText) {
+          formattedHTML = `<em>${selectedText}</em>`
+        } else {
+          formattedHTML = '<em></em>'
+        }
         break
       case 'strikethrough':
-        formattedText = `~~${selectedText}~~`
-        cursorOffset = selectedText ? 0 : 2
+        if (selectedText) {
+          formattedHTML = `<del>${selectedText}</del>`
+        } else {
+          formattedHTML = '<del></del>'
+        }
         break
       case 'quote':
-        formattedText = `> ${selectedText}`
-        cursorOffset = selectedText ? 0 : 2
+        if (selectedText) {
+          formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
+        } else {
+          formattedHTML = '<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic"></blockquote>'
+        }
         break
       case 'code':
-        if (selectedText.includes('\n')) {
-          formattedText = `\`\`\`\n${selectedText}\n\`\`\``
-          cursorOffset = selectedText ? 0 : 4
+        if (selectedText) {
+          if (selectedText.includes('\n')) {
+            formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
+          } else {
+            formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
+          }
         } else {
-          formattedText = `\`${selectedText}\``
-          cursorOffset = selectedText ? 0 : 1
+          formattedHTML = '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono"></code>'
         }
         break
     }
 
-    const newValue = input.value.substring(0, start) + formattedText + input.value.substring(end)
-    setMessageInput(newValue)
+    // Replace the selected content with formatted HTML
+    range.deleteContents()
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = formattedHTML
+    const fragment = document.createDocumentFragment()
+    while (tempDiv.firstChild) {
+      fragment.appendChild(tempDiv.firstChild)
+    }
+    range.insertNode(fragment)
 
-    // Set cursor position
-    setTimeout(() => {
-      const newCursorPos = selectedText ? end + formattedText.length - selectedText.length : start + cursorOffset
-      input.focus()
-      input.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
+    // Update the message input state
+    setMessageInput(input.innerText || '')
+
+    // Position cursor at the end of inserted content
+    selection.removeAllRanges()
+    const newRange = document.createRange()
+    newRange.setStartAfter(fragment.lastChild || fragment)
+    newRange.collapse(true)
+    selection.addRange(newRange)
+    
+    input.focus()
   }
 
   const insertEmoji = (emoji: string) => {
     const input = messageInputRef.current
     if (!input) return
 
-    const start = input.selectionStart || 0
-    const end = input.selectionEnd || 0
-    
-    const newValue = input.value.substring(0, start) + emoji + input.value.substring(end)
-    setMessageInput(newValue)
+    const selection = window.getSelection()
+    if (!selection) return
 
-    // Set cursor position after emoji
-    setTimeout(() => {
-      const newCursorPos = start + emoji.length
+    // If there's no selection, place at the end
+    if (selection.rangeCount === 0) {
       input.focus()
-      input.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
+      const range = document.createRange()
+      range.selectNodeContents(input)
+      range.collapse(false)
+      selection.addRange(range)
+    }
+
+    const range = selection.getRangeAt(0)
+    const textNode = document.createTextNode(emoji)
+    range.insertNode(textNode)
+    
+    // Move cursor after the emoji
+    range.setStartAfter(textNode)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    // Update the message input state
+    setMessageInput(input.innerText || '')
+    input.focus()
   }
 
-  // Render formatted text preview
-  const renderFormattedText = (text: string) => {
-    return text.split('\n').map((line, index, array) => {
-      // Handle different formatting
-      let formattedLine = line
-      
-      // Bold formatting
-      formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      
-      // Italic formatting
-      formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
-      
-      // Strikethrough formatting
-      formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
-      
-      // Inline code formatting
-      formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-      
-      // Quote formatting
-      const isQuote = line.startsWith('> ')
-      if (isQuote) {
-        formattedLine = formattedLine.substring(2) // Remove '> '
-      }
-      
-      // Code block formatting
-      const isCodeBlock = line.startsWith('```')
-      
-      return (
-        <span key={index}>
-          {isQuote ? (
-            <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
-              <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-            </span>
-          ) : isCodeBlock ? (
-            <span className="bg-muted p-2 rounded font-mono text-xs block">
-              {line.replace(/```/g, '')}
-            </span>
-          ) : (
-            <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-          )}
-          {index < array.length - 1 && <br />}
-        </span>
-      )
-    })
+  // Convert HTML content to plain text for storage
+  const getPlainTextFromHTML = (html: string): string => {
+    const tempDiv = document.createElement('div')
+    tempDiv.innerHTML = html
+    
+    // Convert HTML formatting back to markdown-like syntax
+    let text = tempDiv.innerHTML
+    
+    // Convert HTML tags back to markdown
+    text = text.replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+    text = text.replace(/<em>(.*?)<\/em>/g, '*$1*')
+    text = text.replace(/<del>(.*?)<\/del>/g, '~~$1~~')
+    text = text.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/g, '> $1')
+    text = text.replace(/<code[^>]*>(.*?)<\/code>/g, '`$1`')
+    text = text.replace(/<pre[^>]*>(.*?)<\/pre>/g, '```\n$1\n```')
+    text = text.replace(/<br\s*\/?>/g, '\n')
+    text = text.replace(/<div>/g, '\n')
+    text = text.replace(/<\/div>/g, '')
+    
+    // Clean up any remaining HTML tags
+    const cleanDiv = document.createElement('div')
+    cleanDiv.innerHTML = text
+    return cleanDiv.textContent || cleanDiv.innerText || ''
   }
 
   if (!user) {
@@ -751,24 +776,69 @@ function App() {
           {/* Automatic Preview */}
           {messageInput.trim() && (
             <div className="mb-2">
-              <div className="text-xs text-muted-foreground mb-1 px-1">Preview:</div>
+              <div className="text-xs text-muted-foreground mb-1 px-1">This is how your message will appear:</div>
               <div className="min-h-[40px] p-3 bg-muted/30 border border-border rounded-md text-sm">
                 <div className="text-foreground leading-relaxed break-words">
-                  {renderFormattedText(messageInput)}
+                  {messageInput.split('\n').map((line, index, array) => {
+                    // Handle different formatting for preview
+                    let formattedLine = line
+                    
+                    // Bold formatting
+                    formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    
+                    // Italic formatting
+                    formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    
+                    // Strikethrough formatting
+                    formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
+                    
+                    // Inline code formatting
+                    formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+                    
+                    // Quote formatting
+                    const isQuote = line.startsWith('> ')
+                    if (isQuote) {
+                      formattedLine = formattedLine.substring(2) // Remove '> '
+                    }
+                    
+                    // Code block formatting
+                    const isCodeBlock = line.startsWith('```')
+                    
+                    return (
+                      <span key={index}>
+                        {isQuote ? (
+                          <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
+                            <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                          </span>
+                        ) : isCodeBlock ? (
+                          <span className="bg-muted p-2 rounded font-mono text-xs block">
+                            {line.replace(/```/g, '')}
+                          </span>
+                        ) : (
+                          <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
+                        )}
+                        {index < array.length - 1 && <br />}
+                      </span>
+                    )
+                  })}
                 </div>
               </div>
             </div>
           )}
           
           <div className="flex gap-2">
-            <Input
+            <div 
               ref={messageInputRef}
-              placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || currentChannel}`}
-              value={messageInput}
-              onChange={(e) => setMessageInput(e.target.value)}
-              onKeyPress={(e) => handleKeyPress(e, 'message')}
-              className="flex-1 text-sm"
-              id="message-input"
+              contentEditable
+              className="flex-1 min-h-[40px] max-h-32 overflow-y-auto p-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 [&_strong]:font-bold [&_em]:italic [&_del]:line-through [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_blockquote]:border-l-2 [&_blockquote]:border-muted-foreground [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_blockquote]:italic [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:font-mono [&_pre]:text-xs [&_pre]:block"
+              onInput={(e) => {
+                const target = e.target as HTMLDivElement
+                const plainText = getPlainTextFromHTML(target.innerHTML)
+                setMessageInput(plainText)
+              }}
+              onKeyDown={(e) => handleKeyPress(e, 'message')}
+              data-placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || currentChannel}`}
+              suppressContentEditableWarning={true}
             />
             <Button 
               onClick={sendMessage} 
