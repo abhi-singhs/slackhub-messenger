@@ -57,6 +57,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
+  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set())
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -282,6 +283,59 @@ function App() {
   )
 
   // Text formatting functions for contentEditable
+  const checkActiveFormats = () => {
+    try {
+      const input = messageInputRef.current
+      if (!input) return
+
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return
+
+      const range = selection.getRangeAt(0)
+      let node = range.commonAncestorContainer
+
+      // If text node, get parent element
+      if (node.nodeType === Node.TEXT_NODE) {
+        node = node.parentNode
+      }
+
+      const activeSet = new Set<string>()
+      
+      // Walk up the DOM tree to check for formatting elements
+      let current = node as HTMLElement
+      while (current && current !== input) {
+        const tagName = current.tagName?.toLowerCase()
+        
+        switch (tagName) {
+          case 'strong':
+          case 'b':
+            activeSet.add('bold')
+            break
+          case 'em':
+          case 'i':
+            activeSet.add('italic')
+            break
+          case 'del':
+            activeSet.add('strikethrough')
+            break
+          case 'blockquote':
+            activeSet.add('quote')
+            break
+          case 'code':
+          case 'pre':
+            activeSet.add('code')
+            break
+        }
+        
+        current = current.parentElement as HTMLElement
+      }
+
+      setActiveFormats(activeSet)
+    } catch (error) {
+      console.error('Error checking active formats:', error)
+    }
+  }
+
   const formatText = (format: 'bold' | 'italic' | 'strikethrough' | 'quote' | 'code') => {
     try {
       const input = messageInputRef.current
@@ -734,46 +788,46 @@ function App() {
           <div className="flex items-center justify-between gap-1 mb-2 pb-2 border-b border-border">
             <div className="flex items-center gap-1">
               <Button
-                variant="ghost"
+                variant={activeFormats.has('bold') ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => formatText('bold')}
-                className="h-8 w-8 p-0 hover:bg-secondary"
+                className={`h-8 w-8 p-0 ${activeFormats.has('bold') ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary'}`}
                 title="Bold"
               >
                 <TextB className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
+                variant={activeFormats.has('italic') ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => formatText('italic')}
-                className="h-8 w-8 p-0 hover:bg-secondary"
+                className={`h-8 w-8 p-0 ${activeFormats.has('italic') ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary'}`}
                 title="Italic"
               >
                 <TextItalic className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
+                variant={activeFormats.has('strikethrough') ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => formatText('strikethrough')}
-                className="h-8 w-8 p-0 hover:bg-secondary"
+                className={`h-8 w-8 p-0 ${activeFormats.has('strikethrough') ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary'}`}
                 title="Strikethrough"
               >
                 <Minus className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
+                variant={activeFormats.has('quote') ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => formatText('quote')}
-                className="h-8 w-8 p-0 hover:bg-secondary"
+                className={`h-8 w-8 p-0 ${activeFormats.has('quote') ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary'}`}
                 title="Quote"
               >
                 <Quotes className="h-4 w-4" />
               </Button>
               <Button
-                variant="ghost"
+                variant={activeFormats.has('code') ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => formatText('code')}
-                className="h-8 w-8 p-0 hover:bg-secondary"
+                className={`h-8 w-8 p-0 ${activeFormats.has('code') ? 'bg-accent text-accent-foreground' : 'hover:bg-secondary'}`}
                 title="Code"
               >
                 <Code className="h-4 w-4" />
@@ -815,11 +869,15 @@ function App() {
                   const target = e.target as HTMLDivElement
                   const plainText = getPlainTextFromHTML(target.innerHTML)
                   setMessageInput(plainText)
+                  checkActiveFormats()
                 } catch (error) {
                   console.error('Error handling input:', error)
                 }
               }}
+              onSelectionChange={checkActiveFormats}
               onKeyDown={(e) => handleKeyPress(e, 'message')}
+              onMouseUp={checkActiveFormats}
+              onKeyUp={checkActiveFormats}
               data-placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || currentChannel}`}
               suppressContentEditableWarning={true}
             />
