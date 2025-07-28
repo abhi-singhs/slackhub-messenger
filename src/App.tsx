@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Hash, PaperPlaneRight, Plus, List, X, Smiley, TextB, TextItalic, Minus, Quotes, Code, Eye, PencilSimple } from '@phosphor-icons/react'
+import { Hash, PaperPlaneRight, Plus, List, X, Smiley, TextB, TextItalic, Minus, Quotes, Code } from '@phosphor-icons/react'
 
 interface Message {
   id: string
@@ -57,7 +57,6 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
-  const [showPreview, setShowPreview] = useState(false)
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -747,43 +746,19 @@ function App() {
                 </PopoverContent>
               </Popover>
             </div>
-            
-            {/* Preview Toggle */}
-            <Button
-              variant={showPreview ? "secondary" : "ghost"}
-              size="sm"
-              onClick={() => setShowPreview(!showPreview)}
-              className="h-8 px-3 text-xs"
-              title={showPreview ? "Edit" : "Preview"}
-            >
-              {showPreview ? (
-                <>
-                  <PencilSimple className="h-3 w-3 mr-1" />
-                  Edit
-                </>
-              ) : (
-                <>
-                  <Eye className="h-3 w-3 mr-1" />
-                  Preview
-                </>
-              )}
-            </Button>
           </div>
           
-          {showPreview ? (
-            /* Preview Mode */
+          {/* Automatic Preview */}
+          {messageInput.trim() && (
             <div className="mb-2">
+              <div className="text-xs text-muted-foreground mb-1 px-1">Preview:</div>
               <div className="min-h-[40px] p-3 bg-muted/30 border border-border rounded-md text-sm">
-                {messageInput.trim() ? (
-                  <div className="text-foreground leading-relaxed break-words">
-                    {renderFormattedText(messageInput)}
-                  </div>
-                ) : (
-                  <span className="text-muted-foreground italic">Nothing to preview</span>
-                )}
+                <div className="text-foreground leading-relaxed break-words">
+                  {renderFormattedText(messageInput)}
+                </div>
               </div>
             </div>
-          ) : null}
+          )}
           
           <div className="flex gap-2">
             <Input
@@ -792,7 +767,7 @@ function App() {
               value={messageInput}
               onChange={(e) => setMessageInput(e.target.value)}
               onKeyPress={(e) => handleKeyPress(e, 'message')}
-              className={`flex-1 text-sm ${showPreview ? 'hidden' : ''}`}
+              className="flex-1 text-sm"
               id="message-input"
             />
             <Button 
