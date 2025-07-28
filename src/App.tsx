@@ -15,6 +15,8 @@ function App() {
     channels,
     sendMessage,
     createChannel,
+    updateChannel,
+    deleteChannel,
     addReaction
   } = useSlackData()
 
@@ -83,6 +85,8 @@ function App() {
         sidebarOpen={sidebarOpen}
         onChannelSelect={handleChannelSelect}
         onChannelCreate={handleChannelCreate}
+        onChannelUpdate={updateChannel}
+        onChannelDelete={deleteChannel}
         onSidebarToggle={setSidebarOpen}
       />
       

@@ -143,6 +143,32 @@ export const useSlackData = () => {
     )
   }
 
+  const updateChannel = (channelId: string, name: string, description: string) => {
+    setChannels((current) => 
+      (current || []).map(channel => 
+        channel.id === channelId 
+          ? { ...channel, name, description }
+          : channel
+      )
+    )
+  }
+
+  const deleteChannel = (channelId: string) => {
+    // Don't allow deleting the general channel
+    if (channelId === 'general') return
+
+    // Remove the channel
+    setChannels((current) => (current || []).filter(channel => channel.id !== channelId))
+    
+    // Remove all messages from this channel
+    setMessages((current) => (current || []).filter(message => message.channelId !== channelId))
+    
+    // Switch to general channel if we're deleting the current channel
+    if (currentChannel === channelId) {
+      setCurrentChannel('general')
+    }
+  }
+
   return {
     user,
     currentChannel,
@@ -151,6 +177,8 @@ export const useSlackData = () => {
     channels: safeChannels,
     sendMessage,
     createChannel,
+    updateChannel,
+    deleteChannel,
     addReaction
   }
 }

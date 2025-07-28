@@ -4,7 +4,11 @@ import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Hash, Plus, List, X } from '@phosphor-icons/react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
 import { Channel, UserInfo } from '@/types'
 import { getChannelMessageCount } from '@/utils'
 
@@ -16,6 +20,8 @@ interface SidebarProps {
   sidebarOpen: boolean
   onChannelSelect: (channelId: string) => void
   onChannelCreate: (name: string) => void
+  onChannelUpdate: (channelId: string, name: string, description: string) => void
+  onChannelDelete: (channelId: string) => void
   onSidebarToggle: (open: boolean) => void
 }
 
@@ -27,10 +33,16 @@ export const Sidebar = ({
   sidebarOpen,
   onChannelSelect,
   onChannelCreate,
+  onChannelUpdate,
+  onChannelDelete,
   onSidebarToggle
 }: SidebarProps) => {
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
+  const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
+  const [editChannelName, setEditChannelName] = useState('')
+  const [editChannelDescription, setEditChannelDescription] = useState('')
+  const [hoveredChannel, setHoveredChannel] = useState<string | null>(null)
 
   const handleCreateChannel = () => {
     if (!newChannelName.trim()) return
@@ -45,6 +57,33 @@ export const Sidebar = ({
       e.preventDefault()
       handleCreateChannel()
     }
+  }
+
+  const handleEditChannel = (channel: Channel) => {
+    setEditingChannel(channel)
+    setEditChannelName(channel.name)
+    setEditChannelDescription(channel.description || '')
+  }
+
+  const handleUpdateChannel = () => {
+    if (!editingChannel || !editChannelName.trim()) return
+    
+    onChannelUpdate(editingChannel.id, editChannelName.trim(), editChannelDescription.trim())
+    setEditingChannel(null)
+    setEditChannelName('')
+    setEditChannelDescription('')
+  }
+
+  const handleDeleteChannel = (channelId: string) => {
+    onChannelDelete(channelId)
+  }
+
+  const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
+    // Prevent channel selection if clicking on the menu button
+    if ((e.target as HTMLElement).closest('[data-menu-trigger]')) {
+      return
+    }
+    onChannelSelect(channelId)
   }
 
   return (
@@ -125,29 +164,102 @@ export const Sidebar = ({
             <ScrollArea className="h-full">
               <div className="space-y-1">
                 {channels.map((channel) => (
-                  <button
+                  <div
                     key={channel.id}
-                    onClick={() => onChannelSelect(channel.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                      currentChannel === channel.id
-                        ? 'bg-accent text-accent-foreground'
-                        : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
-                    }`}
+                    className="relative group"
+                    onMouseEnter={() => setHoveredChannel(channel.id)}
+                    onMouseLeave={() => setHoveredChannel(null)}
                   >
-                    <Hash className="h-4 w-4" />
-                    <span className="flex-1 text-left">{channel.name}</span>
-                    {getChannelMessageCount(channel.id, messages) > 0 && (
-                      <Badge variant="secondary" className="h-5 text-xs">
-                        {getChannelMessageCount(channel.id, messages)}
-                      </Badge>
+                    <button
+                      onClick={(e) => handleChannelClick(channel.id, e)}
+                      className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
+                        currentChannel === channel.id
+                          ? 'bg-accent text-accent-foreground'
+                          : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
+                      }`}
+                    >
+                      <Hash className="h-4 w-4" />
+                      <span className="flex-1 text-left">{channel.name}</span>
+                      {getChannelMessageCount(channel.id, messages) > 0 && (
+                        <Badge variant="secondary" className="h-5 text-xs">
+                          {getChannelMessageCount(channel.id, messages)}
+                        </Badge>
+                      )}
+                    </button>
+                    
+                    {/* Three-dot menu - only show on hover and if not the general channel */}
+                    {hoveredChannel === channel.id && channel.id !== 'general' && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            data-menu-trigger
+                          >
+                            <DotsThree className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          <DropdownMenuItem onClick={() => handleEditChannel(channel)}>
+                            <PencilSimple className="h-4 w-4 mr-2" />
+                            Edit channel
+                          </DropdownMenuItem>
+                          <DropdownMenuItem 
+                            onClick={() => handleDeleteChannel(channel.id)}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash className="h-4 w-4 mr-2" />
+                            Delete channel
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     )}
-                  </button>
+                  </div>
                 ))}
               </div>
             </ScrollArea>
           </div>
         </div>
       </div>
+
+      {/* Edit Channel Dialog */}
+      <Dialog open={!!editingChannel} onOpenChange={() => setEditingChannel(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Channel</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="channel-name">Channel Name</Label>
+              <Input
+                id="channel-name"
+                value={editChannelName}
+                onChange={(e) => setEditChannelName(e.target.value)}
+                placeholder="Channel name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="channel-description">Description</Label>
+              <Textarea
+                id="channel-description"
+                value={editChannelDescription}
+                onChange={(e) => setEditChannelDescription(e.target.value)}
+                placeholder="Channel description"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingChannel(null)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateChannel}>
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
