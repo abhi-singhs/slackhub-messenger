@@ -181,8 +181,15 @@ export const Sidebar = ({
                     >
                       <Hash className="h-4 w-4" />
                       <span className="flex-1 text-left">{channel.name}</span>
-                      {getChannelMessageCount(channel.id, messages) > 0 && openMenuChannel !== channel.id && (
-                        <Badge variant="secondary" className="h-5 text-xs">
+                      {getChannelMessageCount(channel.id, messages) > 0 && (
+                        <Badge 
+                          variant="secondary" 
+                          className={`h-5 text-xs transition-all duration-200 ease-in-out ${
+                            openMenuChannel === channel.id 
+                              ? 'translate-x-[-2rem] opacity-0' 
+                              : 'translate-x-0 opacity-100'
+                          }`}
+                        >
                           {getChannelMessageCount(channel.id, messages)}
                         </Badge>
                       )}
@@ -195,8 +202,12 @@ export const Sidebar = ({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className={`absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 transition-opacity hover:bg-secondary/80 ${
-                              openMenuChannel === channel.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                            className={`absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 transition-all duration-200 ease-in-out hover:bg-secondary/80 ${
+                              openMenuChannel === channel.id 
+                                ? 'opacity-100 translate-x-0' 
+                                : hoveredChannel === channel.id
+                                  ? 'opacity-100 translate-x-0'
+                                  : 'opacity-0 translate-x-2'
                             }`}
                             data-menu-trigger
                           >
