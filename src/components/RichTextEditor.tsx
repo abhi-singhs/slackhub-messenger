@@ -82,7 +82,7 @@ export const RichTextEditor = ({
         class: 'prose prose-sm max-w-none focus:outline-none min-h-[40px] max-h-32 overflow-y-auto p-3 text-sm',
       },
     },
-  })
+  }, [placeholder]) // Add placeholder as dependency
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -110,17 +110,6 @@ export const RichTextEditor = ({
       editor.commands.clearContent()
     }
   }, [editor, content])
-
-  // Update placeholder when it changes
-  useEffect(() => {
-    if (editor) {
-      editor.extensionManager.extensions.forEach(extension => {
-        if (extension.name === 'placeholder') {
-          extension.options.placeholder = placeholder
-        }
-      })
-    }
-  }, [editor, placeholder])
 
   if (!editor) {
     return null
