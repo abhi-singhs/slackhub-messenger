@@ -22,7 +22,6 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
-  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set())
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -109,10 +108,8 @@ function App() {
           channels={channels}
           currentChannel={currentChannel}
           messageInput={messageInput}
-          activeFormats={activeFormats}
           showInputEmojiPicker={showInputEmojiPicker}
           onMessageInput={setMessageInput}
-          onActiveFormatsChange={setActiveFormats}
           onEmojiPickerToggle={setShowInputEmojiPicker}
           onSendMessage={handleSendMessage}
         />

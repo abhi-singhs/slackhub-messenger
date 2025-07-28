@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Message, Channel, UserInfo } from '@/types'
 
+declare const spark: Window['spark']
+
 export const useSlackData = () => {
   const [user, setUser] = useState<UserInfo | null>(null)
   const [currentChannel, setCurrentChannel] = useState<string>('general')
@@ -13,11 +15,23 @@ export const useSlackData = () => {
     { id: 'dev', name: 'dev', description: 'Development talk' }
   ])
 
+  // Ensure we have fallback values
+  const safeMessages = messages || []
+  const safeChannels = channels || []
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userData = await spark.user()
-        setUser(userData)
+        if (userData) {
+          setUser({
+            id: userData.id.toString(),
+            login: userData.login || 'Anonymous',
+            avatarUrl: userData.avatarUrl || '',
+            email: userData.email || '',
+            isOwner: userData.isOwner || false
+          })
+        }
       } catch (error) {
         console.error('Error fetching user data:', error)
         console.log('Using anonymous user')
@@ -47,7 +61,7 @@ export const useSlackData = () => {
         channelId: currentChannel
       }
 
-      setMessages((current) => [...current, newMessage])
+      setMessages((current) => [...(current || []), newMessage])
     } catch (error) {
       console.error('Error sending message:', error)
     }
@@ -57,7 +71,7 @@ export const useSlackData = () => {
     const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     
     setChannels((current) => [
-      ...current,
+      ...(current || []),
       {
         id: channelId,
         name: name,
@@ -72,7 +86,7 @@ export const useSlackData = () => {
     if (!user) return
 
     setMessages((current) => 
-      current.map(message => {
+      (current || []).map(message => {
         if (message.id !== messageId) return message
 
         const reactions = message.reactions || []
@@ -133,8 +147,8 @@ export const useSlackData = () => {
     user,
     currentChannel,
     setCurrentChannel,
-    messages,
-    channels,
+    messages: safeMessages,
+    channels: safeChannels,
     sendMessage,
     createChannel,
     addReaction
