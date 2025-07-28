@@ -157,10 +157,23 @@ function App() {
   }
 
   const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
+    const date = new Date(timestamp)
+    const today = new Date()
+    const isToday = date.toDateString() === today.toDateString()
+    
+    if (isToday) {
+      return date.toLocaleTimeString([], { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      })
+    } else {
+      return date.toLocaleDateString([], { 
+        month: 'short', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+    }
   }
 
   const getUserName = (userId: string) => {
