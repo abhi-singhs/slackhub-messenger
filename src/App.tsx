@@ -810,58 +810,7 @@ function App() {
             </div>
           </div>
           
-          {/* Automatic Preview */}
-          {messageInput.trim() && (
-            <div className="mb-2">
-              <div className="text-xs text-muted-foreground mb-1 px-1">This is how your message will appear:</div>
-              <div className="min-h-[40px] p-3 bg-muted/30 border border-border rounded-md text-sm">
-                <div className="text-foreground leading-relaxed break-words">
-                  {messageInput.split('\n').map((line, index, array) => {
-                    // Handle different formatting for preview
-                    let formattedLine = line
-                    
-                    // Bold formatting
-                    formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    
-                    // Italic formatting
-                    formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    
-                    // Strikethrough formatting
-                    formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
-                    
-                    // Inline code formatting
-                    formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-                    
-                    // Quote formatting
-                    const isQuote = line.startsWith('> ')
-                    if (isQuote) {
-                      formattedLine = formattedLine.substring(2) // Remove '> '
-                    }
-                    
-                    // Code block formatting
-                    const isCodeBlock = line.startsWith('```')
-                    
-                    return (
-                      <span key={index}>
-                        {isQuote ? (
-                          <span className="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic block">
-                            <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-                          </span>
-                        ) : isCodeBlock ? (
-                          <span className="bg-muted p-2 rounded font-mono text-xs block">
-                            {line.replace(/```/g, '')}
-                          </span>
-                        ) : (
-                          <span dangerouslySetInnerHTML={{ __html: formattedLine }} />
-                        )}
-                        {index < array.length - 1 && <br />}
-                      </span>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          )}
+
           
           <div className="flex gap-2">
             <div 
