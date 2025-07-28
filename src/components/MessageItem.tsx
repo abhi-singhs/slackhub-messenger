@@ -99,7 +99,7 @@ export const MessageItem = ({
                 <Smiley className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-accent/20" side="top" align="end">
+            <PopoverContent className="w-auto p-0 border-accent/20 mb-2 md:mb-0" side="top" align="end">
               <div className="relative">
                 {/* Connecting line to message */}
                 <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>

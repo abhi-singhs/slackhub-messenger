@@ -10,13 +10,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
 import { Channel, UserInfo } from '@/types'
-import { getChannelMessageCount } from '@/utils'
+import { getChannelUnreadCount } from '@/utils'
 
 interface SidebarProps {
   user: UserInfo
   channels: Channel[]
   currentChannel: string
   messages: any[]
+  lastReadTimestamps: Record<string, number>
   sidebarOpen: boolean
   onChannelSelect: (channelId: string) => void
   onChannelCreate: (name: string) => void
@@ -30,6 +31,7 @@ export const Sidebar = ({
   channels,
   currentChannel,
   messages,
+  lastReadTimestamps,
   sidebarOpen,
   onChannelSelect,
   onChannelCreate,
@@ -181,7 +183,7 @@ export const Sidebar = ({
                     >
                       <Hash className="h-4 w-4" />
                       <span className="flex-1 text-left">{channel.name}</span>
-                      {getChannelMessageCount(channel.id, messages) > 0 && (
+                      {getChannelUnreadCount(channel.id, messages, lastReadTimestamps) > 0 && (
                         <Badge 
                           variant="secondary" 
                           className={`h-5 text-xs transition-all duration-200 ease-in-out ${
@@ -190,7 +192,7 @@ export const Sidebar = ({
                               : 'translate-x-0 opacity-100'
                           }`}
                         >
-                          {getChannelMessageCount(channel.id, messages)}
+                          {getChannelUnreadCount(channel.id, messages, lastReadTimestamps)}
                         </Badge>
                       )}
                     </button>

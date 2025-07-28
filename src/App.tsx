@@ -13,11 +13,13 @@ function App() {
     setCurrentChannel,
     messages,
     channels,
+    lastReadTimestamps,
     sendMessage,
     createChannel,
     updateChannel,
     deleteChannel,
-    addReaction
+    addReaction,
+    markChannelAsRead
   } = useSlackData()
 
   const [messageInput, setMessageInput] = useState('')
@@ -82,6 +84,7 @@ function App() {
         channels={channels}
         currentChannel={currentChannel}
         messages={messages}
+        lastReadTimestamps={lastReadTimestamps}
         sidebarOpen={sidebarOpen}
         onChannelSelect={handleChannelSelect}
         onChannelCreate={handleChannelCreate}

@@ -14,10 +14,20 @@ export const useSlackData = () => {
     { id: 'random', name: 'random', description: 'Random chatter' },
     { id: 'dev', name: 'dev', description: 'Development talk' }
   ])
+  const [lastReadTimestamps, setLastReadTimestamps] = useKV<Record<string, number>>('last-read-timestamps', {})
 
   // Ensure we have fallback values
   const safeMessages = messages || []
   const safeChannels = channels || []
+  const safeLastReadTimestamps = lastReadTimestamps || {}
+
+  const markChannelAsRead = (channelId: string) => {
+    const now = Date.now()
+    setLastReadTimestamps((current) => ({
+      ...(current || {}),
+      [channelId]: now
+    }))
+  }
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -46,6 +56,13 @@ export const useSlackData = () => {
     }
     fetchUser()
   }, [])
+
+  // Mark initial channel as read when user is loaded
+  useEffect(() => {
+    if (user && currentChannel) {
+      markChannelAsRead(currentChannel)
+    }
+  }, [user, currentChannel])
 
   const sendMessage = (content: string) => {
     try {
@@ -169,16 +186,23 @@ export const useSlackData = () => {
     }
   }
 
+  const setCurrentChannelAndMarkRead = (channelId: string) => {
+    setCurrentChannel(channelId)
+    markChannelAsRead(channelId)
+  }
+
   return {
     user,
     currentChannel,
-    setCurrentChannel,
+    setCurrentChannel: setCurrentChannelAndMarkRead,
     messages: safeMessages,
     channels: safeChannels,
+    lastReadTimestamps: safeLastReadTimestamps,
     sendMessage,
     createChannel,
     updateChannel,
     deleteChannel,
-    addReaction
+    addReaction,
+    markChannelAsRead
   }
 }

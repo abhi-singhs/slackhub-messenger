@@ -36,7 +36,15 @@ export const getUserName = (userId: string, messages: any[]): string => {
 }
 
 /**
- * Count messages for a specific channel
+ * Count unread messages for a specific channel
+ */
+export const getChannelUnreadCount = (channelId: string, messages: any[], lastReadTimestamps: Record<string, number>): number => {
+  const lastReadTime = lastReadTimestamps[channelId] || 0
+  return messages.filter(msg => msg.channelId === channelId && msg.timestamp > lastReadTime).length
+}
+
+/**
+ * Count messages for a specific channel (legacy - keeping for compatibility)
  */
 export const getChannelMessageCount = (channelId: string, messages: any[]): number => {
   return messages.filter(msg => msg.channelId === channelId).length
