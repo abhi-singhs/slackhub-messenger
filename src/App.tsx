@@ -39,7 +39,7 @@ function AppContent() {
     if (channelId && channelId !== currentChannel) {
       setCurrentChannel(channelId)
     }
-  }, [channelId, currentChannel, setCurrentChannel])
+  }, [channelId, currentChannel])
 
   // Redirect to general channel if no channel is selected
   useEffect(() => {

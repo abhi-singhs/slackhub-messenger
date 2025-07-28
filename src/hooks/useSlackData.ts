@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Message, Channel, UserInfo } from '@/types'
 
@@ -21,13 +21,13 @@ export const useSlackData = () => {
   const safeChannels = channels || []
   const safeLastReadTimestamps = lastReadTimestamps || {}
 
-  const markChannelAsRead = (channelId: string) => {
+  const markChannelAsRead = useCallback((channelId: string) => {
     const now = Date.now()
     setLastReadTimestamps((current) => ({
       ...(current || {}),
       [channelId]: now
     }))
-  }
+  }, [])
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -59,7 +59,7 @@ export const useSlackData = () => {
 
   // Don't auto-mark channels as read here - let App.tsx handle it when route changes
 
-  const sendMessage = (content: string) => {
+  const sendMessage = useCallback((content: string) => {
     try {
       if (!content.trim() || !user) return
 
@@ -77,9 +77,9 @@ export const useSlackData = () => {
     } catch (error) {
       console.error('Error sending message:', error)
     }
-  }
+  }, [user, currentChannel])
 
-  const createChannel = (name: string) => {
+  const createChannel = useCallback((name: string) => {
     const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
     
     setChannels((current) => [
@@ -92,9 +92,9 @@ export const useSlackData = () => {
     ])
     
     setCurrentChannel(channelId)
-  }
+  }, [])
 
-  const addReaction = (messageId: string, emoji: string) => {
+  const addReaction = useCallback((messageId: string, emoji: string) => {
     if (!user) return
 
     setMessages((current) => 
@@ -153,9 +153,9 @@ export const useSlackData = () => {
         }
       })
     )
-  }
+  }, [user])
 
-  const updateChannel = (channelId: string, name: string, description: string) => {
+  const updateChannel = useCallback((channelId: string, name: string, description: string) => {
     setChannels((current) => 
       (current || []).map(channel => 
         channel.id === channelId 
@@ -163,9 +163,9 @@ export const useSlackData = () => {
           : channel
       )
     )
-  }
+  }, [])
 
-  const deleteChannel = (channelId: string) => {
+  const deleteChannel = useCallback((channelId: string) => {
     // Don't allow deleting the general channel
     if (channelId === 'general') return
 
@@ -179,7 +179,7 @@ export const useSlackData = () => {
     if (currentChannel === channelId) {
       setCurrentChannel('general')
     }
-  }
+  }, [currentChannel])
 
   return {
     user,
