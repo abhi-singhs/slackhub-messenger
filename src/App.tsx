@@ -284,7 +284,6 @@ function App() {
           onClick={() => setSidebarOpen(false)}
         />
       )}
-      
       {/* Sidebar */}
       <div className={`
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
@@ -374,7 +373,6 @@ function App() {
           </div>
         </div>
       </div>
-
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full md:w-auto">
         {/* Header */}
@@ -447,7 +445,7 @@ function App() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground text-4xl font-bold"
                             >
                               <Smiley className="h-4 w-4" />
                             </Button>
@@ -536,7 +534,7 @@ function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 export default App
