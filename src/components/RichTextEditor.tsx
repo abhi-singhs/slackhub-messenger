@@ -3,7 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { TextB, TextItalic, Minus, Quotes, Code, Smiley } from '@phosphor-icons/react'
+import { TextB, TextItalic, Minus, Quotes, Code, Smiley, PaperPlaneRight } from '@phosphor-icons/react'
 import { EmojiPicker } from './EmojiPicker'
 import { useEffect, useState } from 'react'
 
@@ -36,6 +36,7 @@ interface RichTextEditorProps {
   onUpdate: (content: string) => void
   onEmojiPickerToggle: (show: boolean) => void
   onSubmit: () => void
+  showSendButton?: boolean
 }
 
 export const RichTextEditor = ({
@@ -44,7 +45,8 @@ export const RichTextEditor = ({
   showEmojiPicker,
   onUpdate,
   onEmojiPickerToggle,
-  onSubmit
+  onSubmit,
+  showSendButton = false
 }: RichTextEditorProps) => {
   const [, forceUpdate] = useState({})
   
@@ -223,6 +225,18 @@ export const RichTextEditor = ({
             </PopoverContent>
           </Popover>
         </div>
+        
+        {/* Send Button */}
+        {showSendButton && (
+          <Button 
+            onClick={onSubmit} 
+            disabled={!content.trim()}
+            size="sm"
+            className="h-8 px-3"
+          >
+            <PaperPlaneRight className="h-4 w-4" />
+          </Button>
+        )}
       </div>
       
       {/* Editor Content */}
