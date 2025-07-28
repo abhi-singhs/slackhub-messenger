@@ -489,7 +489,7 @@ function App() {
                                   onClick={() => addReaction(message.id, reaction.emoji)}
                                 >
                                   <span className="mr-1">{reaction.emoji}</span>
-                                  <span>{reaction.count}</span>
+                                  <span className="text-black">{reaction.count}</span>
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent>
