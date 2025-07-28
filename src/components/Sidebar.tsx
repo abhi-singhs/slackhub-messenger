@@ -43,6 +43,7 @@ export const Sidebar = ({
   const [editChannelName, setEditChannelName] = useState('')
   const [editChannelDescription, setEditChannelDescription] = useState('')
   const [hoveredChannel, setHoveredChannel] = useState<string | null>(null)
+  const [openMenuChannel, setOpenMenuChannel] = useState<string | null>(null)
 
   const handleCreateChannel = () => {
     if (!newChannelName.trim()) return
@@ -180,7 +181,7 @@ export const Sidebar = ({
                     >
                       <Hash className="h-4 w-4" />
                       <span className="flex-1 text-left">{channel.name}</span>
-                      {getChannelMessageCount(channel.id, messages) > 0 && (
+                      {getChannelMessageCount(channel.id, messages) > 0 && openMenuChannel !== channel.id && (
                         <Badge variant="secondary" className="h-5 text-xs">
                           {getChannelMessageCount(channel.id, messages)}
                         </Badge>
@@ -189,12 +190,12 @@ export const Sidebar = ({
                     
                     {/* Three-dot menu - only show on hover and if not the general channel */}
                     {hoveredChannel === channel.id && channel.id !== 'general' && (
-                      <DropdownMenu>
+                      <DropdownMenu onOpenChange={(open) => setOpenMenuChannel(open ? channel.id : null)}>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary/80"
                             data-menu-trigger
                           >
                             <DotsThree className="h-4 w-4" />
