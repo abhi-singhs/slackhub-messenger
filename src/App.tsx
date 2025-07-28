@@ -413,7 +413,7 @@ function App() {
             ) : (
               <TooltipProvider>
                 {currentChannelMessages.map((message) => (
-                  <div key={message.id} className="flex gap-3 group hover:bg-accent/15 transition-colors duration-200 rounded-lg p-2 -m-2">
+                  <div key={message.id} className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
                     <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
                       <AvatarImage src={message.userAvatar} alt={message.userName} />
                       <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
