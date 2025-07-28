@@ -33,14 +33,19 @@
 - **Success criteria**: Reactions are persistent, show user counts, allow toggle on/off, display tooltips
 
 ### Message Search
-- **What it does**: Real-time search across all messages with text highlighting and keyboard shortcuts
-- **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels
-- **Success criteria**: Search works across message content and usernames, highlights matches, supports ⌘K shortcut, shows result counts
+- **What it does**: Comprehensive search across all messages with dedicated results page, message context, and navigation
+- **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels with full context
+- **Success criteria**: Search works across message content and usernames, provides dedicated results page with context, allows navigation to original messages, highlights matches, supports ⌘K shortcut, shows surrounding message context
 
 ### Mobile Responsiveness
 - **What it does**: Adapts interface for mobile screens with touch-friendly interactions
 - **Why it matters**: Users need access from phones and tablets throughout the day
 - **Success criteria**: Sidebar collapses to overlay, touch targets are accessible, content remains readable
+
+### Search Results Page
+- **What it does**: Dedicated page showing search results with full message context, channel information, and navigation
+- **Why it matters**: Provides comprehensive search experience with surrounding message context for better understanding
+- **Success criteria**: Shows all matching messages with context, allows drilling into specific results, enables navigation to original messages, displays channel and timestamp information
 
 ### User Integration
 - **What it does**: Fetches GitHub user data for avatars and identity

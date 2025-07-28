@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesList } from '@/components/MessagesList'
 import { MessageInput } from '@/components/MessageInput'
+import { SearchResults } from '@/components/SearchResults'
 
 function App() {
   const {
@@ -27,6 +28,8 @@ function App() {
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [showSearchResults, setShowSearchResults] = useState(false)
+  const [targetMessageId, setTargetMessageId] = useState<string | null>(null)
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -44,11 +47,14 @@ function App() {
     setCurrentChannel(channelId)
     setSidebarOpen(false) // Close sidebar on mobile when channel is selected
     setSearchQuery('') // Clear search when switching channels
+    setShowSearchResults(false) // Exit search results view
+    setTargetMessageId(null) // Clear target message
   }
 
   const handleChannelCreate = (name: string) => {
     createChannel(name)
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
+    setShowSearchResults(false) // Exit search results view
   }
 
   const handleSendMessage = () => {
@@ -66,6 +72,41 @@ function App() {
       }
       return newSet
     })
+  }
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query)
+    if (query.length >= 2) {
+      setShowSearchResults(true)
+    } else {
+      setShowSearchResults(false)
+      setTargetMessageId(null)
+    }
+  }
+
+  const handleSearchResultsBack = () => {
+    setShowSearchResults(false)
+    setTargetMessageId(null)
+  }
+
+  const handleNavigateToMessage = (channelId: string, messageId: string) => {
+    setCurrentChannel(channelId)
+    setTargetMessageId(messageId)
+    setShowSearchResults(false)
+    setSidebarOpen(false)
+    
+    // Scroll to the target message after a brief delay
+    setTimeout(() => {
+      const messageElement = document.getElementById(`message-${messageId}`)
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        messageElement.classList.add('animate-pulse')
+        setTimeout(() => {
+          messageElement.classList.remove('animate-pulse')
+          setTargetMessageId(null)
+        }, 2000)
+      }
+    }, 100)
   }
 
   if (!user) {
@@ -102,29 +143,46 @@ function App() {
           currentChannel={currentChannel}
           searchQuery={searchQuery}
           onSidebarToggle={() => setSidebarOpen(true)}
-          onSearchChange={setSearchQuery}
+          onSearchChange={handleSearchChange}
         />
 
-        <MessagesList
-          messages={messages}
-          channels={channels}
-          currentChannel={currentChannel}
-          user={user}
-          searchQuery={searchQuery}
-          openEmojiPickers={openEmojiPickers}
-          onEmojiPickerToggle={handleEmojiPickerToggle}
-          onReactionAdd={addReaction}
-        />
+        {showSearchResults ? (
+          <SearchResults
+            searchQuery={searchQuery}
+            messages={messages}
+            channels={channels}
+            user={user}
+            openEmojiPickers={openEmojiPickers}
+            onEmojiPickerToggle={handleEmojiPickerToggle}
+            onReactionAdd={addReaction}
+            onBack={handleSearchResultsBack}
+            onNavigateToMessage={handleNavigateToMessage}
+          />
+        ) : (
+          <>
+            <MessagesList
+              messages={messages}
+              channels={channels}
+              currentChannel={currentChannel}
+              user={user}
+              searchQuery=""
+              openEmojiPickers={openEmojiPickers}
+              onEmojiPickerToggle={handleEmojiPickerToggle}
+              onReactionAdd={addReaction}
+              targetMessageId={targetMessageId}
+            />
 
-        <MessageInput
-          channels={channels}
-          currentChannel={currentChannel}
-          messageInput={messageInput}
-          showInputEmojiPicker={showInputEmojiPicker}
-          onMessageInput={setMessageInput}
-          onEmojiPickerToggle={setShowInputEmojiPicker}
-          onSendMessage={handleSendMessage}
-        />
+            <MessageInput
+              channels={channels}
+              currentChannel={currentChannel}
+              messageInput={messageInput}
+              showInputEmojiPicker={showInputEmojiPicker}
+              onMessageInput={setMessageInput}
+              onEmojiPickerToggle={setShowInputEmojiPicker}
+              onSendMessage={handleSendMessage}
+            />
+          </>
+        )}
       </div>
     </div>
   );

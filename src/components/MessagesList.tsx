@@ -15,6 +15,7 @@ interface MessagesListProps {
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
+  targetMessageId?: string | null
 }
 
 export const MessagesList = ({
@@ -25,7 +26,8 @@ export const MessagesList = ({
   searchQuery,
   openEmojiPickers,
   onEmojiPickerToggle,
-  onReactionAdd
+  onReactionAdd,
+  targetMessageId
 }: MessagesListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
@@ -75,18 +77,28 @@ export const MessagesList = ({
             </div>
           ) : filteredMessages.length > 0 ? (
             <TooltipProvider>
-              {filteredMessages.map((message) => (
-                <MessageItem
-                  key={message.id}
-                  message={message}
-                  user={user}
-                  messages={messages}
-                  searchQuery={searchQuery}
-                  isEmojiPickerOpen={openEmojiPickers.has(message.id)}
-                  onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
-                  onReactionAdd={onReactionAdd}
-                />
-              ))}
+              {filteredMessages.map((message) => {
+                const isTargetMessage = targetMessageId === message.id
+                return (
+                  <div
+                    key={message.id}
+                    id={`message-${message.id}`}
+                    className={`transition-all duration-500 ${
+                      isTargetMessage ? 'ring-2 ring-accent/50 bg-accent/5 rounded-lg p-2' : ''
+                    }`}
+                  >
+                    <MessageItem
+                      message={message}
+                      user={user}
+                      messages={messages}
+                      searchQuery={searchQuery}
+                      isEmojiPickerOpen={openEmojiPickers.has(message.id)}
+                      onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
+                      onReactionAdd={onReactionAdd}
+                    />
+                  </div>
+                )
+              })}
             </TooltipProvider>
           ) : null}
           <div ref={messagesEndRef} />

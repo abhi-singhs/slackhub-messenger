@@ -28,6 +28,15 @@ export const SearchInput = ({ searchQuery, onSearchChange, placeholder = "Search
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [])
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && searchQuery.trim()) {
+      // Trigger search results when Enter is pressed
+      if (searchQuery.length >= 2) {
+        // The parent component handles showing search results
+      }
+    }
+  }
+
   const handleClear = () => {
     onSearchChange('')
   }
@@ -43,6 +52,7 @@ export const SearchInput = ({ searchQuery, onSearchChange, placeholder = "Search
           placeholder={`${placeholder} (⌘K)`}
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           className="pl-10 pr-10 h-8 text-sm bg-muted/50 border-0 focus:bg-background focus:ring-1 focus:ring-ring"
