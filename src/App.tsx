@@ -406,6 +406,23 @@ function App() {
                         <span className="text-xs text-muted-foreground flex-shrink-0">
                           {formatTime(message.timestamp)}
                         </span>
+                        <div className="flex-1"></div>
+                        
+                        {/* Add Reaction Button - Top Right */}
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary"
+                            >
+                              <Smiley className="h-3 w-3" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" side="top" align="end">
+                            <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
+                          </PopoverContent>
+                        </Popover>
                       </div>
                       <div className="relative">
                         <p className="text-sm text-foreground leading-relaxed break-words mb-2">
@@ -441,22 +458,6 @@ function App() {
                               </TooltipContent>
                             </Tooltip>
                           ))}
-                          
-                          {/* Add Reaction Button */}
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary"
-                              >
-                                <Smiley className="h-3 w-3" />
-                              </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" side="top" align="start">
-                              <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
-                            </PopoverContent>
-                          </Popover>
                         </div>
                       </div>
                     </div>
