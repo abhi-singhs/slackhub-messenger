@@ -337,35 +337,65 @@ function App() {
           break
       }
 
+      // Store the original range position for fallback
+      const originalContainer = range.startContainer
+      const originalOffset = range.startOffset
+
       // Replace the selected content with formatted HTML
       range.deleteContents()
       const tempDiv = document.createElement('div')
       tempDiv.innerHTML = formattedHTML
       const fragment = document.createDocumentFragment()
+      
+      // Keep track of the inserted nodes
+      const insertedNodes: Node[] = []
       while (tempDiv.firstChild) {
-        fragment.appendChild(tempDiv.firstChild)
+        const node = tempDiv.firstChild
+        fragment.appendChild(node)
+        insertedNodes.push(node)
       }
+      
       range.insertNode(fragment)
 
       // Update the message input state
       setMessageInput(input.innerText || '')
 
-      // Position cursor at the end of inserted content
+      // Position cursor properly
       selection.removeAllRanges()
       const newRange = document.createRange()
       
-      // Safely position cursor after the inserted content
-      if (fragment.lastChild) {
-        newRange.setStartAfter(fragment.lastChild)
-      } else if (fragment.childNodes.length > 0) {
-        newRange.setStartAfter(fragment.childNodes[0])
-      } else {
-        // If fragment is empty, just place cursor at the current position
-        newRange.setStart(range.startContainer, range.startOffset)
+      try {
+        if (insertedNodes.length > 0) {
+          const lastNode = insertedNodes[insertedNodes.length - 1]
+          
+          if (selectedText) {
+            // If we had selected text, position cursor after the formatted content
+            newRange.setStartAfter(lastNode)
+          } else {
+            // If no selected text (empty formatting tags), position cursor inside the tags
+            if (lastNode.nodeType === Node.ELEMENT_NODE && lastNode.childNodes.length === 0) {
+              // Empty element, place cursor inside
+              newRange.setStart(lastNode, 0)
+            } else if (lastNode.nodeType === Node.TEXT_NODE) {
+              // Text node, place cursor at the end
+              newRange.setStart(lastNode, lastNode.textContent?.length || 0)
+            } else {
+              // Complex element, place cursor after
+              newRange.setStartAfter(lastNode)
+            }
+          }
+        } else {
+          // Fallback to original position
+          newRange.setStart(originalContainer, originalOffset)
+        }
+        
+        newRange.collapse(true)
+        selection.addRange(newRange)
+      } catch (error) {
+        console.error('Error positioning cursor:', error)
+        // Final fallback - just focus the input
+        input.focus()
       }
-      
-      newRange.collapse(true)
-      selection.addRange(newRange)
       
       input.focus()
     } catch (error) {
