@@ -111,6 +111,17 @@ export const RichTextEditor = ({
     }
   }, [editor, content])
 
+  // Update placeholder when it changes
+  useEffect(() => {
+    if (editor) {
+      editor.extensionManager.extensions.forEach(extension => {
+        if (extension.name === 'placeholder') {
+          extension.options.placeholder = placeholder
+        }
+      })
+    }
+  }, [editor, placeholder])
+
   if (!editor) {
     return null
   }
