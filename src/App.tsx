@@ -74,6 +74,7 @@ function App() {
         const userData = await spark.user()
         setUser(userData)
       } catch (error) {
+        console.error('Error fetching user data:', error)
         console.log('Using anonymous user')
         setUser({
           id: 'anonymous',
@@ -106,25 +107,29 @@ function App() {
   const currentChannelMessages = messages.filter(msg => msg.channelId === currentChannel)
 
   const sendMessage = () => {
-    if (!messageInput.trim() || !user) return
+    try {
+      if (!messageInput.trim() || !user) return
 
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      content: messageInput.trim(),
-      userId: user.id,
-      userName: user.login,
-      userAvatar: user.avatarUrl,
-      timestamp: Date.now(),
-      channelId: currentChannel
-    }
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        content: messageInput.trim(),
+        userId: user.id,
+        userName: user.login,
+        userAvatar: user.avatarUrl,
+        timestamp: Date.now(),
+        channelId: currentChannel
+      }
 
-    setMessages((current) => [...current, newMessage])
-    setMessageInput('')
-    
-    // Clear the contentEditable div
-    if (messageInputRef.current) {
-      messageInputRef.current.innerHTML = ''
-      messageInputRef.current.focus()
+      setMessages((current) => [...current, newMessage])
+      setMessageInput('')
+      
+      // Clear the contentEditable div
+      if (messageInputRef.current) {
+        messageInputRef.current.innerHTML = ''
+        messageInputRef.current.focus()
+      }
+    } catch (error) {
+      console.error('Error sending message:', error)
     }
   }
 
@@ -154,13 +159,17 @@ function App() {
   }
 
   const handleKeyPress = (e: React.KeyboardEvent, action: 'message' | 'channel') => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      if (action === 'message') {
-        sendMessage()
-      } else {
-        createChannel()
+    try {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault()
+        if (action === 'message') {
+          sendMessage()
+        } else {
+          createChannel()
+        }
       }
+    } catch (error) {
+      console.error('Error handling key press:', error)
     }
   }
 
@@ -274,136 +283,164 @@ function App() {
 
   // Text formatting functions for contentEditable
   const formatText = (format: 'bold' | 'italic' | 'strikethrough' | 'quote' | 'code') => {
-    const input = messageInputRef.current
-    if (!input) return
+    try {
+      const input = messageInputRef.current
+      if (!input) return
 
-    const selection = window.getSelection()
-    if (!selection || selection.rangeCount === 0) return
+      const selection = window.getSelection()
+      if (!selection || selection.rangeCount === 0) return
 
-    const range = selection.getRangeAt(0)
-    const selectedText = range.toString()
-    
-    let formattedHTML = ''
+      const range = selection.getRangeAt(0)
+      const selectedText = range.toString()
+      
+      let formattedHTML = ''
 
-    switch (format) {
-      case 'bold':
-        if (selectedText) {
-          formattedHTML = `<strong>${selectedText}</strong>`
-        } else {
-          formattedHTML = '<strong></strong>'
-        }
-        break
-      case 'italic':
-        if (selectedText) {
-          formattedHTML = `<em>${selectedText}</em>`
-        } else {
-          formattedHTML = '<em></em>'
-        }
-        break
-      case 'strikethrough':
-        if (selectedText) {
-          formattedHTML = `<del>${selectedText}</del>`
-        } else {
-          formattedHTML = '<del></del>'
-        }
-        break
-      case 'quote':
-        if (selectedText) {
-          formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
-        } else {
-          formattedHTML = '<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic"></blockquote>'
-        }
-        break
-      case 'code':
-        if (selectedText) {
-          if (selectedText.includes('\n')) {
-            formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
+      switch (format) {
+        case 'bold':
+          if (selectedText) {
+            formattedHTML = `<strong>${selectedText}</strong>`
           } else {
-            formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
+            formattedHTML = '<strong></strong>'
           }
-        } else {
-          formattedHTML = '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono"></code>'
-        }
-        break
+          break
+        case 'italic':
+          if (selectedText) {
+            formattedHTML = `<em>${selectedText}</em>`
+          } else {
+            formattedHTML = '<em></em>'
+          }
+          break
+        case 'strikethrough':
+          if (selectedText) {
+            formattedHTML = `<del>${selectedText}</del>`
+          } else {
+            formattedHTML = '<del></del>'
+          }
+          break
+        case 'quote':
+          if (selectedText) {
+            formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
+          } else {
+            formattedHTML = '<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic"></blockquote>'
+          }
+          break
+        case 'code':
+          if (selectedText) {
+            if (selectedText.includes('\n')) {
+              formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
+            } else {
+              formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
+            }
+          } else {
+            formattedHTML = '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono"></code>'
+          }
+          break
+      }
+
+      // Replace the selected content with formatted HTML
+      range.deleteContents()
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = formattedHTML
+      const fragment = document.createDocumentFragment()
+      while (tempDiv.firstChild) {
+        fragment.appendChild(tempDiv.firstChild)
+      }
+      range.insertNode(fragment)
+
+      // Update the message input state
+      setMessageInput(input.innerText || '')
+
+      // Position cursor at the end of inserted content
+      selection.removeAllRanges()
+      const newRange = document.createRange()
+      
+      // Safely position cursor after the inserted content
+      if (fragment.lastChild) {
+        newRange.setStartAfter(fragment.lastChild)
+      } else if (fragment.childNodes.length > 0) {
+        newRange.setStartAfter(fragment.childNodes[0])
+      } else {
+        // If fragment is empty, just place cursor at the current position
+        newRange.setStart(range.startContainer, range.startOffset)
+      }
+      
+      newRange.collapse(true)
+      selection.addRange(newRange)
+      
+      input.focus()
+    } catch (error) {
+      console.error('Error formatting text:', error)
     }
-
-    // Replace the selected content with formatted HTML
-    range.deleteContents()
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = formattedHTML
-    const fragment = document.createDocumentFragment()
-    while (tempDiv.firstChild) {
-      fragment.appendChild(tempDiv.firstChild)
-    }
-    range.insertNode(fragment)
-
-    // Update the message input state
-    setMessageInput(input.innerText || '')
-
-    // Position cursor at the end of inserted content
-    selection.removeAllRanges()
-    const newRange = document.createRange()
-    newRange.setStartAfter(fragment.lastChild || fragment)
-    newRange.collapse(true)
-    selection.addRange(newRange)
-    
-    input.focus()
   }
 
   const insertEmoji = (emoji: string) => {
-    const input = messageInputRef.current
-    if (!input) return
+    try {
+      const input = messageInputRef.current
+      if (!input) return
 
-    const selection = window.getSelection()
-    if (!selection) return
+      const selection = window.getSelection()
+      if (!selection) return
 
-    // If there's no selection, place at the end
-    if (selection.rangeCount === 0) {
-      input.focus()
-      const range = document.createRange()
-      range.selectNodeContents(input)
-      range.collapse(false)
+      // If there's no selection, place at the end
+      if (selection.rangeCount === 0) {
+        input.focus()
+        const range = document.createRange()
+        range.selectNodeContents(input)
+        range.collapse(false)
+        selection.addRange(range)
+      }
+
+      const range = selection.getRangeAt(0)
+      const textNode = document.createTextNode(emoji)
+      range.insertNode(textNode)
+      
+      // Move cursor after the emoji
+      range.setStartAfter(textNode)
+      range.collapse(true)
+      selection.removeAllRanges()
       selection.addRange(range)
+
+      // Update the message input state
+      setMessageInput(input.innerText || '')
+      input.focus()
+    } catch (error) {
+      console.error('Error inserting emoji:', error)
     }
-
-    const range = selection.getRangeAt(0)
-    const textNode = document.createTextNode(emoji)
-    range.insertNode(textNode)
-    
-    // Move cursor after the emoji
-    range.setStartAfter(textNode)
-    range.collapse(true)
-    selection.removeAllRanges()
-    selection.addRange(range)
-
-    // Update the message input state
-    setMessageInput(input.innerText || '')
-    input.focus()
   }
 
   // Convert HTML content to plain text for storage
   const getPlainTextFromHTML = (html: string): string => {
-    const tempDiv = document.createElement('div')
-    tempDiv.innerHTML = html
-    
-    // Convert HTML formatting back to markdown-like syntax
-    let text = tempDiv.innerHTML
-    
-    // Convert HTML tags back to markdown
-    text = text.replace(/<strong>(.*?)<\/strong>/g, '**$1**')
-    text = text.replace(/<em>(.*?)<\/em>/g, '*$1*')
-    text = text.replace(/<del>(.*?)<\/del>/g, '~~$1~~')
-    text = text.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/g, '> $1')
-    text = text.replace(/<code[^>]*>(.*?)<\/code>/g, '`$1`')
-    text = text.replace(/<pre[^>]*>(.*?)<\/pre>/g, '```\n$1\n```')
-    text = text.replace(/<br\s*\/?>/g, '\n')
-    text = text.replace(/<div>/g, '\n')
-    text = text.replace(/<\/div>/g, '')
-    
-    // Clean up any remaining HTML tags
-    const cleanDiv = document.createElement('div')
-    cleanDiv.innerHTML = text
-    return cleanDiv.textContent || cleanDiv.innerText || ''
+    try {
+      if (!html || html.trim() === '') return ''
+      
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = html
+      
+      // Convert HTML formatting back to markdown-like syntax
+      let text = tempDiv.innerHTML
+      
+      // Convert HTML tags back to markdown
+      text = text.replace(/<strong>(.*?)<\/strong>/g, '**$1**')
+      text = text.replace(/<em>(.*?)<\/em>/g, '*$1*')
+      text = text.replace(/<del>(.*?)<\/del>/g, '~~$1~~')
+      text = text.replace(/<blockquote[^>]*>(.*?)<\/blockquote>/g, '> $1')
+      text = text.replace(/<code[^>]*>(.*?)<\/code>/g, '`$1`')
+      text = text.replace(/<pre[^>]*>(.*?)<\/pre>/g, '```\n$1\n```')
+      text = text.replace(/<br\s*\/?>/g, '\n')
+      text = text.replace(/<div>/g, '\n')
+      text = text.replace(/<\/div>/g, '')
+      
+      // Clean up any remaining HTML tags
+      const cleanDiv = document.createElement('div')
+      cleanDiv.innerHTML = text
+      return cleanDiv.textContent || cleanDiv.innerText || ''
+    } catch (error) {
+      console.error('Error processing HTML:', error)
+      // Fallback to just getting text content
+      const tempDiv = document.createElement('div')
+      tempDiv.innerHTML = html
+      return tempDiv.textContent || tempDiv.innerText || ''
+    }
   }
 
   if (!user) {
@@ -832,9 +869,13 @@ function App() {
               contentEditable
               className="flex-1 min-h-[40px] max-h-32 overflow-y-auto p-3 text-sm border border-input rounded-md bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 [&_strong]:font-bold [&_em]:italic [&_del]:line-through [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:rounded [&_code]:text-xs [&_code]:font-mono [&_blockquote]:border-l-2 [&_blockquote]:border-muted-foreground [&_blockquote]:pl-3 [&_blockquote]:text-muted-foreground [&_blockquote]:italic [&_pre]:bg-muted [&_pre]:p-2 [&_pre]:rounded [&_pre]:font-mono [&_pre]:text-xs [&_pre]:block"
               onInput={(e) => {
-                const target = e.target as HTMLDivElement
-                const plainText = getPlainTextFromHTML(target.innerHTML)
-                setMessageInput(plainText)
+                try {
+                  const target = e.target as HTMLDivElement
+                  const plainText = getPlainTextFromHTML(target.innerHTML)
+                  setMessageInput(plainText)
+                } catch (error) {
+                  console.error('Error handling input:', error)
+                }
               }}
               onKeyDown={(e) => handleKeyPress(e, 'message')}
               data-placeholder={`Message #${channels.find(c => c.id === currentChannel)?.name || currentChannel}`}
