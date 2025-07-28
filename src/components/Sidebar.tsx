@@ -188,14 +188,16 @@ export const Sidebar = ({
                       )}
                     </button>
                     
-                    {/* Three-dot menu - only show on hover and if not the general channel */}
-                    {hoveredChannel === channel.id && channel.id !== 'general' && (
+                    {/* Three-dot menu - show on hover or when menu is open, but not for general channel */}
+                    {(hoveredChannel === channel.id || openMenuChannel === channel.id) && channel.id !== 'general' && (
                       <DropdownMenu onOpenChange={(open) => setOpenMenuChannel(open ? channel.id : null)}>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary/80"
+                            className={`absolute right-1 top-1/2 -translate-y-1/2 h-6 w-6 p-0 transition-opacity hover:bg-secondary/80 ${
+                              openMenuChannel === channel.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                            }`}
                             data-menu-trigger
                           >
                             <DotsThree className="h-4 w-4" />
