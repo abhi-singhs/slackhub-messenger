@@ -447,9 +447,9 @@ function App() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                              className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
                             >
-                              <Smiley className="h-3 w-3" />
+                              <Smiley className="h-4 w-4" />
                             </Button>
                           </PopoverTrigger>
                           <PopoverContent className="w-auto p-0 border-accent/20" side="top" align="end">
