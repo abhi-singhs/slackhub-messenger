@@ -419,8 +419,12 @@ function App() {
                               <Smiley className="h-3 w-3" />
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" side="top" align="end">
-                            <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
+                          <PopoverContent className="w-auto p-0 border-accent/20" side="top" align="end">
+                            <div className="relative">
+                              {/* Connecting line to message */}
+                              <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
+                              <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
+                            </div>
                           </PopoverContent>
                         </Popover>
                       </div>
