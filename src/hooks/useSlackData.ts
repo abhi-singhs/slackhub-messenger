@@ -6,7 +6,7 @@ declare const spark: Window['spark']
 
 export const useSlackData = () => {
   const [user, setUser] = useState<UserInfo | null>(null)
-  const [currentChannel, setCurrentChannel] = useState<string>('general')
+  const [currentChannel, setCurrentChannel] = useState<string>('')
   
   const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
   const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
@@ -91,7 +91,7 @@ export const useSlackData = () => {
       }
     ])
     
-    setCurrentChannel(channelId)
+    // Don't set current channel here - let the router handle navigation
   }, [])
 
   const addReaction = useCallback((messageId: string, emoji: string) => {
@@ -174,12 +174,7 @@ export const useSlackData = () => {
     
     // Remove all messages from this channel
     setMessages((current) => (current || []).filter(message => message.channelId !== channelId))
-    
-    // Switch to general channel if we're deleting the current channel
-    if (currentChannel === channelId) {
-      setCurrentChannel('general')
-    }
-  }, [currentChannel])
+  }, [])
 
   return {
     user,

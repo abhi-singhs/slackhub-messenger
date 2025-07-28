@@ -36,16 +36,18 @@ function AppContent() {
 
   // Sync current channel with URL
   useEffect(() => {
-    if (channelId && channelId !== currentChannel) {
+    if (channelId) {
       setCurrentChannel(channelId)
     }
-  }, [channelId, currentChannel])
+  }, [channelId, setCurrentChannel])
 
-  // Redirect to general channel if no channel is selected
+  // Redirect to general channel if no channel is selected and channels are loaded
   useEffect(() => {
     if (channels && channels.length > 0 && !channelId) {
-      const generalChannel = channels.find(c => c.name === 'general') || channels[0]
-      navigate(`/channel/${generalChannel.id}`, { replace: true })
+      const generalChannel = channels.find(c => c.id === 'general') || channels[0]
+      if (generalChannel) {
+        navigate(`/channel/${generalChannel.id}`, { replace: true })
+      }
     }
   }, [channels, channelId, navigate])
 
@@ -85,7 +87,7 @@ function AppContent() {
   }, [targetMessageId])
 
   const handleChannelSelect = (channelId: string) => {
-    // Just navigate - let the useEffect handle state sync
+    // Navigate directly to the channel
     navigate(`/channel/${channelId}`)
     setSidebarOpen(false)
     setSearchQuery('')
@@ -99,11 +101,11 @@ function AppContent() {
   }
 
   const handleChannelDelete = (channelId: string) => {
-    // If we're deleting the current channel, we need to navigate to general first
+    deleteChannel(channelId)
+    // If we're deleting the current channel, navigate to general
     if (channelId === currentChannel) {
       navigate('/channel/general')
     }
-    deleteChannel(channelId)
   }
 
   const handleSendMessage = () => {
