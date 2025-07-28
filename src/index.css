@@ -67,6 +67,11 @@
     height: 0;
     float: left;
   }
+
+  /* Search highlight styling */
+  mark {
+    @apply bg-accent/20 text-accent-foreground px-0.5 rounded font-medium;
+  }
 }
 
 :root {

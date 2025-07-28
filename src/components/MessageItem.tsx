@@ -5,6 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Smiley } from '@phosphor-icons/react'
 import { Message, UserInfo } from '@/types'
 import { formatTime, getUserName } from '@/utils'
+import { highlightSearchTerm } from '@/lib/utils'
 import { EmojiPicker } from './EmojiPicker'
 
 interface MessageItemProps {
@@ -12,6 +13,7 @@ interface MessageItemProps {
   user: UserInfo | null
   messages: Message[]
   isEmojiPickerOpen: boolean
+  searchQuery?: string
   onEmojiPickerToggle: (open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
 }
@@ -21,6 +23,7 @@ export const MessageItem = ({
   user,
   messages,
   isEmojiPickerOpen,
+  searchQuery,
   onEmojiPickerToggle,
   onReactionAdd
 }: MessageItemProps) => {
@@ -29,26 +32,34 @@ export const MessageItem = ({
       // Handle different formatting
       let formattedLine = line
       
-      // Bold formatting
-      formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      
-      // Italic formatting
-      formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
-      
-      // Strikethrough formatting
-      formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
-      
-      // Inline code formatting
-      formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
-      
-      // Quote formatting
+      // Quote formatting check first
       const isQuote = line.startsWith('> ')
       if (isQuote) {
         formattedLine = formattedLine.substring(2) // Remove '> '
       }
       
-      // Code block formatting
+      // Code block formatting check
       const isCodeBlock = line.startsWith('```')
+      
+      // Skip formatting for code blocks
+      if (!isCodeBlock) {
+        // Bold formatting
+        formattedLine = formattedLine.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        
+        // Italic formatting
+        formattedLine = formattedLine.replace(/\*(.*?)\*/g, '<em>$1</em>')
+        
+        // Strikethrough formatting
+        formattedLine = formattedLine.replace(/~~(.*?)~~/g, '<del>$1</del>')
+        
+        // Inline code formatting
+        formattedLine = formattedLine.replace(/`([^`]+)`/g, '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">$1</code>')
+        
+        // Apply search highlighting after other formatting
+        if (searchQuery && searchQuery.trim()) {
+          formattedLine = highlightSearchTerm(formattedLine, searchQuery.trim())
+        }
+      }
       
       return (
         <span key={index}>
@@ -78,7 +89,11 @@ export const MessageItem = ({
       <div className="flex-1 min-w-0">
         <div className="flex items-baseline gap-2 mb-1">
           <span className="font-medium text-sm text-foreground truncate">
-            {message.userName}
+            <span dangerouslySetInnerHTML={{ 
+              __html: searchQuery && searchQuery.trim() 
+                ? highlightSearchTerm(message.userName, searchQuery.trim()) 
+                : message.userName 
+            }} />
           </span>
           <span className="text-xs text-muted-foreground flex-shrink-0">
             {formatTime(message.timestamp)}

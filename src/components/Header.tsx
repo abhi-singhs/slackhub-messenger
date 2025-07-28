@@ -2,14 +2,17 @@ import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Hash, List } from '@phosphor-icons/react'
 import { Channel } from '@/types'
+import { SearchInput } from '@/components/SearchInput'
 
 interface HeaderProps {
   channels: Channel[]
   currentChannel: string
+  searchQuery: string
   onSidebarToggle: () => void
+  onSearchChange: (query: string) => void
 }
 
-export const Header = ({ channels, currentChannel, onSidebarToggle }: HeaderProps) => {
+export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
   const currentChannelData = channels.find(c => c.id === currentChannel)
   
   return (
@@ -30,6 +33,15 @@ export const Header = ({ channels, currentChannel, onSidebarToggle }: HeaderProp
       <p className="text-sm text-muted-foreground hidden sm:block truncate">
         {currentChannelData?.description}
       </p>
+      
+      {/* Search input - takes remaining space */}
+      <div className="flex-1 flex justify-end">
+        <SearchInput
+          searchQuery={searchQuery}
+          onSearchChange={onSearchChange}
+          placeholder="Search messages..."
+        />
+      </div>
     </div>
   )
 }

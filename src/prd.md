@@ -32,6 +32,11 @@
 - **Why it matters**: Enables quick emotional responses and reduces message clutter
 - **Success criteria**: Reactions are persistent, show user counts, allow toggle on/off, display tooltips
 
+### Message Search
+- **What it does**: Real-time search across all messages with text highlighting and keyboard shortcuts
+- **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels
+- **Success criteria**: Search works across message content and usernames, highlights matches, supports ⌘K shortcut, shows result counts
+
 ### Mobile Responsiveness
 - **What it does**: Adapts interface for mobile screens with touch-friendly interactions
 - **Why it matters**: Users need access from phones and tablets throughout the day

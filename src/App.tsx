@@ -26,6 +26,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -42,6 +43,7 @@ function App() {
   const handleChannelSelect = (channelId: string) => {
     setCurrentChannel(channelId)
     setSidebarOpen(false) // Close sidebar on mobile when channel is selected
+    setSearchQuery('') // Clear search when switching channels
   }
 
   const handleChannelCreate = (name: string) => {
@@ -98,7 +100,9 @@ function App() {
         <Header
           channels={channels}
           currentChannel={currentChannel}
+          searchQuery={searchQuery}
           onSidebarToggle={() => setSidebarOpen(true)}
+          onSearchChange={setSearchQuery}
         />
 
         <MessagesList
@@ -106,6 +110,7 @@ function App() {
           channels={channels}
           currentChannel={currentChannel}
           user={user}
+          searchQuery={searchQuery}
           openEmojiPickers={openEmojiPickers}
           onEmojiPickerToggle={handleEmojiPickerToggle}
           onReactionAdd={addReaction}

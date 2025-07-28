@@ -1,8 +1,9 @@
 import { useRef, useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { Hash } from '@phosphor-icons/react'
+import { Hash, MagnifyingGlass } from '@phosphor-icons/react'
 import { Message, Channel, UserInfo } from '@/types'
+import { searchMessages } from '@/lib/utils'
 import { MessageItem } from './MessageItem'
 
 interface MessagesListProps {
@@ -10,6 +11,7 @@ interface MessagesListProps {
   channels: Channel[]
   currentChannel: string
   user: UserInfo | null
+  searchQuery: string
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
@@ -20,46 +22,73 @@ export const MessagesList = ({
   channels,
   currentChannel,
   user,
+  searchQuery,
   openEmojiPickers,
   onEmojiPickerToggle,
   onReactionAdd
 }: MessagesListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
+  
+  // Get messages for current channel
   const currentChannelMessages = messages.filter(msg => msg.channelId === currentChannel)
+  
+  // Apply search filtering if search query exists
+  const filteredMessages = searchQuery.trim() 
+    ? searchMessages(currentChannelMessages, searchQuery) 
+    : currentChannelMessages
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, currentChannel])
+    // Only auto-scroll if there's no active search
+    if (!searchQuery.trim()) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, currentChannel, searchQuery])
+
+  const currentChannelData = channels.find(c => c.id === currentChannel)
 
   return (
     <div className="flex-1 overflow-hidden">
       <ScrollArea className="h-full p-2 sm:p-4">
         <div className="space-y-4">
-          {currentChannelMessages.length === 0 ? (
+          {/* Show search results info */}
+          {searchQuery.trim() && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-accent/10 rounded-lg border border-accent/20">
+              <MagnifyingGlass className="h-4 w-4 text-accent" />
+              <span className="text-sm text-foreground">
+                {filteredMessages.length === 0 
+                  ? `No messages found for "${searchQuery}"` 
+                  : `Found ${filteredMessages.length} message${filteredMessages.length === 1 ? '' : 's'} for "${searchQuery}"`
+                }
+              </span>
+            </div>
+          )}
+          
+          {filteredMessages.length === 0 && !searchQuery.trim() ? (
             <div className="text-center py-12">
               <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
-                Welcome to #{channels.find(c => c.id === currentChannel)?.name}
+                Welcome to #{currentChannelData?.name}
               </h3>
               <p className="text-muted-foreground px-4">
                 This is the beginning of your conversation. Start chatting!
               </p>
             </div>
-          ) : (
+          ) : filteredMessages.length > 0 ? (
             <TooltipProvider>
-              {currentChannelMessages.map((message) => (
+              {filteredMessages.map((message) => (
                 <MessageItem
                   key={message.id}
                   message={message}
                   user={user}
                   messages={messages}
+                  searchQuery={searchQuery}
                   isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                   onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                   onReactionAdd={onReactionAdd}
                 />
               ))}
             </TooltipProvider>
-          )}
+          ) : null}
           <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
