@@ -40,7 +40,7 @@ export const SearchResults = ({
 
   // Search results with context
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim()) return []
+    if (!searchQuery.trim() || !messages || !channels) return []
 
     const query = searchQuery.toLowerCase()
     const results: SearchResult[] = []

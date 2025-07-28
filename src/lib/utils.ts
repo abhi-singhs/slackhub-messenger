@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Search utility functions
 export function searchMessages(messages: Message[], query: string): Message[] {
-  if (!query.trim()) return messages
+  if (!messages || !Array.isArray(messages) || !query.trim()) return messages || []
   
   const searchTerm = query.toLowerCase().trim()
   

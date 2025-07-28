@@ -31,6 +31,7 @@ export const formatTime = (timestamp: number): string => {
  * Get username from messages array or return userId as fallback
  */
 export const getUserName = (userId: string, messages: any[]): string => {
+  if (!messages || !Array.isArray(messages)) return userId
   const userMessage = messages.find(msg => msg.userId === userId)
   return userMessage?.userName || userId
 }
@@ -39,6 +40,7 @@ export const getUserName = (userId: string, messages: any[]): string => {
  * Count unread messages for a specific channel
  */
 export const getChannelUnreadCount = (channelId: string, messages: any[], lastReadTimestamps: Record<string, number>): number => {
+  if (!messages || !Array.isArray(messages)) return 0
   const lastReadTime = lastReadTimestamps[channelId] || 0
   return messages.filter(msg => msg.channelId === channelId && msg.timestamp > lastReadTime).length
 }
@@ -47,6 +49,7 @@ export const getChannelUnreadCount = (channelId: string, messages: any[], lastRe
  * Count messages for a specific channel (legacy - keeping for compatibility)
  */
 export const getChannelMessageCount = (channelId: string, messages: any[]): number => {
+  if (!messages || !Array.isArray(messages)) return 0
   return messages.filter(msg => msg.channelId === channelId).length
 }
 

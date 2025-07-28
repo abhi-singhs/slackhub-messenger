@@ -13,7 +13,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
-  const currentChannelData = channels.find(c => c.id === currentChannel)
+  const currentChannelData = channels?.find(c => c.id === currentChannel)
   
   return (
     <div className="h-14 px-4 flex items-center gap-2 border-b border-border bg-card">

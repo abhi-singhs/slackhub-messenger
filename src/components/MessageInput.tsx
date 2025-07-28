@@ -20,7 +20,7 @@ export const MessageInput = ({
   onEmojiPickerToggle,
   onSendMessage
 }: MessageInputProps) => {
-  const currentChannelName = channels.find(c => c.id === currentChannel)?.name || currentChannel
+  const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
 
   return (
     <div className="p-2 sm:p-4 border-t border-border bg-card">

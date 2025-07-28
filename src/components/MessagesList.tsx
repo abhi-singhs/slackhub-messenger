@@ -32,7 +32,7 @@ export const MessagesList = ({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   
   // Get messages for current channel
-  const currentChannelMessages = messages.filter(msg => msg.channelId === currentChannel)
+  const currentChannelMessages = (messages || []).filter(msg => msg.channelId === currentChannel)
   
   // Apply search filtering if search query exists
   const filteredMessages = searchQuery.trim() 
@@ -46,7 +46,7 @@ export const MessagesList = ({
     }
   }, [messages, currentChannel, searchQuery])
 
-  const currentChannelData = channels.find(c => c.id === currentChannel)
+  const currentChannelData = channels?.find(c => c.id === currentChannel)
 
   return (
     <div className="flex-1 overflow-hidden">

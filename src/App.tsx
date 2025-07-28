@@ -124,9 +124,9 @@ function App() {
     <div className="flex h-screen bg-background relative">
       <Sidebar
         user={user}
-        channels={channels}
+        channels={channels || []}
         currentChannel={currentChannel}
-        messages={messages}
+        messages={messages || []}
         lastReadTimestamps={lastReadTimestamps}
         sidebarOpen={sidebarOpen}
         onChannelSelect={handleChannelSelect}
@@ -139,7 +139,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full md:w-auto">
         <Header
-          channels={channels}
+          channels={channels || []}
           currentChannel={currentChannel}
           searchQuery={searchQuery}
           onSidebarToggle={() => setSidebarOpen(true)}
@@ -149,8 +149,8 @@ function App() {
         {showSearchResults ? (
           <SearchResults
             searchQuery={searchQuery}
-            messages={messages}
-            channels={channels}
+            messages={messages || []}
+            channels={channels || []}
             user={user}
             openEmojiPickers={openEmojiPickers}
             onEmojiPickerToggle={handleEmojiPickerToggle}
@@ -161,8 +161,8 @@ function App() {
         ) : (
           <>
             <MessagesList
-              messages={messages}
-              channels={channels}
+              messages={messages || []}
+              channels={channels || []}
               currentChannel={currentChannel}
               user={user}
               searchQuery=""
@@ -173,7 +173,7 @@ function App() {
             />
 
             <MessageInput
-              channels={channels}
+              channels={channels || []}
               currentChannel={currentChannel}
               messageInput={messageInput}
               showInputEmojiPicker={showInputEmojiPicker}

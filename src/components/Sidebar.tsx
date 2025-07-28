@@ -64,7 +64,7 @@ export const Sidebar = ({
 
   const handleEditChannel = (channel: Channel) => {
     // Find the current channel data to ensure we have the latest name
-    const currentChannelData = channels.find(c => c.id === channel.id) || channel
+    const currentChannelData = channels?.find(c => c.id === channel.id) || channel
     setEditingChannel(currentChannelData)
     setEditChannelName(currentChannelData.name)
     setEditChannelDescription(currentChannelData.description || '')
@@ -168,7 +168,7 @@ export const Sidebar = ({
           <div className="flex-1 min-h-0 px-4 pb-4">
             <ScrollArea className="h-full">
               <div className="space-y-1">
-                {channels.map((channel) => (
+                {(channels || []).map((channel) => (
                   <div
                     key={channel.id}
                     className="relative group"
