@@ -362,59 +362,115 @@ function App() {
         return
       }
 
-      let formattedHTML = ''
+      // Check if the selected text is already formatted with this type
+      const container = range.commonAncestorContainer
+      let parentElement = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
+      let isAlreadyFormatted = false
+      let formattedElement: HTMLElement | null = null
 
-      switch (format) {
-        case 'bold':
-          formattedHTML = `<strong>${selectedText}</strong>`
+      // Walk up the DOM tree to find existing formatting
+      while (parentElement && parentElement !== input) {
+        const tagName = parentElement.tagName?.toLowerCase()
+        
+        let matchesFormat = false
+        switch (format) {
+          case 'bold':
+            matchesFormat = tagName === 'strong' || tagName === 'b'
+            break
+          case 'italic':
+            matchesFormat = tagName === 'em' || tagName === 'i'
+            break
+          case 'strikethrough':
+            matchesFormat = tagName === 'del'
+            break
+          case 'quote':
+            matchesFormat = tagName === 'blockquote'
+            break
+          case 'code':
+            matchesFormat = tagName === 'code' || tagName === 'pre'
+            break
+        }
+        
+        if (matchesFormat) {
+          isAlreadyFormatted = true
+          formattedElement = parentElement
           break
-        case 'italic':
-          formattedHTML = `<em>${selectedText}</em>`
-          break
-        case 'strikethrough':
-          formattedHTML = `<del>${selectedText}</del>`
-          break
-        case 'quote':
-          formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
-          break
-        case 'code':
-          if (selectedText.includes('\n')) {
-            formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
-          } else {
-            formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
-          }
-          break
+        }
+        
+        parentElement = parentElement.parentElement
       }
 
-      // Replace the selected content with formatted HTML
-      range.deleteContents()
-      const tempDiv = document.createElement('div')
-      tempDiv.innerHTML = formattedHTML
-      const fragment = document.createDocumentFragment()
-      
-      let lastNode: Node | null = null
-      while (tempDiv.firstChild) {
-        const node = tempDiv.firstChild
-        fragment.appendChild(node)
-        lastNode = node
+      if (isAlreadyFormatted && formattedElement) {
+        // Remove formatting by replacing the formatted element with its text content
+        const textContent = formattedElement.textContent || ''
+        const textNode = document.createTextNode(textContent)
+        
+        formattedElement.parentNode?.replaceChild(textNode, formattedElement)
+        
+        // Select the unformatted text
+        const newRange = document.createRange()
+        newRange.selectNodeContents(textNode)
+        selection.removeAllRanges()
+        selection.addRange(newRange)
+      } else {
+        // Apply formatting
+        let formattedHTML = ''
+
+        switch (format) {
+          case 'bold':
+            formattedHTML = `<strong>${selectedText}</strong>`
+            break
+          case 'italic':
+            formattedHTML = `<em>${selectedText}</em>`
+            break
+          case 'strikethrough':
+            formattedHTML = `<del>${selectedText}</del>`
+            break
+          case 'quote':
+            formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
+            break
+          case 'code':
+            if (selectedText.includes('\n')) {
+              formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
+            } else {
+              formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
+            }
+            break
+        }
+
+        // Replace the selected content with formatted HTML
+        range.deleteContents()
+        const tempDiv = document.createElement('div')
+        tempDiv.innerHTML = formattedHTML
+        const fragment = document.createDocumentFragment()
+        
+        let lastNode: Node | null = null
+        while (tempDiv.firstChild) {
+          const node = tempDiv.firstChild
+          fragment.appendChild(node)
+          lastNode = node
+        }
+        
+        range.insertNode(fragment)
+
+        // Position cursor after the inserted content
+        if (lastNode) {
+          const newRange = document.createRange()
+          newRange.setStartAfter(lastNode)
+          newRange.collapse(true)
+          
+          selection.removeAllRanges()
+          selection.addRange(newRange)
+        }
       }
-      
-      range.insertNode(fragment)
 
       // Update the message input state
       setMessageInput(input.innerText || '')
-
-      // Position cursor after the inserted content
-      if (lastNode) {
-        const newRange = document.createRange()
-        newRange.setStartAfter(lastNode)
-        newRange.collapse(true)
-        
-        selection.removeAllRanges()
-        selection.addRange(newRange)
-      }
       
       input.focus()
+      
+      // Update active formats after the change
+      setTimeout(() => checkActiveFormats(), 10)
     } catch (error) {
       console.error('Error formatting text:', error)
     }
