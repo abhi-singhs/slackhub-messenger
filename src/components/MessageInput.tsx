@@ -113,53 +113,102 @@ export const MessageInput = ({
       }
 
       // Check if the selected text is already formatted with this type
-      const container = range.commonAncestorContainer
-      let parentElement = container.nodeType === Node.TEXT_NODE ? container.parentElement : container as HTMLElement
-      let isAlreadyFormatted = false
-      let formattedElement: HTMLElement | null = null
-
-      // Walk up the DOM tree to find existing formatting
-      while (parentElement && parentElement !== input) {
-        const tagName = parentElement.tagName?.toLowerCase()
+      const isFormattedInSelection = () => {
+        const contents = range.cloneContents()
+        const tempDiv = document.createElement('div')
+        tempDiv.appendChild(contents)
         
-        let matchesFormat = false
-        switch (format) {
-          case 'bold':
-            matchesFormat = tagName === 'strong' || tagName === 'b'
-            break
-          case 'italic':
-            matchesFormat = tagName === 'em' || tagName === 'i'
-            break
-          case 'strikethrough':
-            matchesFormat = tagName === 'del'
-            break
-          case 'quote':
-            matchesFormat = tagName === 'blockquote'
-            break
-          case 'code':
-            matchesFormat = tagName === 'code' || tagName === 'pre'
-            break
+        let hasFormatting = false
+        const walker = document.createTreeWalker(
+          tempDiv,
+          NodeFilter.SHOW_ELEMENT,
+          null
+        )
+        
+        let node = walker.nextNode()
+        while (node) {
+          const element = node as HTMLElement
+          const tagName = element.tagName?.toLowerCase()
+          
+          switch (format) {
+            case 'bold':
+              if (tagName === 'strong' || tagName === 'b') hasFormatting = true
+              break
+            case 'italic':
+              if (tagName === 'em' || tagName === 'i') hasFormatting = true
+              break
+            case 'strikethrough':
+              if (tagName === 'del') hasFormatting = true
+              break
+            case 'quote':
+              if (tagName === 'blockquote') hasFormatting = true
+              break
+            case 'code':
+              if (tagName === 'code' || tagName === 'pre') hasFormatting = true
+              break
+          }
+          
+          if (hasFormatting) break
+          node = walker.nextNode()
         }
         
-        if (matchesFormat) {
-          isAlreadyFormatted = true
-          formattedElement = parentElement
-          break
-        }
-        
-        parentElement = parentElement.parentElement
+        return hasFormatting
       }
 
-      if (isAlreadyFormatted && formattedElement) {
-        // Remove formatting by replacing the formatted element with its text content
-        const textContent = formattedElement.textContent || ''
-        const textNode = document.createTextNode(textContent)
+      if (isFormattedInSelection()) {
+        // Remove formatting from selected text only
+        const contents = range.extractContents()
+        const tempDiv = document.createElement('div')
+        tempDiv.appendChild(contents)
         
-        formattedElement.parentNode?.replaceChild(textNode, formattedElement)
+        // Remove formatting tags while preserving text content
+        const removeFormattingTags = (element: Element) => {
+          const tagName = element.tagName?.toLowerCase()
+          let shouldRemove = false
+          
+          switch (format) {
+            case 'bold':
+              shouldRemove = tagName === 'strong' || tagName === 'b'
+              break
+            case 'italic':
+              shouldRemove = tagName === 'em' || tagName === 'i'
+              break
+            case 'strikethrough':
+              shouldRemove = tagName === 'del'
+              break
+            case 'quote':
+              shouldRemove = tagName === 'blockquote'
+              break
+            case 'code':
+              shouldRemove = tagName === 'code' || tagName === 'pre'
+              break
+          }
+          
+          if (shouldRemove) {
+            // Replace element with its text content
+            const textNode = document.createTextNode(element.textContent || '')
+            element.parentNode?.replaceChild(textNode, element)
+          }
+        }
         
-        // Select the unformatted text
+        // Find and remove formatting elements
+        const elementsToRemove = tempDiv.querySelectorAll('strong, b, em, i, del, blockquote, code, pre')
+        elementsToRemove.forEach(element => {
+          removeFormattingTags(element)
+        })
+        
+        // Insert the unformatted content back
+        const fragment = document.createDocumentFragment()
+        while (tempDiv.firstChild) {
+          fragment.appendChild(tempDiv.firstChild)
+        }
+        
+        range.insertNode(fragment)
+        
+        // Position cursor after the unformatted content
         const newRange = document.createRange()
-        newRange.selectNodeContents(textNode)
+        newRange.setStartAfter(fragment.lastChild || fragment)
+        newRange.collapse(true)
         selection.removeAllRanges()
         selection.addRange(newRange)
       } else {
