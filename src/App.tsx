@@ -288,58 +288,49 @@ function App() {
       if (!input) return
 
       const selection = window.getSelection()
-      if (!selection || selection.rangeCount === 0) return
+      if (!selection) return
+
+      // If no selection, ensure we have a collapsed selection at cursor
+      if (selection.rangeCount === 0) {
+        const range = document.createRange()
+        range.selectNodeContents(input)
+        range.collapse(false)
+        selection.addRange(range)
+      }
 
       const range = selection.getRangeAt(0)
       const selectedText = range.toString()
       
+      // If no text is selected, only apply formatting for future typing
+      if (!selectedText) {
+        // Just maintain cursor position without adding empty tags
+        input.focus()
+        return
+      }
+
       let formattedHTML = ''
 
       switch (format) {
         case 'bold':
-          if (selectedText) {
-            formattedHTML = `<strong>${selectedText}</strong>`
-          } else {
-            formattedHTML = '<strong></strong>'
-          }
+          formattedHTML = `<strong>${selectedText}</strong>`
           break
         case 'italic':
-          if (selectedText) {
-            formattedHTML = `<em>${selectedText}</em>`
-          } else {
-            formattedHTML = '<em></em>'
-          }
+          formattedHTML = `<em>${selectedText}</em>`
           break
         case 'strikethrough':
-          if (selectedText) {
-            formattedHTML = `<del>${selectedText}</del>`
-          } else {
-            formattedHTML = '<del></del>'
-          }
+          formattedHTML = `<del>${selectedText}</del>`
           break
         case 'quote':
-          if (selectedText) {
-            formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
-          } else {
-            formattedHTML = '<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic"></blockquote>'
-          }
+          formattedHTML = `<blockquote class="border-l-2 border-muted-foreground pl-3 text-muted-foreground italic">${selectedText}</blockquote>`
           break
         case 'code':
-          if (selectedText) {
-            if (selectedText.includes('\n')) {
-              formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
-            } else {
-              formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
-            }
+          if (selectedText.includes('\n')) {
+            formattedHTML = `<pre class="bg-muted p-2 rounded font-mono text-xs block">${selectedText}</pre>`
           } else {
-            formattedHTML = '<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono"></code>'
+            formattedHTML = `<code class="bg-muted px-1 py-0.5 rounded text-xs font-mono">${selectedText}</code>`
           }
           break
       }
-
-      // Store the original range position for fallback
-      const originalContainer = range.startContainer
-      const originalOffset = range.startOffset
 
       // Replace the selected content with formatted HTML
       range.deleteContents()
@@ -347,12 +338,11 @@ function App() {
       tempDiv.innerHTML = formattedHTML
       const fragment = document.createDocumentFragment()
       
-      // Keep track of the inserted nodes
-      const insertedNodes: Node[] = []
+      let lastNode: Node | null = null
       while (tempDiv.firstChild) {
         const node = tempDiv.firstChild
         fragment.appendChild(node)
-        insertedNodes.push(node)
+        lastNode = node
       }
       
       range.insertNode(fragment)
@@ -360,41 +350,14 @@ function App() {
       // Update the message input state
       setMessageInput(input.innerText || '')
 
-      // Position cursor properly
-      selection.removeAllRanges()
-      const newRange = document.createRange()
-      
-      try {
-        if (insertedNodes.length > 0) {
-          const lastNode = insertedNodes[insertedNodes.length - 1]
-          
-          if (selectedText) {
-            // If we had selected text, position cursor after the formatted content
-            newRange.setStartAfter(lastNode)
-          } else {
-            // If no selected text (empty formatting tags), position cursor inside the tags
-            if (lastNode.nodeType === Node.ELEMENT_NODE && lastNode.childNodes.length === 0) {
-              // Empty element, place cursor inside
-              newRange.setStart(lastNode, 0)
-            } else if (lastNode.nodeType === Node.TEXT_NODE) {
-              // Text node, place cursor at the end
-              newRange.setStart(lastNode, lastNode.textContent?.length || 0)
-            } else {
-              // Complex element, place cursor after
-              newRange.setStartAfter(lastNode)
-            }
-          }
-        } else {
-          // Fallback to original position
-          newRange.setStart(originalContainer, originalOffset)
-        }
-        
+      // Position cursor after the inserted content
+      if (lastNode) {
+        const newRange = document.createRange()
+        newRange.setStartAfter(lastNode)
         newRange.collapse(true)
+        
+        selection.removeAllRanges()
         selection.addRange(newRange)
-      } catch (error) {
-        console.error('Error positioning cursor:', error)
-        // Final fallback - just focus the input
-        input.focus()
       }
       
       input.focus()
