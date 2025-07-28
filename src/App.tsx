@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Hash, Send, Plus } from '@phosphor-icons/react'
+import { Hash, PaperPlaneRight, Plus } from '@phosphor-icons/react'
 
 interface Message {
   id: string
@@ -283,7 +283,7 @@ function App() {
               id="message-input"
             />
             <Button onClick={sendMessage} disabled={!messageInput.trim()}>
-              <Send className="h-4 w-4" />
+              <PaperPlaneRight className="h-4 w-4" />
             </Button>
           </div>
         </div>
