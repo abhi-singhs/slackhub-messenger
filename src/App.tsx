@@ -7,7 +7,9 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Hash, PaperPlaneRight, Plus, List, X } from '@phosphor-icons/react'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Hash, PaperPlaneRight, Plus, List, X, Smiley } from '@phosphor-icons/react'
 
 interface Message {
   id: string
@@ -17,6 +19,13 @@ interface Message {
   userAvatar: string
   timestamp: number
   channelId: string
+  reactions?: MessageReaction[]
+}
+
+interface MessageReaction {
+  emoji: string
+  users: string[]
+  count: number
 }
 
 interface Channel {
@@ -32,6 +41,12 @@ interface UserInfo {
   email: string
   isOwner: boolean
 }
+
+// Common emoji reactions for the picker
+const COMMON_EMOJIS = [
+  '👍', '👎', '❤️', '😊', '😂', '😮', '😢', '😡',
+  '🎉', '🔥', '👏', '💯', '✅', '❌', '⭐', '🚀'
+]
 
 function App() {
   const [user, setUser] = useState<UserInfo | null>(null)
@@ -150,6 +165,84 @@ function App() {
   const getChannelMessageCount = (channelId: string) => {
     return messages.filter(msg => msg.channelId === channelId).length
   }
+
+  const addReaction = (messageId: string, emoji: string) => {
+    if (!user) return
+
+    setMessages((current) => 
+      current.map(message => {
+        if (message.id !== messageId) return message
+
+        const reactions = message.reactions || []
+        const existingReaction = reactions.find(r => r.emoji === emoji)
+
+        if (existingReaction) {
+          // If user already reacted with this emoji, remove their reaction
+          if (existingReaction.users.includes(user.id)) {
+            const updatedUsers = existingReaction.users.filter(id => id !== user.id)
+            if (updatedUsers.length === 0) {
+              // Remove the reaction entirely if no users left
+              return {
+                ...message,
+                reactions: reactions.filter(r => r.emoji !== emoji)
+              }
+            } else {
+              // Update the reaction with fewer users
+              return {
+                ...message,
+                reactions: reactions.map(r => 
+                  r.emoji === emoji 
+                    ? { ...r, users: updatedUsers, count: updatedUsers.length }
+                    : r
+                )
+              }
+            }
+          } else {
+            // Add user to existing reaction
+            const updatedUsers = [...existingReaction.users, user.id]
+            return {
+              ...message,
+              reactions: reactions.map(r => 
+                r.emoji === emoji 
+                  ? { ...r, users: updatedUsers, count: updatedUsers.length }
+                  : r
+              )
+            }
+          }
+        } else {
+          // Create new reaction
+          return {
+            ...message,
+            reactions: [
+              ...reactions,
+              {
+                emoji,
+                users: [user.id],
+                count: 1
+              }
+            ]
+          }
+        }
+      })
+    )
+  }
+
+  // Emoji Picker Component
+  const EmojiPicker = ({ onEmojiSelect }: { onEmojiSelect: (emoji: string) => void }) => (
+    <div className="grid grid-cols-8 gap-1 p-2 w-64">
+      {COMMON_EMOJIS.map((emoji) => (
+        <Button
+          key={emoji}
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 p-0 hover:bg-secondary"
+          onClick={() => onEmojiSelect(emoji)}
+        >
+          <span className="text-lg">{emoji}</span>
+        </Button>
+      ))}
+    </div>
+  )
 
   if (!user) {
     return (
@@ -298,27 +391,78 @@ function App() {
                 </p>
               </div>
             ) : (
-              currentChannelMessages.map((message) => (
-                <div key={message.id} className="flex gap-3 group">
-                  <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
-                    <AvatarImage src={message.userAvatar} alt={message.userName} />
-                    <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-baseline gap-2 mb-1">
-                      <span className="font-medium text-sm text-foreground truncate">
-                        {message.userName}
-                      </span>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        {formatTime(message.timestamp)}
-                      </span>
+              <TooltipProvider>
+                {currentChannelMessages.map((message) => (
+                  <div key={message.id} className="flex gap-3 group">
+                    <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
+                      <AvatarImage src={message.userAvatar} alt={message.userName} />
+                      <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-baseline gap-2 mb-1">
+                        <span className="font-medium text-sm text-foreground truncate">
+                          {message.userName}
+                        </span>
+                        <span className="text-xs text-muted-foreground flex-shrink-0">
+                          {formatTime(message.timestamp)}
+                        </span>
+                      </div>
+                      <div className="relative">
+                        <p className="text-sm text-foreground leading-relaxed break-words mb-2">
+                          {message.content}
+                        </p>
+                        
+                        {/* Reactions */}
+                        <div className="flex items-center gap-1 flex-wrap mb-1">
+                          {message.reactions?.map((reaction) => (
+                            <Tooltip key={reaction.emoji}>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary ${
+                                    reaction.users.includes(user?.id || '') 
+                                      ? 'bg-accent/20 border-accent text-accent-foreground' 
+                                      : ''
+                                  }`}
+                                  onClick={() => addReaction(message.id, reaction.emoji)}
+                                >
+                                  <span className="mr-1">{reaction.emoji}</span>
+                                  <span>{reaction.count}</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs">
+                                  {reaction.users.length === 1 
+                                    ? `Reacted with ${reaction.emoji}` 
+                                    : `${reaction.users.length} people reacted with ${reaction.emoji}`
+                                  }
+                                </p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                          
+                          {/* Add Reaction Button */}
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-secondary"
+                              >
+                                <Smiley className="h-3 w-3" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" side="top" align="start">
+                              <EmojiPicker onEmojiSelect={(emoji) => addReaction(message.id, emoji)} />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-sm text-foreground leading-relaxed break-words">
-                      {message.content}
-                    </p>
                   </div>
-                </div>
-              ))
+                ))}
+              </TooltipProvider>
             )}
             <div ref={messagesEndRef} />
           </div>

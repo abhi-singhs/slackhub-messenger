@@ -23,9 +23,14 @@
 - **Success criteria**: Channels persist, show message counts, and allow easy switching
 
 ### Real-time Messaging
-- **What it does**: Send and receive messages within channels with user attribution
-- **Why it matters**: Core communication functionality with GitHub user integration
-- **Success criteria**: Messages appear immediately, persist across sessions, display user info
+- **What it does**: Send and receive messages within channels with user attribution and emoji reactions
+- **Why it matters**: Core communication functionality with GitHub user integration and emotional expression
+- **Success criteria**: Messages appear immediately, persist across sessions, display user info, support reactions
+
+### Message Reactions
+- **What it does**: Add emoji reactions to messages with visual feedback and user tracking
+- **Why it matters**: Enables quick emotional responses and reduces message clutter
+- **Success criteria**: Reactions are persistent, show user counts, allow toggle on/off, display tooltips
 
 ### Mobile Responsiveness
 - **What it does**: Adapts interface for mobile screens with touch-friendly interactions
@@ -82,7 +87,7 @@
 - **Component Usage**: Cards for containers, Buttons for actions, Input for text entry, Avatar for users
 - **Component Customization**: Standard shadcn components with theme color customization
 - **Component States**: Hover, active, focus, and disabled states for all interactive elements
-- **Icon Selection**: Phosphor icons for consistency (Hash, Plus, PaperPlaneRight, List, X)
+- **Icon Selection**: Phosphor icons for consistency (Hash, Plus, PaperPlaneRight, List, X, Smiley)
 - **Component Hierarchy**: Primary buttons for send actions, secondary for channel management
 - **Spacing System**: Consistent 2-4 unit spacing using Tailwind scale
 - **Mobile Adaptation**: Touch-friendly button sizes, collapsible sidebar, readable text sizes
