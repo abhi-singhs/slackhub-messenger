@@ -1,3 +1,4 @@
+import { useParams, useSearchParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { Hash, List } from '@phosphor-icons/react'
@@ -13,7 +14,11 @@ interface HeaderProps {
 }
 
 export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
-  const currentChannelData = channels?.find(c => c.id === currentChannel)
+  const { channelId } = useParams<{ channelId: string }>()
+  const [searchParams] = useSearchParams()
+  const queryFromUrl = searchParams.get('q') || ''
+  
+  const currentChannelData = channels?.find(c => c.id === channelId)
   
   return (
     <div className="h-14 px-4 flex items-center gap-2 border-b border-border bg-card">
@@ -27,7 +32,7 @@ export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle,
       </Button>
       <Hash className="h-5 w-5 text-muted-foreground" />
       <h2 className="font-semibold text-foreground truncate">
-        {currentChannelData?.name || currentChannel}
+        {currentChannelData?.name || channelId}
       </h2>
       <Separator orientation="vertical" className="h-6 hidden sm:block" />
       <p className="text-sm text-muted-foreground hidden sm:block truncate">
@@ -37,7 +42,7 @@ export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle,
       {/* Search input - takes remaining space */}
       <div className="flex-1 flex justify-end">
         <SearchInput
-          searchQuery={searchQuery}
+          searchQuery={queryFromUrl || searchQuery}
           onSearchChange={onSearchChange}
           placeholder="Search messages..."
         />

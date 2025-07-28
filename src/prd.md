@@ -32,6 +32,11 @@
 - **Why it matters**: Enables quick emotional responses and reduces message clutter
 - **Success criteria**: Reactions are persistent, show user counts, allow toggle on/off, display tooltips
 
+### URL-Based Navigation
+- **What it does**: Provides clean URL routing for channels and search with browser navigation support
+- **Why it matters**: Users expect bookmarkable URLs, browser back/forward navigation, and shareable links to specific channels and messages
+- **Success criteria**: Each channel has unique URL, search results have URLs, deep linking to messages works, browser navigation is supported
+
 ### Message Search
 - **What it does**: Comprehensive search across all messages with dedicated results page, message context, and navigation
 - **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels with full context

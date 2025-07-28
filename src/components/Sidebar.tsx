@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -39,6 +40,8 @@ export const Sidebar = ({
   onChannelDelete,
   onSidebarToggle
 }: SidebarProps) => {
+  const navigate = useNavigate()
+  const { channelId } = useParams<{ channelId: string }>()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -88,7 +91,8 @@ export const Sidebar = ({
     if ((e.target as HTMLElement).closest('[data-menu-trigger]')) {
       return
     }
-    onChannelSelect(channelId)
+    navigate(`/channel/${channelId}`)
+    onSidebarToggle(false) // Close sidebar on mobile
   }
 
   return (
@@ -178,7 +182,7 @@ export const Sidebar = ({
                     <button
                       onClick={(e) => handleChannelClick(channel.id, e)}
                       className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors ${
-                        currentChannel === channel.id
+                        channelId === channel.id
                           ? 'bg-accent text-accent-foreground'
                           : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
                       }`}

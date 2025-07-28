@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { UserInfo } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
-import { MessagesList } from '@/components/MessagesList'
-import { MessageInput } from '@/components/MessageInput'
-import { SearchResults } from '@/components/SearchResults'
+import { ChannelView, SearchView } from '@/routes'
 
-function App() {
+// Main app content component that handles routing
+function AppContent() {
   const {
     user,
     currentChannel,
@@ -28,8 +28,26 @@ function App() {
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
-  const [showSearchResults, setShowSearchResults] = useState(false)
-  const [targetMessageId, setTargetMessageId] = useState<string | null>(null)
+
+  const navigate = useNavigate()
+  const { channelId } = useParams<{ channelId: string }>()
+  const [searchParams] = useSearchParams()
+  const targetMessageId = searchParams.get('message')
+
+  // Sync current channel with URL
+  useEffect(() => {
+    if (channelId && channelId !== currentChannel) {
+      setCurrentChannel(channelId)
+    }
+  }, [channelId, currentChannel, setCurrentChannel])
+
+  // Redirect to general channel if no channel is selected
+  useEffect(() => {
+    if (channels && channels.length > 0 && !channelId) {
+      const generalChannel = channels.find(c => c.name === 'general') || channels[0]
+      navigate(`/channel/${generalChannel.id}`, { replace: true })
+    }
+  }, [channels, channelId, navigate])
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -43,18 +61,31 @@ function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Scroll to target message when URL contains message parameter
+  useEffect(() => {
+    if (targetMessageId) {
+      setTimeout(() => {
+        const messageElement = document.getElementById(`message-${targetMessageId}`)
+        if (messageElement) {
+          messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          messageElement.classList.add('animate-pulse')
+          setTimeout(() => {
+            messageElement.classList.remove('animate-pulse')
+          }, 2000)
+        }
+      }, 100)
+    }
+  }, [targetMessageId])
+
   const handleChannelSelect = (channelId: string) => {
-    setCurrentChannel(channelId)
+    navigate(`/channel/${channelId}`)
     setSidebarOpen(false) // Close sidebar on mobile when channel is selected
     setSearchQuery('') // Clear search when switching channels
-    setShowSearchResults(false) // Exit search results view
-    setTargetMessageId(null) // Clear target message
   }
 
   const handleChannelCreate = (name: string) => {
     createChannel(name)
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
-    setShowSearchResults(false) // Exit search results view
   }
 
   const handleSendMessage = () => {
@@ -77,36 +108,13 @@ function App() {
   const handleSearchChange = (query: string) => {
     setSearchQuery(query)
     if (query.length >= 2) {
-      setShowSearchResults(true)
-    } else {
-      setShowSearchResults(false)
-      setTargetMessageId(null)
-    }
-  }
-
-  const handleSearchResultsBack = () => {
-    setShowSearchResults(false)
-    setTargetMessageId(null)
-  }
-
-  const handleNavigateToMessage = (channelId: string, messageId: string) => {
-    setCurrentChannel(channelId)
-    setTargetMessageId(messageId)
-    setShowSearchResults(false)
-    setSidebarOpen(false)
-    
-    // Scroll to the target message after a brief delay
-    setTimeout(() => {
-      const messageElement = document.getElementById(`message-${messageId}`)
-      if (messageElement) {
-        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-        messageElement.classList.add('animate-pulse')
-        setTimeout(() => {
-          messageElement.classList.remove('animate-pulse')
-          setTargetMessageId(null)
-        }, 2000)
+      navigate(`/search?q=${encodeURIComponent(query)}`)
+    } else if (query.length === 0) {
+      // If search is cleared, go back to current channel
+      if (currentChannel) {
+        navigate(`/channel/${currentChannel}`)
       }
-    }, 100)
+    }
   }
 
   if (!user) {
@@ -146,46 +154,52 @@ function App() {
           onSearchChange={handleSearchChange}
         />
 
-        {showSearchResults ? (
-          <SearchResults
-            searchQuery={searchQuery}
-            messages={messages || []}
-            channels={channels || []}
-            user={user}
-            openEmojiPickers={openEmojiPickers}
-            onEmojiPickerToggle={handleEmojiPickerToggle}
-            onReactionAdd={addReaction}
-            onBack={handleSearchResultsBack}
-            onNavigateToMessage={handleNavigateToMessage}
+        <Routes>
+          <Route 
+            path="/channel/:channelId" 
+            element={
+              <ChannelView
+                user={user}
+                channels={channels || []}
+                messages={messages || []}
+                openEmojiPickers={openEmojiPickers}
+                showInputEmojiPicker={showInputEmojiPicker}
+                messageInput={messageInput}
+                onMessageInput={setMessageInput}
+                onEmojiPickerToggle={handleEmojiPickerToggle}
+                onInputEmojiPickerToggle={setShowInputEmojiPicker}
+                onReactionAdd={addReaction}
+                onSendMessage={handleSendMessage}
+                targetMessageId={targetMessageId}
+              />
+            } 
           />
-        ) : (
-          <>
-            <MessagesList
-              messages={messages || []}
-              channels={channels || []}
-              currentChannel={currentChannel}
-              user={user}
-              searchQuery=""
-              openEmojiPickers={openEmojiPickers}
-              onEmojiPickerToggle={handleEmojiPickerToggle}
-              onReactionAdd={addReaction}
-              targetMessageId={targetMessageId}
-            />
-
-            <MessageInput
-              channels={channels || []}
-              currentChannel={currentChannel}
-              messageInput={messageInput}
-              showInputEmojiPicker={showInputEmojiPicker}
-              onMessageInput={setMessageInput}
-              onEmojiPickerToggle={setShowInputEmojiPicker}
-              onSendMessage={handleSendMessage}
-            />
-          </>
-        )}
+          <Route 
+            path="/search" 
+            element={
+              <SearchView
+                messages={messages || []}
+                channels={channels || []}
+                user={user}
+                openEmojiPickers={openEmojiPickers}
+                onEmojiPickerToggle={handleEmojiPickerToggle}
+                onReactionAdd={addReaction}
+              />
+            } 
+          />
+          <Route path="/" element={<Navigate to={channels && channels.length > 0 ? `/channel/${channels.find(c => c.name === 'general')?.id || channels[0]?.id}` : "/channel/general"} replace />} />
+        </Routes>
       </div>
     </div>
   );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  )
 }
 
 export default App
