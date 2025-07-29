@@ -45,7 +45,6 @@ function App() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   
-  // Refs for keyboard shortcuts
   const messageInputRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -277,7 +276,7 @@ function App() {
 
   if (!user || !channels) {
     return (
-      <div className="flex items-center justify-center h-screen">
+      <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
