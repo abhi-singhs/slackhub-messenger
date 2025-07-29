@@ -53,10 +53,13 @@ function AvatarImage({
         {...props}
       />
       {showOnlineIndicator && (
-        <div className={cn(
-          "absolute -bottom-0.5 -right-0.5 size-3 border-2 border-background rounded-full z-10",
-          getStatusColor(status)
-        )} />
+        <div 
+          className={cn(
+            "absolute -bottom-0.5 -right-0.5 size-3 border-2 border-background rounded-full z-10",
+            getStatusColor(status)
+          )}
+          key={`status-${status}`}
+        />
       )}
     </div>
   )
