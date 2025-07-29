@@ -138,35 +138,14 @@ export function ThreadView({
           {sortedThreadMessages.length > 0 ? (
             <div className="space-y-3">
               {sortedThreadMessages.map((message) => (
-                <div key={message.id} className="flex items-start gap-3">
-                  <img
-                    src={message.userAvatar || '/default-avatar.png'}
-                    alt=""
-                    className="w-8 h-8 rounded-full flex-shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-semibold text-sm">
-                        {message.userName}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTime(message.timestamp)}
-                      </span>
-                    </div>
-                    <div
-                      className="text-sm prose prose-sm max-w-none"
-                      dangerouslySetInnerHTML={{ __html: message.content }}
-                    />
-                    <MessageItem
-                      message={message}
-                      user={user}
-                      isEmojiPickerOpen={openEmojiPickers.has(message.id)}
-                      onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
-                      onReactionAdd={onReactionAdd}
-                      showReactionsOnly={true}
-                    />
-                  </div>
-                </div>
+                <MessageItem
+                  key={message.id}
+                  message={message}
+                  user={user}
+                  isEmojiPickerOpen={openEmojiPickers.has(message.id)}
+                  onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
+                  onReactionAdd={onReactionAdd}
+                />
               ))}
             </div>
           ) : (
