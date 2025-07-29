@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Message, UserInfo, Channel } from '@/types'
 import { Button } from '@/components/ui/button'
 import { MessageItem } from '@/components/MessageItem'
@@ -31,6 +31,24 @@ export function ThreadView({
 }: ThreadViewProps) {
   const [messageInput, setMessageInput] = useState('')
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
+  const modalRef = useRef<HTMLDivElement>(null)
+
+  // Handle clicking outside the modal to close it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    // Add event listener when modal is mounted
+    document.addEventListener('mousedown', handleClickOutside)
+    
+    // Cleanup event listener when modal is unmounted
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [onClose])
 
   const handleSendMessage = () => {
     if (messageInput.trim()) {
@@ -50,7 +68,10 @@ export function ThreadView({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col">
+      <div 
+        ref={modalRef}
+        className="bg-card rounded-lg shadow-xl w-full max-w-2xl max-h-[80vh] flex flex-col"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="flex items-center gap-3">
