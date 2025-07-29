@@ -89,19 +89,14 @@ export const MessageItem = ({
 
   return (
     <div className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
-      <div className="relative">
-        <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
-          <AvatarImage src={message.userAvatar} alt={message.userName} />
-          <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        {/* Status indicator for message author */}
-        <div className="absolute -bottom-0.5 -right-0.5">
-          <StatusIndicator 
-            status={message.userId === user?.id ? userStatus : 'active'} 
-            size="sm" 
-          />
-        </div>
-      </div>
+      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
+        <AvatarImage 
+          src={message.userAvatar} 
+          alt={message.userName} 
+          showOnlineIndicator={message.userId === user?.id ? userStatus === 'active' : true}
+        />
+        <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
+      </Avatar> 
       <div className="flex-1 min-w-0 relative">
         {/* Full-width thread trigger button */}
         {onStartThread && !message.threadId && !showReactionsOnly && (

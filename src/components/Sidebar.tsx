@@ -160,15 +160,14 @@ export const Sidebar = ({
             </Button>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <div className="relative">
-              <Avatar className="w-6 h-6">
-                <AvatarImage src={user?.avatarUrl || ''} alt={user?.login || 'User'} />
-                <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-              </Avatar>
-              <div className="absolute -bottom-0.5 -right-0.5">
-                <StatusIndicator status={status} size="sm" />
-              </div>
-            </div>
+            <Avatar className="w-6 h-6">
+              <AvatarImage 
+                src={user?.avatarUrl || ''} 
+                alt={user?.login || 'User'} 
+                showOnlineIndicator={status === 'active'}
+              />
+              <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+            </Avatar>
             <div className="flex-1 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
               <StatusSelector currentStatus={status} onStatusChange={setStatus} />

@@ -23,14 +23,20 @@ function Avatar({
 
 function AvatarImage({
   className,
+  showOnlineIndicator = false,
   ...props
-}: ComponentProps<typeof AvatarPrimitive.Image>) {
+}: ComponentProps<typeof AvatarPrimitive.Image> & { showOnlineIndicator?: boolean }) {
   return (
-    <AvatarPrimitive.Image
-      data-slot="avatar-image"
-      className={cn("aspect-square size-full mr-3", className)}
-      {...props}
-    />
+    <div className="relative">
+      <AvatarPrimitive.Image
+        data-slot="avatar-image"
+        className={cn("aspect-square size-full mr-3", className)}
+        {...props}
+      />
+      {showOnlineIndicator && (
+        <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-background rounded-full" />
+      )}
+    </div>
   )
 }
 
