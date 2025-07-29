@@ -30,6 +30,28 @@ export const formatTime = (timestamp: number): string => {
 }
 
 /**
+ * Formats a timestamp into a human-readable date string
+ */
+export const formatDate = (timestamp: number): string => {
+  const date = new Date(timestamp)
+  const today = new Date()
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+  
+  if (date.toDateString() === today.toDateString()) {
+    return 'Today'
+  } else if (date.toDateString() === yesterday.toDateString()) {
+    return 'Yesterday'
+  } else {
+    return date.toLocaleDateString([], { 
+      month: 'short', 
+      day: 'numeric',
+      year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+    })
+  }
+}
+
+/**
  * Get username from messages array or return userId as fallback
  */
 export const getUserName = (userId: string, messages: any[]): string => {

@@ -5,6 +5,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSettings } from '@/hooks/useSettings'
 import { useUserStatus } from '@/hooks/useUserStatus'
 import { useNotifications } from '@/hooks/useNotifications'
+import { useCalls } from '@/hooks/useCalls'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
@@ -12,6 +13,8 @@ import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
 import { QuickSwitcher } from '@/components/QuickSwitcher'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
+import { CallInterface } from '@/components/CallInterface'
+import { IncomingCallDialog } from '@/components/IncomingCallDialog'
 import { Toaster } from '@/components/ui/sonner'
 
 // View states for the app
@@ -43,6 +46,25 @@ function App() {
   
   // Initialize notifications system
   useNotifications(user, channels || [], messages || [])
+
+  // Initialize calls system
+  const {
+    currentCall,
+    incomingCall,
+    isCallUIOpen,
+    callHistory,
+    localStream,
+    remoteStream,
+    isMuted,
+    hasVideo,
+    startCall,
+    answerCall,
+    declineCall,
+    endCall,
+    toggleMute,
+    toggleVideo,
+    setIsCallUIOpen
+  } = useCalls(user)
 
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -357,8 +379,11 @@ function App() {
           channels={channels || []}
           currentChannel={currentChannel}
           searchQuery={searchQuery}
+          user={user}
+          callHistory={callHistory}
           onSidebarToggle={() => setSidebarOpen(true)}
           onSearchChange={handleSearchChange}
+          onStartCall={startCall}
           searchInputRef={searchInputRef}
         />
 
@@ -425,6 +450,28 @@ function App() {
       <KeyboardShortcutsHelp
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
+      />
+
+      {/* Call Interface */}
+      <CallInterface
+        currentCall={currentCall}
+        user={user}
+        localStream={localStream}
+        remoteStream={remoteStream}
+        isMuted={isMuted}
+        hasVideo={hasVideo}
+        isOpen={isCallUIOpen}
+        onClose={() => setIsCallUIOpen(false)}
+        onEndCall={endCall}
+        onToggleMute={toggleMute}
+        onToggleVideo={toggleVideo}
+      />
+
+      {/* Incoming Call Dialog */}
+      <IncomingCallDialog
+        incomingCall={incomingCall}
+        onAnswer={answerCall}
+        onDecline={declineCall}
       />
       
       {/* Toast notifications */}

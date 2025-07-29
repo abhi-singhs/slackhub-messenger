@@ -32,6 +32,11 @@
 - **Why it matters**: Prevents channel clutter, maintains conversation context, and allows parallel discussions within channels
 - **Success criteria**: Users can start threads from any message, view thread conversations in dedicated modal, reply to threads, see reply counts on parent messages, and navigate between channel and thread views seamlessly
 
+### Voice and Video Calling
+- **What it does**: Enables users to initiate and participate in voice and video calls with other team members, including call history and contact management
+- **Why it matters**: Provides richer communication options beyond text messaging, enabling face-to-face collaboration and urgent discussions
+- **Success criteria**: Users can start voice/video calls from contact list or call history, answer/decline incoming calls, use in-call controls (mute, video toggle), see call duration and status, maintain call history, and handle multiple participants
+
 ### Real-time Messaging
 - **What it does**: Send and receive messages within channels with user attribution and emoji reactions
 - **Why it matters**: Core communication functionality with GitHub user integration and emotional expression

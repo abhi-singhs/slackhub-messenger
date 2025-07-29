@@ -39,6 +39,30 @@ export type UserStatus = 'active' | 'away' | 'busy'
 
 export type NotificationSound = 'subtle' | 'classic' | 'modern' | 'none'
 
+export type CallType = 'voice' | 'video'
+
+export type CallStatus = 'idle' | 'calling' | 'ringing' | 'connected' | 'ended' | 'declined' | 'missed'
+
+export interface CallParticipant {
+  userId: string
+  userName: string
+  userAvatar: string
+  status: UserStatus
+  isMuted?: boolean
+  hasVideo?: boolean
+}
+
+export interface Call {
+  id: string
+  type: CallType
+  initiator: CallParticipant
+  participants: CallParticipant[]
+  status: CallStatus
+  startTime: number
+  endTime?: number
+  channelId?: string // For channel calls
+}
+
 export interface NotificationSettings {
   // Sound settings
   soundEnabled: boolean
