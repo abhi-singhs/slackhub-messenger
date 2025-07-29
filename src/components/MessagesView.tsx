@@ -1,12 +1,12 @@
-import { UserInfo, Message, Channel } from '@/types'
+import { UserInfo, Message, Channel, UserStatus } from '@/types'
 import { MessagesList } from './MessagesList'
 import { SearchResults } from './SearchResults'
-import { useUserStatus } from '@/hooks/useUserStatus'
 
 interface MessagesViewProps {
   messages: Message[]
   channels: Channel[]
   user: UserInfo | null
+  userStatus: UserStatus
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
@@ -19,6 +19,7 @@ export function MessagesView({
   messages,
   channels,
   user,
+  userStatus,
   openEmojiPickers,
   onEmojiPickerToggle,
   onReactionAdd,
@@ -26,7 +27,6 @@ export function MessagesView({
   onStartThread,
   searchQuery
 }: MessagesViewProps) {
-  const { status } = useUserStatus()
   
   // If we have a search query, show search results
   if (searchQuery && searchQuery.length >= 2) {
@@ -35,6 +35,7 @@ export function MessagesView({
         messages={messages}
         channels={channels}
         user={user}
+        userStatus={userStatus}
         searchQuery={searchQuery}
         openEmojiPickers={openEmojiPickers}
         onEmojiPickerToggle={onEmojiPickerToggle}
@@ -50,7 +51,7 @@ export function MessagesView({
       messages={messages}
       user={user}
       openEmojiPickers={openEmojiPickers}
-      userStatus={status}
+      userStatus={userStatus}
       onEmojiPickerToggle={onEmojiPickerToggle}
       onReactionAdd={onReactionAdd}
       onStartThread={onStartThread}

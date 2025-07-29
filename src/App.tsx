@@ -3,6 +3,7 @@ import { UserInfo } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSettings } from '@/hooks/useSettings'
+import { useUserStatus } from '@/hooks/useUserStatus'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
@@ -17,6 +18,9 @@ type ViewState = 'channel' | 'search'
 function App() {
   // Initialize settings hook to apply theme on mount
   useSettings()
+  
+  // Centralized status management
+  const { status: userStatus, setStatus: setUserStatus } = useUserStatus()
   
   const {
     user,
@@ -297,11 +301,13 @@ function App() {
         messages={messages || []}
         lastReadTimestamps={lastReadTimestamps}
         sidebarOpen={sidebarOpen}
+        userStatus={userStatus}
         onChannelSelect={handleChannelSelect}
         onChannelCreate={handleChannelCreate}
         onChannelUpdate={updateChannel}
         onChannelDelete={handleChannelDelete}
         onSidebarToggle={setSidebarOpen}
+        onStatusChange={setUserStatus}
         onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
       />
       
@@ -321,6 +327,7 @@ function App() {
           messages={currentMessages}
           channels={channels || []}
           user={user}
+          userStatus={userStatus}
           openEmojiPickers={openEmojiPickers}
           onEmojiPickerToggle={handleEmojiPickerToggle}
           onReactionAdd={addReaction}
@@ -352,6 +359,7 @@ function App() {
           threadMessages={threadMessages}
           user={user}
           channels={channels || []}
+          userStatus={userStatus}
           openEmojiPickers={openEmojiPickers}
           onClose={handleCloseThread}
           onEmojiPickerToggle={handleEmojiPickerToggle}

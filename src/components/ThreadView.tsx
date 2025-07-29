@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Message, UserInfo, Channel } from '@/types'
+import { Message, UserInfo, Channel, UserStatus } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
-import { useUserStatus } from '@/hooks/useUserStatus'
 import { formatTime } from '@/utils'
 import { X, Smiley } from '@phosphor-icons/react'
 
@@ -14,6 +13,7 @@ interface ThreadViewProps {
   threadMessages: Message[]
   user: UserInfo
   channels: Channel[]
+  userStatus: UserStatus
   openEmojiPickers: Set<string>
   onClose: () => void
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
@@ -26,13 +26,13 @@ export function ThreadView({
   threadMessages,
   user,
   channels,
+  userStatus,
   openEmojiPickers,
   onClose,
   onEmojiPickerToggle,
   onReactionAdd,
   onSendThreadReply
 }: ThreadViewProps) {
-  const { status } = useUserStatus()
   const [messageInput, setMessageInput] = useState('')
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -119,7 +119,7 @@ export function ThreadView({
                   src={parentMessage.userAvatar || ''} 
                   alt={parentMessage.userName} 
                   showOnlineIndicator={true}
-                  status={parentMessage.userId === user?.id ? status : 'active'}
+                  status={parentMessage.userId === user?.id ? userStatus : 'active'}
                 />
                 <AvatarFallback>{parentMessage.userName.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
@@ -187,7 +187,7 @@ export function ThreadView({
                   key={message.id}
                   message={message}
                   user={user}
-                  userStatus={status}
+                  userStatus={userStatus}
                   isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                   onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                   onReactionAdd={onReactionAdd}

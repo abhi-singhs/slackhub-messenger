@@ -11,10 +11,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard } from '@phosphor-icons/react'
-import { Channel, UserInfo } from '@/types'
+import { Channel, UserInfo, UserStatus } from '@/types'
 import { getChannelUnreadCount } from '@/utils'
 import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
-import { useUserStatus } from '@/hooks/useUserStatus'
 import { StatusIndicator } from '@/components/StatusIndicator'
 import { StatusSelector } from '@/components/StatusSelector'
 
@@ -33,11 +32,13 @@ interface SidebarProps {
   messages: any[]
   lastReadTimestamps: Record<string, number>
   sidebarOpen: boolean
+  userStatus: UserStatus
   onChannelSelect: (channelId: string) => void
   onChannelCreate: (name: string) => void
   onChannelUpdate: (channelId: string, name: string, description: string) => void
   onChannelDelete: (channelId: string) => void
   onSidebarToggle: (open: boolean) => void
+  onStatusChange: (status: UserStatus) => void
   onShowKeyboardShortcuts?: () => void
 }
 
@@ -48,15 +49,16 @@ export const Sidebar = ({
   messages,
   lastReadTimestamps,
   sidebarOpen,
+  userStatus,
   onChannelSelect,
   onChannelCreate,
   onChannelUpdate,
   onChannelDelete,
   onSidebarToggle,
+  onStatusChange,
   onShowKeyboardShortcuts
 }: SidebarProps) => {
   const { settings, updateTheme, updateColorTheme } = useSettings()
-  const { status, setStatus } = useUserStatus()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -165,13 +167,13 @@ export const Sidebar = ({
                 src={user?.avatarUrl || ''} 
                 alt={user?.login || 'User'} 
                 showOnlineIndicator={true}
-                status={status}
+                status={userStatus}
               />
               <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 flex items-center justify-between">
               <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
-              <StatusSelector currentStatus={status} onStatusChange={setStatus} />
+              <StatusSelector currentStatus={userStatus} onStatusChange={onStatusChange} />
             </div>
           </div>
         </div>

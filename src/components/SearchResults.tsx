@@ -3,7 +3,7 @@ import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
 import { Hash, User, CalendarBlank } from '@phosphor-icons/react'
-import { Message, Channel, UserInfo } from '@/types'
+import { Message, Channel, UserInfo, UserStatus } from '@/types'
 
 interface SearchResult {
   message: Message
@@ -16,6 +16,7 @@ interface SearchResultsProps {
   messages: Message[]
   channels: Channel[]
   user: UserInfo | null
+  userStatus: UserStatus
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
@@ -27,6 +28,7 @@ export const SearchResults = ({
   messages,
   channels,
   user,
+  userStatus,
   openEmojiPickers,
   onEmojiPickerToggle,
   onReactionAdd,
