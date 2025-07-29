@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, useParams, useSearchParams, useNavigate } from 'react-router-dom'
 import { UserInfo } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
-import { ChannelView, SearchView } from '@/routes'
+import { MessagesView } from '@/components/MessagesView'
+import { MessageInput } from '@/components/MessageInput'
 
-// Main app content component that handles routing
-function AppContent() {
+// View states for the app
+type ViewState = 'channel' | 'search'
+
+function App() {
   const {
     user,
     currentChannel,
@@ -28,32 +30,17 @@ function AppContent() {
   const [openEmojiPickers, setOpenEmojiPickers] = useState<Set<string>>(new Set())
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [viewState, setViewState] = useState<ViewState>('channel')
 
-  const navigate = useNavigate()
-  const { channelId } = useParams<{ channelId: string }>()
-  const [searchParams] = useSearchParams()
-  const targetMessageId = searchParams.get('message')
-
-  // Sync current channel with URL parameter
+  // Set initial channel when channels are loaded
   useEffect(() => {
-    if (channelId && channelId !== currentChannel) {
-      setCurrentChannel(channelId)
-    }
-  }, [channelId, currentChannel, setCurrentChannel])
-
-  // Handle initial navigation when channels are loaded
-  useEffect(() => {
-    // Only navigate if:
-    // 1. We have channels loaded
-    // 2. We're not already on a channel route (no channelId in URL)
-    // 3. We haven't already navigated
-    if (channels && channels.length > 0 && !channelId) {
+    if (channels && channels.length > 0 && !currentChannel) {
       const generalChannel = channels.find(c => c.id === 'general') || channels[0]
       if (generalChannel) {
-        navigate(`/channel/${generalChannel.id}`, { replace: true })
+        setCurrentChannel(generalChannel.id)
       }
     }
-  }, [channels, channelId, navigate])
+  }, [channels, currentChannel, setCurrentChannel])
 
   // Mark current channel as read when it changes
   useEffect(() => {
@@ -74,46 +61,33 @@ function AppContent() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Scroll to target message when URL contains message parameter
-  useEffect(() => {
-    if (targetMessageId) {
-      setTimeout(() => {
-        const messageElement = document.getElementById(`message-${targetMessageId}`)
-        if (messageElement) {
-          messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
-          messageElement.classList.add('animate-pulse')
-          setTimeout(() => {
-            messageElement.classList.remove('animate-pulse')
-          }, 2000)
-        }
-      }, 100)
-    }
-  }, [targetMessageId])
-
   const handleChannelSelect = (channelId: string) => {
-    // Navigate directly to the channel
-    navigate(`/channel/${channelId}`)
+    setCurrentChannel(channelId)
     setSidebarOpen(false)
     setSearchQuery('')
+    setViewState('channel')
   }
 
   const handleChannelCreate = (name: string) => {
     const channelId = createChannel(name)
+    setCurrentChannel(channelId)
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
-    navigate(`/channel/${channelId}`)
   }
 
   const handleChannelDelete = (channelId: string) => {
     deleteChannel(channelId)
     // If we're deleting the current channel, navigate to general
     if (channelId === currentChannel) {
-      navigate('/channel/general')
+      const generalChannel = channels?.find(c => c.id === 'general') || channels?.[0]
+      if (generalChannel) {
+        setCurrentChannel(generalChannel.id)
+      }
     }
   }
 
   const handleSendMessage = () => {
-    if (channelId) {
-      sendMessage(messageInput, channelId)
+    if (currentChannel) {
+      sendMessage(messageInput, currentChannel)
       setMessageInput('')
     }
   }
@@ -133,12 +107,31 @@ function AppContent() {
   const handleSearchChange = (query: string) => {
     setSearchQuery(query)
     if (query.length >= 2) {
-      navigate(`/search?q=${encodeURIComponent(query)}`)
+      setViewState('search')
     } else if (query.length === 0) {
-      // If search is cleared, go back to current channel
-      if (currentChannel) {
-        navigate(`/channel/${currentChannel}`)
-      }
+      setViewState('channel')
+    }
+  }
+
+  const handleSearchMessageClick = (messageId: string) => {
+    // Find the channel for this message
+    const message = messages?.find(m => m.id === messageId)
+    if (message) {
+      setCurrentChannel(message.channelId)
+      setViewState('channel')
+      setSearchQuery('')
+      
+      // Scroll to the message after a brief delay
+      setTimeout(() => {
+        const messageElement = document.getElementById(`message-${messageId}`)
+        if (messageElement) {
+          messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          messageElement.classList.add('animate-pulse')
+          setTimeout(() => {
+            messageElement.classList.remove('animate-pulse')
+          }, 2000)
+        }
+      }, 100)
     }
   }
 
@@ -152,6 +145,14 @@ function AppContent() {
       </div>
     )
   }
+
+  // Filter messages for current view
+  const currentMessages = viewState === 'search' 
+    ? (messages?.filter(message => 
+        message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        message.user.login.toLowerCase().includes(searchQuery.toLowerCase())
+      ) || [])
+    : (messages?.filter(message => message.channelId === currentChannel) || [])
 
   return (
     <div className="flex h-screen bg-background relative">
@@ -179,65 +180,34 @@ function AppContent() {
           onSearchChange={handleSearchChange}
         />
 
-        <Routes>
-          <Route 
-            path="/channel/:channelId" 
-            element={
-              <ChannelView
-                user={user}
-                channels={channels || []}
-                messages={messages || []}
-                openEmojiPickers={openEmojiPickers}
-                showInputEmojiPicker={showInputEmojiPicker}
-                messageInput={messageInput}
-                onMessageInput={setMessageInput}
-                onEmojiPickerToggle={handleEmojiPickerToggle}
-                onInputEmojiPickerToggle={setShowInputEmojiPicker}
-                onReactionAdd={addReaction}
-                onSendMessage={handleSendMessage}
-                targetMessageId={targetMessageId}
-              />
-            } 
+        {/* Messages Area */}
+        <MessagesView
+          messages={currentMessages}
+          channels={channels || []}
+          user={user}
+          openEmojiPickers={openEmojiPickers}
+          onEmojiPickerToggle={handleEmojiPickerToggle}
+          onReactionAdd={addReaction}
+          onMessageClick={viewState === 'search' ? handleSearchMessageClick : undefined}
+          searchQuery={viewState === 'search' ? searchQuery : ''}
+        />
+
+        {/* Message Input - Only show for channel view */}
+        {viewState === 'channel' && (
+          <MessageInput
+            user={user}
+            messageInput={messageInput}
+            showInputEmojiPicker={showInputEmojiPicker}
+            onMessageInput={setMessageInput}
+            onInputEmojiPickerToggle={setShowInputEmojiPicker}
+            onSendMessage={handleSendMessage}
+            currentChannel={currentChannel}
+            channels={channels || []}
           />
-          <Route 
-            path="/search" 
-            element={
-              <SearchView
-                messages={messages || []}
-                channels={channels || []}
-                user={user}
-                openEmojiPickers={openEmojiPickers}
-                onEmojiPickerToggle={handleEmojiPickerToggle}
-                onReactionAdd={addReaction}
-              />
-            } 
-          />
-          <Route 
-            path="/" 
-            element={
-              channels && channels.length > 0 
-                ? <Navigate to="/channel/general" replace />
-                : <div className="flex-1 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
-                      <p className="text-muted-foreground">Loading channels...</p>
-                    </div>
-                  </div>
-            } 
-          />
-          <Route path="*" element={<Navigate to="/channel/general" replace />} />
-        </Routes>
+        )}
       </div>
     </div>
   );
-}
-
-function App() {
-  return (
-    <Router>
-      <AppContent />
-    </Router>
-  )
 }
 
 export default App

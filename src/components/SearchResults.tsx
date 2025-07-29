@@ -1,11 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Button } from '@/components/ui/button'
+import { useMemo } from 'react'
 import { Card } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, CalendarBlank, Hash, User } from '@phosphor-icons/react'
+import { Hash, User, CalendarBlank } from '@phosphor-icons/react'
 import { Message, Channel, UserInfo } from '@/types'
-import { MessageItem } from '@/components/MessageItem'
 
 interface SearchResult {
   message: Message
@@ -21,8 +19,7 @@ interface SearchResultsProps {
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
-  onBack: () => void
-  onNavigateToMessage: (channelId: string, messageId: string) => void
+  onMessageClick?: (messageId: string) => void
 }
 
 export const SearchResults = ({
@@ -33,11 +30,8 @@ export const SearchResults = ({
   openEmojiPickers,
   onEmojiPickerToggle,
   onReactionAdd,
-  onBack,
-  onNavigateToMessage
+  onMessageClick
 }: SearchResultsProps) => {
-  const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null)
-
   // Search results with context
   const searchResults = useMemo(() => {
     if (!searchQuery.trim() || !messages || !channels) return []
@@ -105,86 +99,15 @@ export const SearchResults = ({
   }
 
   const handleResultClick = (result: SearchResult) => {
-    setSelectedResult(result)
-  }
-
-  const handleNavigateToMessage = (result: SearchResult) => {
-    onNavigateToMessage(result.channel.id, result.message.id)
-    onBack()
-  }
-
-  if (selectedResult) {
-    return (
-      <div className="flex flex-col h-full bg-background">
-        {/* Header */}
-        <div className="h-14 px-4 flex items-center gap-3 border-b border-border bg-card">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedResult(null)}
-            className="h-8 w-8 p-0"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2">
-            <Hash className="h-4 w-4 text-muted-foreground" />
-            <span className="font-medium">{selectedResult.channel.name}</span>
-          </div>
-          <Badge variant="secondary" className="text-xs">
-            {formatDate(selectedResult.message.timestamp)}
-          </Badge>
-          <div className="flex-1" />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleNavigateToMessage(selectedResult)}
-            className="text-xs"
-          >
-            Go to Message
-          </Button>
-        </div>
-
-        {/* Message Context */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-4xl mx-auto space-y-1">
-            {selectedResult.contextMessages.map((msg, index) => {
-              const isTargetMessage = msg.id === selectedResult.message.id
-              return (
-                <div
-                  key={msg.id}
-                  className={`transition-colors ${
-                    isTargetMessage ? 'bg-accent/10 border border-accent/20 rounded-lg p-2' : ''
-                  }`}
-                >
-                  <MessageItem
-                    message={msg}
-                    user={user}
-                    isEmojiPickerOpen={openEmojiPickers.has(msg.id)}
-                    searchQuery={isTargetMessage ? searchQuery : ''}
-                    onEmojiPickerToggle={onEmojiPickerToggle}
-                    onReactionAdd={onReactionAdd}
-                  />
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    )
+    if (onMessageClick) {
+      onMessageClick(result.message.id)
+    }
   }
 
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="h-14 px-4 flex items-center gap-3 border-b border-border bg-card">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onBack}
-          className="h-8 w-8 p-0"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
         <div className="flex items-center gap-2">
           <span className="font-medium">Search Results</span>
           <Badge variant="secondary" className="text-xs">
@@ -247,10 +170,7 @@ export const SearchResults = ({
                     
                     {/* Context indicator */}
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <span>Click to see {result.contextMessages.length} messages with context</span>
-                      <Badge variant="outline" className="text-xs px-2 py-0">
-                        {result.contextMessages.length} messages
-                      </Badge>
+                      <span>Click to go to message in #{result.channel.name}</span>
                     </div>
                   </div>
 
