@@ -1,6 +1,7 @@
 import { UserInfo, Message, Channel } from '@/types'
 import { MessagesList } from './MessagesList'
 import { SearchResults } from './SearchResults'
+import { useUserStatus } from '@/hooks/useUserStatus'
 
 interface MessagesViewProps {
   messages: Message[]
@@ -25,6 +26,8 @@ export function MessagesView({
   onStartThread,
   searchQuery
 }: MessagesViewProps) {
+  const { status } = useUserStatus()
+  
   // If we have a search query, show search results
   if (searchQuery && searchQuery.length >= 2) {
     return (
@@ -47,6 +50,7 @@ export function MessagesView({
       messages={messages}
       user={user}
       openEmojiPickers={openEmojiPickers}
+      userStatus={status}
       onEmojiPickerToggle={onEmojiPickerToggle}
       onReactionAdd={onReactionAdd}
       onStartThread={onStartThread}

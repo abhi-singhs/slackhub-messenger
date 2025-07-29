@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
+import { useUserStatus } from '@/hooks/useUserStatus'
+import { formatTime } from '@/utils'
 import { X, Smiley } from '@phosphor-icons/react'
 
 interface ThreadViewProps {
@@ -29,6 +31,7 @@ export function ThreadView({
   onReactionAdd,
   onSendThreadReply
 }: ThreadViewProps) {
+  const { status } = useUserStatus()
   const [messageInput, setMessageInput] = useState('')
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
@@ -179,6 +182,7 @@ export function ThreadView({
                   key={message.id}
                   message={message}
                   user={user}
+                  userStatus={status}
                   isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                   onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                   onReactionAdd={onReactionAdd}

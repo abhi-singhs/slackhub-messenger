@@ -23,10 +23,13 @@ export interface Channel {
   description?: string
 }
 
+export type UserStatus = 'active' | 'away' | 'busy'
+
 export interface UserInfo {
   id: string
   login: string
   avatarUrl: string
   email: string
   isOwner: boolean
+  status?: UserStatus
 }

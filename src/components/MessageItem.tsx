@@ -3,10 +3,11 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Smiley, Chat } from '@phosphor-icons/react'
-import { Message, UserInfo } from '@/types'
+import { Message, UserInfo, UserStatus } from '@/types'
 import { formatTime, getUserName } from '@/utils'
 import { highlightSearchTerm } from '@/lib/utils'
 import { EmojiPicker } from './EmojiPicker'
+import { StatusIndicator } from './StatusIndicator'
 
 interface MessageItemProps {
   message: Message
@@ -15,6 +16,7 @@ interface MessageItemProps {
   isEmojiPickerOpen?: boolean
   searchQuery?: string
   showReactionsOnly?: boolean
+  userStatus?: UserStatus
   onEmojiPickerToggle?: (open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onStartThread?: (messageId: string) => void
@@ -27,6 +29,7 @@ export const MessageItem = ({
   isEmojiPickerOpen = false,
   searchQuery,
   showReactionsOnly = false,
+  userStatus = 'active',
   onEmojiPickerToggle = () => {},
   onReactionAdd,
   onStartThread
@@ -86,10 +89,19 @@ export const MessageItem = ({
 
   return (
     <div className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
-      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
-        <AvatarImage src={message.userAvatar} alt={message.userName} />
-        <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
-      </Avatar>
+      <div className="relative">
+        <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
+          <AvatarImage src={message.userAvatar} alt={message.userName} />
+          <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        {/* Status indicator for message author */}
+        <div className="absolute -bottom-0.5 -right-0.5">
+          <StatusIndicator 
+            status={message.userId === user?.id ? userStatus : 'active'} 
+            size="sm" 
+          />
+        </div>
+      </div>
       <div className="flex-1 min-w-0 relative">
         {/* Full-width thread trigger button */}
         {onStartThread && !message.threadId && !showReactionsOnly && (

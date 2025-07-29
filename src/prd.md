@@ -68,9 +68,14 @@
 - **Success criteria**: Shows all matching messages with context, allows drilling into specific results, enables navigation to original messages, displays channel and timestamp information
 
 ### User Integration
-- **What it does**: Fetches GitHub user data for avatars and identity
-- **Why it matters**: Provides authentic user attribution and familiar identity
-- **Success criteria**: User avatars and names display consistently across all messages
+- **What it does**: Fetches GitHub user data for avatars and identity with user status indicators (active, away, busy)
+- **Why it matters**: Provides authentic user attribution, familiar identity, and availability awareness for team members
+- **Success criteria**: User avatars and names display consistently across all messages, status indicators show current availability, users can set their own status with visual indicators
+
+### User Status Management
+- **What it does**: Allow users to set their availability status (active, away, busy) with visual indicators throughout the interface
+- **Why it matters**: Team members can understand availability and set expectations for response times, reducing interruptions during focused work
+- **Success criteria**: Status persists across sessions, displays next to user avatars in messages and sidebar, provides dropdown selector with clear status descriptions, shows different colored indicators for each status
 
 ## Design Direction
 

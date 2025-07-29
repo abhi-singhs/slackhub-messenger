@@ -14,6 +14,9 @@ import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard } f
 import { Channel, UserInfo } from '@/types'
 import { getChannelUnreadCount } from '@/utils'
 import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+import { useUserStatus } from '@/hooks/useUserStatus'
+import { StatusIndicator } from '@/components/StatusIndicator'
+import { StatusSelector } from '@/components/StatusSelector'
 
 const themeOptions = [
   { value: 'blue' as ColorTheme, name: 'Blue', color: 'oklch(0.65 0.15 240)' },
@@ -53,6 +56,7 @@ export const Sidebar = ({
   onShowKeyboardShortcuts
 }: SidebarProps) => {
   const { settings, updateTheme, updateColorTheme } = useSettings()
+  const { status, setStatus } = useUserStatus()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -156,11 +160,19 @@ export const Sidebar = ({
             </Button>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <Avatar className="w-6 h-6">
-              <AvatarImage src={user?.avatarUrl || ''} alt={user?.login || 'User'} />
-              <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
-            </Avatar>
-            <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
+            <div className="relative">
+              <Avatar className="w-6 h-6">
+                <AvatarImage src={user?.avatarUrl || ''} alt={user?.login || 'User'} />
+                <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+              </Avatar>
+              <div className="absolute -bottom-0.5 -right-0.5">
+                <StatusIndicator status={status} size="sm" />
+              </div>
+            </div>
+            <div className="flex-1 flex items-center justify-between">
+              <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
+              <StatusSelector currentStatus={status} onStatusChange={setStatus} />
+            </div>
           </div>
         </div>
         

@@ -2,13 +2,14 @@ import { useRef, useEffect } from 'react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { Hash } from '@phosphor-icons/react'
-import { Message, UserInfo } from '@/types'
+import { Message, UserInfo, UserStatus } from '@/types'
 import { MessageItem } from './MessageItem'
 
 interface MessagesListProps {
   messages: Message[]
   user: UserInfo | null
   openEmojiPickers: Set<string>
+  userStatus?: UserStatus
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onStartThread?: (messageId: string) => void
@@ -18,6 +19,7 @@ export const MessagesList = ({
   messages,
   user,
   openEmojiPickers,
+  userStatus = 'active',
   onEmojiPickerToggle,
   onReactionAdd,
   onStartThread
@@ -54,6 +56,7 @@ export const MessagesList = ({
                     user={user}
                     messages={messages}
                     searchQuery=""
+                    userStatus={userStatus}
                     isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                     onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                     onReactionAdd={onReactionAdd}
