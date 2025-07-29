@@ -34,7 +34,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   if (isImageFile(attachment.type)) {
     return (
       <div className={`inline-block ${className}`}>
-        <div className="relative group max-w-sm">
+        <div className="relative group max-w-lg">
           <img
             src={attachment.thumbnail || attachment.url}
             alt={attachment.name}
@@ -95,7 +95,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   // Video attachment
   if (isVideoFile(attachment.type)) {
     return (
-      <div className={`inline-block max-w-sm ${className}`}>
+      <div className={`inline-block max-w-lg ${className}`}>
         <div className="relative group">
           <video
             src={attachment.url}
@@ -117,7 +117,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   if (isAudioFile(attachment.type)) {
     return (
       <div className={`inline-block ${className}`}>
-        <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 max-w-md">
+        <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 max-w-lg">
           <div className="text-2xl">🎵</div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-sm truncate">{attachment.name}</div>
@@ -139,7 +139,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   // Generic file attachment
   return (
     <div className={`inline-block ${className}`}>
-      <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors max-w-sm">
+      <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors max-w-lg">
         <div className="text-2xl">{getFileIcon(attachment.type)}</div>
         <div className="flex-1 min-w-0">
           <div className="font-medium text-sm truncate">{attachment.name}</div>
