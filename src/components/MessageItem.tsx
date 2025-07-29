@@ -287,7 +287,7 @@ export const MessageItem = ({
           )}
           
           {/* File Attachments */}
-          {message.attachments && message.attachments.length > 0 && (
+          {message.attachments && Array.isArray(message.attachments) && message.attachments.length > 0 && (
             <div className="mb-2 space-y-2">
               {message.attachments.map((attachment) => (
                 <FileAttachmentView
@@ -313,14 +313,14 @@ export const MessageItem = ({
           
           {/* Reactions */}
           <div className="flex items-center gap-1 flex-wrap mb-1 relative z-20">
-            {message.reactions?.map((reaction) => (
+            {Array.isArray(message.reactions) ? message.reactions.map((reaction) => (
               <Tooltip key={reaction.emoji}>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
                     className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary relative z-30 ${
-                      reaction.users.includes(user?.id || '') 
+                      Array.isArray(reaction.users) && reaction.users.includes(user?.id || '') 
                         ? 'bg-accent/20 border-accent text-accent-foreground' 
                         : ''
                     }`}
@@ -332,9 +332,9 @@ export const MessageItem = ({
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="text-xs">
-                    {reaction.users.length === 1 
+                    {Array.isArray(reaction.users) && reaction.users.length === 1 
                       ? `${getUserName(reaction.users[0], messages)} reacted with ${reaction.emoji}` 
-                      : `${reaction.users.map(userId => getUserName(userId, messages)).join(', ')} reacted with ${reaction.emoji}`
+                      : `${Array.isArray(reaction.users) ? reaction.users.map(userId => getUserName(userId, messages)).join(', ') : ''} reacted with ${reaction.emoji}`
                     }
                   </p>
                 </TooltipContent>

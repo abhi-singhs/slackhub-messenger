@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange, searchInputRef }: HeaderProps) => {
-  const currentChannelData = channels?.find(c => c.id === currentChannel)
+  const currentChannelData = Array.isArray(channels) ? channels.find(c => c.id === currentChannel) : null
   
   return (
     <div className="h-14 px-4 flex items-center gap-2 border-b border-border bg-card">

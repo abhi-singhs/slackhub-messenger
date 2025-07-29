@@ -120,6 +120,9 @@ const shouldNotifyForMessage = (
   // Ensure notifications object is valid
   if (!notifications) return false
   
+  // Ensure channels is an array
+  if (!Array.isArray(channels)) return false
+  
   // Check do not disturb
   if (notifications.doNotDisturb) return false
   
@@ -178,7 +181,7 @@ export const useNotifications = (
   
   // Monitor new messages and trigger notifications
   useEffect(() => {
-    if (!user || !messages || messages.length === 0 || !notifications) return
+    if (!user || !messages || !Array.isArray(messages) || messages.length === 0 || !notifications) return
     
     const newMessages = messages.slice(lastMessageCountRef.current)
     lastMessageCountRef.current = messages.length
@@ -189,14 +192,14 @@ export const useNotifications = (
     }
     
     newMessages.forEach(message => {
-      if (notifications && shouldNotifyForMessage(message, user, notifications, channels)) {
-        handleNotification(message, channels)
+      if (notifications && shouldNotifyForMessage(message, user, notifications, channels || [])) {
+        handleNotification(message, channels || [])
       }
     })
   }, [messages, user, notifications, channels])
   
   const handleNotification = useCallback(async (message: Message, channels: Channel[]) => {
-    if (!notifications) return
+    if (!notifications || !Array.isArray(channels)) return
     
     const channel = channels.find(c => c.id === message.channelId)
     const channelSettings = notifications.channelSettings?.[message.channelId]

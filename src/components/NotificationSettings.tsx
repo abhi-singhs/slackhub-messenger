@@ -445,7 +445,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
             Customize notifications for individual channels
           </p>
           
-          {channels.map((channel) => {
+          {channels && channels.length > 0 ? channels.map((channel) => {
             const channelSettings = notifications.channelSettings[channel.id] || { muted: false }
             return (
               <div key={channel.id} className="flex items-center justify-between py-2">
@@ -468,7 +468,11 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
                 </div>
               </div>
             )
-          })}
+          }) : (
+            <div className="text-sm text-muted-foreground py-4">
+              No channels available
+            </div>
+          )}
         </div>
       </div>
     </div>

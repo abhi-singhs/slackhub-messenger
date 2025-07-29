@@ -31,7 +31,7 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
   const [fileUploadCallback, setFileUploadCallback] = useState<(() => void) | null>(null)
   
-  const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
+  const currentChannelName = Array.isArray(channels) ? channels.find(c => c.id === currentChannel)?.name : currentChannel || ''
   const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
 
   const handleSendMessage = () => {

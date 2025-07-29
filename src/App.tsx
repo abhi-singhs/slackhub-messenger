@@ -155,7 +155,7 @@ function App() {
 
   const handleSearchMessageClick = (messageId: string) => {
     // Find the channel for this message
-    const message = messages?.find(m => m.id === messageId)
+    const message = Array.isArray(messages) ? messages.find(m => m.id === messageId) : null
     if (message) {
       setCurrentChannel(message.channelId)
       setViewState('channel')
@@ -211,11 +211,11 @@ function App() {
   const handleAddReaction = () => {
     // Get current messages for the active view
     const currentMessages = viewState === 'search' 
-      ? (messages?.filter(message => 
+      ? (Array.isArray(messages) ? messages.filter(message => 
           message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
           message.userName.toLowerCase().includes(searchQuery.toLowerCase())
-        ) || [])
-      : (messages?.filter(message => message.channelId === currentChannel) || [])
+        ) : [])
+      : (Array.isArray(messages) ? messages.filter(message => message.channelId === currentChannel) : [])
     
     if (!currentMessages.length) return
     const lastMessage = currentMessages[currentMessages.length - 1]
@@ -227,11 +227,11 @@ function App() {
   const handleStartThreadOnLastMessage = () => {
     // Get current messages for the active view
     const currentMessages = viewState === 'search' 
-      ? (messages?.filter(message => 
+      ? (Array.isArray(messages) ? messages.filter(message => 
           message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
           message.userName.toLowerCase().includes(searchQuery.toLowerCase())
-        ) || [])
-      : (messages?.filter(message => message.channelId === currentChannel) || [])
+        ) : [])
+      : (Array.isArray(messages) ? messages.filter(message => message.channelId === currentChannel) : [])
     
     if (!currentMessages.length) return
     const lastMessage = currentMessages[currentMessages.length - 1]
@@ -262,11 +262,11 @@ function App() {
     
     // Get current messages for the active view
     const currentMessages = viewState === 'search' 
-      ? (messages?.filter(message => 
+      ? (Array.isArray(messages) ? messages.filter(message => 
           message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
           message.userName.toLowerCase().includes(searchQuery.toLowerCase())
-        ) || [])
-      : (messages?.filter(message => message.channelId === currentChannel) || [])
+        ) : [])
+      : (Array.isArray(messages) ? messages.filter(message => message.channelId === currentChannel) : [])
     
     // Find the last message by this user
     const userMessages = currentMessages.filter(msg => msg.userId === user.id)
@@ -322,15 +322,15 @@ function App() {
 
   // Filter messages for current view
   const currentMessages = viewState === 'search' 
-    ? (messages?.filter(message => 
+    ? (Array.isArray(messages) ? messages.filter(message => 
         message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
         message.userName.toLowerCase().includes(searchQuery.toLowerCase())
-      ) || [])
-    : (messages?.filter(message => message.channelId === currentChannel) || [])
+      ) : [])
+    : (Array.isArray(messages) ? messages.filter(message => message.channelId === currentChannel) : [])
 
   // Get thread data
-  const activeThread = activeThreadId ? messages?.find(m => m.id === activeThreadId) : null
-  const threadMessages = activeThreadId ? (messages?.filter(m => m.threadId === activeThreadId) || []) : []
+  const activeThread = activeThreadId ? (Array.isArray(messages) ? messages.find(m => m.id === activeThreadId) : null) : null
+  const threadMessages = activeThreadId ? (Array.isArray(messages) ? messages.filter(m => m.threadId === activeThreadId) : []) : []
 
   return (
     <div className="flex h-screen bg-background relative">

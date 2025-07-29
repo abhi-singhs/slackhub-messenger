@@ -81,7 +81,7 @@ export function ThreadView({
     }
   }
 
-  const sortedThreadMessages = [...threadMessages].sort((a, b) => a.timestamp - b.timestamp)
+  const sortedThreadMessages = Array.isArray(threadMessages) ? [...threadMessages].sort((a, b) => a.timestamp - b.timestamp) : []
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

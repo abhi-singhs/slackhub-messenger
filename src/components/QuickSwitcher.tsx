@@ -24,10 +24,10 @@ export const QuickSwitcher = ({
   const [query, setQuery] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const filteredChannels = channels.filter(channel =>
+  const filteredChannels = Array.isArray(channels) ? channels.filter(channel =>
     channel.name.toLowerCase().includes(query.toLowerCase()) ||
     channel.description?.toLowerCase().includes(query.toLowerCase())
-  )
+  ) : []
 
   const handleChannelSelect = (channelId: string) => {
     onChannelSelect(channelId)

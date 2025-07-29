@@ -103,7 +103,7 @@ export function FileUpload({ attachments, onAttachmentsChange, disabled, onFileU
   }
 
   const removeAttachment = (attachmentId: string) => {
-    onAttachmentsChange(attachments.filter(a => a.id !== attachmentId))
+    onAttachmentsChange(Array.isArray(attachments) ? attachments.filter(a => a.id !== attachmentId) : [])
   }
 
   return (
@@ -119,7 +119,7 @@ export function FileUpload({ attachments, onAttachmentsChange, disabled, onFileU
       />
 
       {/* File attachments preview */}
-      {attachments.length > 0 && (
+      {Array.isArray(attachments) && attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 p-2 border border-border rounded-lg bg-muted/30">
           {attachments.map((attachment) => (
             <div key={attachment.id} className="relative group">

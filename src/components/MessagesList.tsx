@@ -35,7 +35,7 @@ export const MessagesList = ({
   }, [messages])
 
   // Filter out thread replies - only show main messages
-  const mainMessages = messages.filter(message => !message.threadId)
+  const mainMessages = Array.isArray(messages) ? messages.filter(message => !message.threadId) : []
 
   return (
     <div className="flex-1 overflow-hidden">
