@@ -8,9 +8,20 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash } from '@phosphor-icons/react'
+import { Switch } from '@/components/ui/switch'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Moon, Sun, Palette } from '@phosphor-icons/react'
 import { Channel, UserInfo } from '@/types'
 import { getChannelUnreadCount } from '@/utils'
+import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+
+const themeOptions = [
+  { value: 'blue' as ColorTheme, name: 'Blue', color: 'oklch(0.65 0.15 240)' },
+  { value: 'green' as ColorTheme, name: 'Green', color: 'oklch(0.65 0.15 140)' },
+  { value: 'purple' as ColorTheme, name: 'Purple', color: 'oklch(0.65 0.15 300)' },
+  { value: 'orange' as ColorTheme, name: 'Orange', color: 'oklch(0.65 0.15 40)' },
+  { value: 'red' as ColorTheme, name: 'Red', color: 'oklch(0.65 0.15 20)' },
+]
 
 interface SidebarProps {
   user: UserInfo | null
@@ -39,6 +50,7 @@ export const Sidebar = ({
   onChannelDelete,
   onSidebarToggle
 }: SidebarProps) => {
+  const { settings, updateTheme, updateColorTheme } = useSettings()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -81,6 +93,14 @@ export const Sidebar = ({
 
   const handleDeleteChannel = (channelId: string) => {
     onChannelDelete(channelId)
+  }
+
+  const handleThemeToggle = (checked: boolean) => {
+    updateTheme(checked ? 'dark' : 'light')
+  }
+
+  const handleColorThemeChange = (value: string) => {
+    updateColorTheme(value as ColorTheme)
   }
 
   const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
@@ -246,6 +266,65 @@ export const Sidebar = ({
                 ))}
               </div>
             </ScrollArea>
+          </div>
+        </div>
+
+        {/* Theme Controls Section */}
+        <div className="p-4 border-t border-border flex-shrink-0">
+          <div className="space-y-4">
+            {/* Dark Mode Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {settings.theme === 'dark' ? (
+                  <Moon className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Sun className="h-4 w-4 text-muted-foreground" />
+                )}
+                <Label className="text-sm">Dark Mode</Label>
+              </div>
+              <Switch
+                checked={settings.theme === 'dark'}
+                onCheckedChange={handleThemeToggle}
+              />
+            </div>
+
+            {/* Color Theme Picker */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-muted-foreground" />
+                <Label className="text-sm">Theme</Label>
+              </div>
+              
+              <RadioGroup
+                value={settings.colorTheme}
+                onValueChange={handleColorThemeChange}
+                className="flex gap-2"
+              >
+                {themeOptions.map((option) => (
+                  <div key={option.value}>
+                    <RadioGroupItem
+                      value={option.value}
+                      id={option.value}
+                      className="sr-only"
+                    />
+                    <Label
+                      htmlFor={option.value}
+                      className="cursor-pointer"
+                      title={option.name}
+                    >
+                      <div
+                        className={`w-6 h-6 rounded-full border-2 transition-all ${
+                          settings.colorTheme === option.value
+                            ? 'border-foreground scale-110'
+                            : 'border-border hover:border-muted-foreground'
+                        }`}
+                        style={{ backgroundColor: option.color }}
+                      />
+                    </Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
           </div>
         </div>
       </div>

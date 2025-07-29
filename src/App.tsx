@@ -10,7 +10,6 @@ import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
 import { QuickSwitcher } from '@/components/QuickSwitcher'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
-import { SettingsModal } from '@/components/SettingsModal'
 
 // View states for the app
 type ViewState = 'channel' | 'search'
@@ -43,7 +42,6 @@ function App() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [showQuickSwitcher, setShowQuickSwitcher] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
-  const [showSettings, setShowSettings] = useState(false)
   
   const messageInputRef = useRef<HTMLDivElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -236,8 +234,6 @@ function App() {
       setShowQuickSwitcher(false)
     } else if (showKeyboardHelp) {
       setShowKeyboardHelp(false)
-    } else if (showSettings) {
-      setShowSettings(false)
     } else if (activeThreadId) {
       setActiveThreadId(null)
     } else if (openEmojiPickers.size > 0) {
@@ -254,10 +250,6 @@ function App() {
     setShowKeyboardHelp(true)
   }
 
-  const handleShowSettings = () => {
-    setShowSettings(true)
-  }
-
   // Setup keyboard shortcuts
   useKeyboardShortcuts({
     onQuickSwitcher: handleQuickSwitcher,
@@ -271,7 +263,6 @@ function App() {
     onSearch: handleFocusSearch,
     onEscape: handleEscape,
     onHelp: handleShowHelp,
-    onSettings: handleShowSettings,
   })
 
   if (!user || !channels) {
@@ -381,12 +372,6 @@ function App() {
       <KeyboardShortcutsHelp
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
-      />
-
-      {/* Settings Modal */}
-      <SettingsModal
-        open={showSettings}
-        onOpenChange={setShowSettings}
       />
     </div>
   );

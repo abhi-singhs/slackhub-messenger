@@ -19,7 +19,6 @@ interface KeyboardShortcutsConfig {
   // General
   onEscape?: () => void
   onHelp?: () => void
-  onSettings?: () => void
 }
 
 export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
@@ -104,12 +103,6 @@ export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
     if ((event.metaKey || event.ctrlKey) && event.key === '/') {
       event.preventDefault()
       config.onHelp?.()
-      return
-    }
-
-    if ((event.metaKey || event.ctrlKey) && event.key === ',') {
-      event.preventDefault()
-      config.onSettings?.()
       return
     }
   }, [config])
