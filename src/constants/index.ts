@@ -33,3 +33,11 @@ export const USER_STATUS_OPTIONS = [
   { value: 'away', label: 'Away', color: 'bg-yellow-500' },
   { value: 'busy', label: 'Busy', color: 'bg-red-500' }
 ] as const
+
+// Notification sound options
+export const NOTIFICATION_SOUNDS = [
+  { value: 'none', label: 'None', description: 'No sound' },
+  { value: 'subtle', label: 'Subtle', description: 'Gentle two-tone chime' },
+  { value: 'classic', label: 'Classic', description: 'Traditional beep' },
+  { value: 'modern', label: 'Modern', description: 'Tech-style sweep' }
+] as const

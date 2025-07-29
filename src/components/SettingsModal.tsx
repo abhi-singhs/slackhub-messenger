@@ -1,20 +1,26 @@
 import { useState } from 'react'
-import { Settings, Moon, Sun, Palette, X } from '@phosphor-icons/react'
+import { Settings, Moon, Sun, Palette, Bell } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+import { NotificationSettings } from '@/components/NotificationSettings'
+import { UserInfo, Channel } from '@/types'
 import { THEME_OPTIONS } from '@/constants'
 
 interface SettingsModalProps {
+  user: UserInfo | null
+  channels: Channel[]
   trigger?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
 
-export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
+export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
   const { settings, updateTheme, updateColorTheme } = useSettings()
   const [internalOpen, setInternalOpen] = useState(false)
   
@@ -41,7 +47,7 @@ export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: exter
       <DialogTrigger asChild>
         {trigger || defaultTrigger}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="h-5 w-5" />
@@ -49,67 +55,86 @@ export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: exter
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-6 py-4">
-          {/* Dark Mode Toggle */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              {settings.theme === 'dark' ? (
-                <Moon className="h-5 w-5 text-muted-foreground" />
-              ) : (
-                <Sun className="h-5 w-5 text-muted-foreground" />
-              )}
-              <div>
-                <Label className="text-sm font-medium">Dark Mode</Label>
-                <p className="text-xs text-muted-foreground">Toggle between light and dark themes</p>
-              </div>
-            </div>
-            <Switch
-              checked={settings.theme === 'dark'}
-              onCheckedChange={handleThemeToggle}
-            />
-          </div>
-
-          {/* Color Theme Picker */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Palette className="h-5 w-5 text-muted-foreground" />
-              <div>
-                <Label className="text-sm font-medium">Color Theme</Label>
-                <p className="text-xs text-muted-foreground">Choose your preferred accent color</p>
-              </div>
-            </div>
-            
-            <RadioGroup
-              value={settings.colorTheme}
-              onValueChange={handleColorThemeChange}
-              className="grid grid-cols-5 gap-3"
-            >
-              {THEME_OPTIONS.map((option) => (
-                <div key={option.value} className="flex flex-col items-center gap-2">
-                  <RadioGroupItem
-                    value={option.value}
-                    id={option.value}
-                    className="sr-only"
-                  />
-                  <Label
-                    htmlFor={option.value}
-                    className="flex flex-col items-center gap-1 cursor-pointer"
-                  >
-                    <div
-                      className={`w-8 h-8 rounded-full border-2 transition-all ${
-                        settings.colorTheme === option.value
-                          ? 'border-foreground scale-110'
-                          : 'border-border hover:border-muted-foreground'
-                      }`}
-                      style={{ backgroundColor: option.color }}
-                    />
-                    <span className="text-xs text-muted-foreground">{option.name}</span>
-                  </Label>
+        <Tabs defaultValue="appearance" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              Appearance
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="flex items-center gap-2">
+              <Bell className="h-4 w-4" />
+              Notifications
+            </TabsTrigger>
+          </TabsList>
+          
+          <ScrollArea className="h-[60vh] mt-6">
+            <TabsContent value="appearance" className="space-y-6 pr-4">
+              {/* Dark Mode Toggle */}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {settings.theme === 'dark' ? (
+                    <Moon className="h-5 w-5 text-muted-foreground" />
+                  ) : (
+                    <Sun className="h-5 w-5 text-muted-foreground" />
+                  )}
+                  <div>
+                    <Label className="text-sm font-medium">Dark Mode</Label>
+                    <p className="text-xs text-muted-foreground">Toggle between light and dark themes</p>
+                  </div>
                 </div>
-              ))}
-            </RadioGroup>
-          </div>
-        </div>
+                <Switch
+                  checked={settings.theme === 'dark'}
+                  onCheckedChange={handleThemeToggle}
+                />
+              </div>
+
+              {/* Color Theme Picker */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Palette className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <Label className="text-sm font-medium">Color Theme</Label>
+                    <p className="text-xs text-muted-foreground">Choose your preferred accent color</p>
+                  </div>
+                </div>
+                
+                <RadioGroup
+                  value={settings.colorTheme}
+                  onValueChange={handleColorThemeChange}
+                  className="grid grid-cols-5 gap-3"
+                >
+                  {THEME_OPTIONS.map((option) => (
+                    <div key={option.value} className="flex flex-col items-center gap-2">
+                      <RadioGroupItem
+                        value={option.value}
+                        id={option.value}
+                        className="sr-only"
+                      />
+                      <Label
+                        htmlFor={option.value}
+                        className="flex flex-col items-center gap-1 cursor-pointer"
+                      >
+                        <div
+                          className={`w-8 h-8 rounded-full border-2 transition-all ${
+                            settings.colorTheme === option.value
+                              ? 'border-foreground scale-110'
+                              : 'border-border hover:border-muted-foreground'
+                          }`}
+                          style={{ backgroundColor: option.color }}
+                        />
+                        <span className="text-xs text-muted-foreground">{option.name}</span>
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="notifications" className="pr-4">
+              <NotificationSettings user={user} channels={channels} />
+            </TabsContent>
+          </ScrollArea>
+        </Tabs>
       </DialogContent>
     </Dialog>
   )

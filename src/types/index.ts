@@ -37,6 +37,41 @@ export interface Channel {
 
 export type UserStatus = 'active' | 'away' | 'busy'
 
+export type NotificationSound = 'subtle' | 'classic' | 'modern' | 'none'
+
+export interface NotificationSettings {
+  // Sound settings
+  soundEnabled: boolean
+  soundVolume: number // 0-100
+  soundType: NotificationSound
+  
+  // Desktop notifications
+  desktopNotifications: boolean
+  
+  // Message notification triggers
+  allMessages: boolean
+  directMessages: boolean
+  mentions: boolean
+  keywords: string[]
+  
+  // Channel-specific settings
+  channelSettings: Record<string, {
+    muted: boolean
+    customSound?: NotificationSound
+  }>
+  
+  // Do not disturb
+  doNotDisturb: boolean
+  doNotDisturbUntil?: number // timestamp
+  
+  // Quiet hours
+  quietHours: {
+    enabled: boolean
+    startTime: string // "22:00"
+    endTime: string // "08:00"
+  }
+}
+
 export interface UserInfo {
   id: string
   login: string

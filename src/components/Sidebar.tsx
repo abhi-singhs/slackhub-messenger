@@ -8,22 +8,12 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Switch } from '@/components/ui/switch'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard } from '@phosphor-icons/react'
 import { Channel, UserInfo, UserStatus } from '@/types'
 import { getChannelUnreadCount } from '@/lib/utils'
-import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
 import { StatusIndicator } from '@/components/StatusIndicator'
 import { StatusSelector } from '@/components/StatusSelector'
-
-const themeOptions = [
-  { value: 'blue' as ColorTheme, name: 'Blue', color: 'oklch(0.65 0.15 240)' },
-  { value: 'green' as ColorTheme, name: 'Green', color: 'oklch(0.65 0.15 140)' },
-  { value: 'purple' as ColorTheme, name: 'Purple', color: 'oklch(0.65 0.15 300)' },
-  { value: 'orange' as ColorTheme, name: 'Orange', color: 'oklch(0.65 0.15 40)' },
-  { value: 'red' as ColorTheme, name: 'Red', color: 'oklch(0.65 0.15 20)' },
-]
+import { SettingsModal } from '@/components/SettingsModal'
 
 interface SidebarProps {
   user: UserInfo | null
@@ -58,7 +48,6 @@ export const Sidebar = ({
   onStatusChange,
   onShowKeyboardShortcuts
 }: SidebarProps) => {
-  const { settings, updateTheme, updateColorTheme } = useSettings()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -66,7 +55,7 @@ export const Sidebar = ({
   const [editChannelDescription, setEditChannelDescription] = useState('')
   const [hoveredChannel, setHoveredChannel] = useState<string | null>(null)
   const [openMenuChannel, setOpenMenuChannel] = useState<string | null>(null)
-  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false)
+  const [settingsModalOpen, setSettingsModalOpen] = useState(false)
 
   const handleCreateChannel = () => {
     if (!newChannelName.trim()) return
@@ -102,14 +91,6 @@ export const Sidebar = ({
 
   const handleDeleteChannel = (channelId: string) => {
     onChannelDelete(channelId)
-  }
-
-  const handleThemeToggle = (checked: boolean) => {
-    updateTheme(checked ? 'dark' : 'light')
-  }
-
-  const handleColorThemeChange = (value: string) => {
-    updateColorTheme(value as ColorTheme)
   }
 
   const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
@@ -288,76 +269,34 @@ export const Sidebar = ({
 
         {/* Settings Section */}
         <div className="p-4 border-t border-border flex-shrink-0">
-          <DropdownMenu open={settingsDropdownOpen} onOpenChange={setSettingsDropdownOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary"
-              >
-                <Gear className="h-4 w-4" />
-                Settings
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 p-4 space-y-4">
-              {/* Keyboard Shortcuts */}
-              <div className="pb-2 border-b border-border">
-                <button
-                  onClick={() => {
-                    onShowKeyboardShortcuts?.()
-                    setSettingsDropdownOpen(false)
-                  }}
-                  className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+          <div className="flex gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex-1 justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary"
+              onClick={() => onShowKeyboardShortcuts?.()}
+            >
+              <Keyboard className="h-4 w-4" />
+              Shortcuts
+            </Button>
+            
+            <SettingsModal
+              user={user}
+              channels={channels}
+              open={settingsModalOpen}
+              onOpenChange={setSettingsModalOpen}
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex-1 justify-start gap-2 text-muted-foreground hover:text-foreground hover:bg-secondary"
                 >
-                  <Keyboard className="h-4 w-4" />
-                  Keyboard Shortcuts
-                </button>
-              </div>
-
-              {/* Dark Mode Toggle */}
-              <div className="flex items-center justify-between">
-                <Label className="text-sm">Dark Mode</Label>
-                <Switch
-                  checked={settings.theme === 'dark'}
-                  onCheckedChange={handleThemeToggle}
-                />
-              </div>
-
-              {/* Color Theme Picker */}
-              <div className="space-y-2">
-                <Label className="text-sm">Color Theme</Label>
-                <RadioGroup
-                  value={settings.colorTheme}
-                  onValueChange={handleColorThemeChange}
-                  className="flex flex-wrap gap-2"
-                >
-                  {themeOptions.map((option) => (
-                    <div key={option.value}>
-                      <RadioGroupItem
-                        value={option.value}
-                        id={option.value}
-                        className="sr-only"
-                      />
-                      <Label
-                        htmlFor={option.value}
-                        className="cursor-pointer"
-                        title={option.name}
-                      >
-                        <div
-                          className={`w-6 h-6 rounded-full border-2 transition-all ${
-                            settings.colorTheme === option.value
-                              ? 'border-foreground scale-110'
-                              : 'border-border hover:border-muted-foreground'
-                          }`}
-                          style={{ backgroundColor: option.color }}
-                        />
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  <Gear className="h-4 w-4" />
+                  Settings
+                </Button>
+              }
+            />
+          </div>
         </div>
       </div>
 

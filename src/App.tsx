@@ -4,6 +4,7 @@ import { useSlackData } from '@/hooks/useSlackData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSettings } from '@/hooks/useSettings'
 import { useUserStatus } from '@/hooks/useUserStatus'
+import { useNotifications } from '@/hooks/useNotifications'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
@@ -22,6 +23,9 @@ function App() {
   
   // Centralized status management
   const { status: userStatus, setStatus: setUserStatus } = useUserStatus()
+  
+  // Initialize notifications system
+  useNotifications(user, channels || [], messages || [])
   
   const {
     user,

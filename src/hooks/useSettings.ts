@@ -1,5 +1,6 @@
 import { useKV } from '@github/spark/hooks'
 import { useEffect } from 'react'
+import { NotificationSettings } from '@/types'
 
 export type Theme = 'light' | 'dark'
 export type ColorTheme = 'blue' | 'green' | 'purple' | 'orange' | 'red'
@@ -7,11 +8,31 @@ export type ColorTheme = 'blue' | 'green' | 'purple' | 'orange' | 'red'
 export interface Settings {
   theme: Theme
   colorTheme: ColorTheme
+  notifications: NotificationSettings
+}
+
+const defaultNotificationSettings: NotificationSettings = {
+  soundEnabled: true,
+  soundVolume: 50,
+  soundType: 'subtle',
+  desktopNotifications: true,
+  allMessages: false,
+  directMessages: true,
+  mentions: true,
+  keywords: [],
+  channelSettings: {},
+  doNotDisturb: false,
+  quietHours: {
+    enabled: false,
+    startTime: '22:00',
+    endTime: '08:00'
+  }
 }
 
 const defaultSettings: Settings = {
   theme: 'light',
-  colorTheme: 'orange'
+  colorTheme: 'orange',
+  notifications: defaultNotificationSettings
 }
 
 export const useSettings = () => {
@@ -38,9 +59,31 @@ export const useSettings = () => {
     setSettings(current => ({ ...current, colorTheme }))
   }
 
+  const updateNotifications = (notifications: Partial<NotificationSettings>) => {
+    setSettings(current => ({ 
+      ...current, 
+      notifications: { ...current.notifications, ...notifications }
+    }))
+  }
+
+  const updateChannelNotifications = (channelId: string, channelSettings: { muted: boolean; customSound?: NotificationSettings['soundType'] }) => {
+    setSettings(current => ({
+      ...current,
+      notifications: {
+        ...current.notifications,
+        channelSettings: {
+          ...current.notifications.channelSettings,
+          [channelId]: channelSettings
+        }
+      }
+    }))
+  }
+
   return {
     settings,
     updateTheme,
-    updateColorTheme
+    updateColorTheme,
+    updateNotifications,
+    updateChannelNotifications
   }
 }

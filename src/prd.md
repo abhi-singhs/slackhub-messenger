@@ -53,6 +53,29 @@
 - **Success criteria**: Search works across message content and usernames, provides dedicated results page with context, allows navigation to original messages, highlights matches, supports ⌘K shortcut, shows surrounding message context
 
 ### File Upload & Sharing
+- **What it does**: Upload and share images, videos, documents, and other files with rich preview system and media controls
+- **Why it matters**: Modern team communication requires visual and document sharing beyond text messages
+- **Success criteria**: Files upload reliably, previews display correctly, media controls work smoothly, mobile-friendly interaction
+
+### User Status Management
+- **What it does**: Set and display user availability status (active, away, busy) with persistent visual indicators
+- **Why it matters**: Teams need awareness of colleague availability for effective communication timing
+- **Success criteria**: Status persists across sessions, updates in real-time, clear visual indicators throughout interface
+
+### Notification Settings & Sound Alerts
+- **What it does**: Comprehensive notification system with sound alerts, desktop notifications, and granular settings for different types of messages and channels
+- **Why it matters**: Users need to stay informed of important messages while controlling notification noise and respecting focus time
+- **Success criteria**: 
+  - Sound notifications work reliably with volume control and different sound types (subtle, classic, modern)
+  - Desktop notifications appear with proper permissions and content preview
+  - Users can customize notifications for all messages, direct messages, mentions, and keywords
+  - Channel-specific notification settings (mute/unmute individual channels)
+  - Do not disturb mode with time-based scheduling
+  - Quiet hours functionality to automatically disable notifications during set times
+  - Permission handling for desktop notifications is seamless and user-friendly
+  - Web Audio API-generated sounds work across browsers without requiring external audio files
+
+### File Upload & Sharing
 - **What it does**: Enables uploading and sharing of photos, videos, documents, audio files, and archives with drag-and-drop support, preview generation, and inline display
 - **Why it matters**: Teams need to share visual content, documents, and media files seamlessly within conversations to collaborate effectively
 - **Success criteria**: Supports images (JPEG, PNG, GIF, WebP, SVG), videos (MP4, WebM, OGG), documents (PDF, Word, TXT), audio files, and archives up to 10MB per file, provides drag-and-drop upload, generates thumbnails for images, displays files inline with download options, shows file metadata, and works on both desktop and mobile
