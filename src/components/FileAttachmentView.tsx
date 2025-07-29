@@ -117,7 +117,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   if (isAudioFile(attachment.type)) {
     return (
       <div className={`inline-block ${className}`}>
-        <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 max-w-sm">
+        <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 max-w-md">
           <div className="text-2xl">🎵</div>
           <div className="flex-1 min-w-0">
             <div className="font-medium text-sm truncate">{attachment.name}</div>
