@@ -6,7 +6,7 @@ interface EmojiPickerProps {
 }
 
 export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => (
-  <div className="grid grid-cols-8 gap-1 p-2 w-64">
+  <div className="grid grid-cols-8 gap-1 p-2 w-64 emoji-picker" data-emoji-picker>
     {COMMON_EMOJIS.map((emoji) => (
       <Button
         key={emoji}
@@ -14,6 +14,7 @@ export const EmojiPicker = ({ onEmojiSelect }: EmojiPickerProps) => (
         size="sm"
         className="h-8 w-8 p-0 hover:bg-secondary"
         onClick={() => onEmojiSelect(emoji)}
+        data-emoji
       >
         <span className="text-lg">{emoji}</span>
       </Button>

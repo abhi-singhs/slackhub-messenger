@@ -128,11 +128,12 @@ export const MessageItem = ({
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                    data-emoji-picker
                   >
                     <Smiley className="h-4 w-4" />
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 border-accent/20 mb-2 md:mb-0" side="top" align="end">
+                <PopoverContent className="w-auto p-0 border-accent/20 mb-2 md:mb-0" side="top" align="end" data-emoji-picker>
                   <div className="relative">
                     {/* Connecting line to message */}
                     <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>

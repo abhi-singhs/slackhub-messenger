@@ -256,11 +256,12 @@ export const RichTextEditor = ({
                 size="sm"
                 className="h-8 w-8 p-0 hover:bg-secondary"
                 title="Add Emoji"
+                data-emoji-picker
               >
                 <Smiley className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" side="top" align="start">
+            <PopoverContent className="w-auto p-0" side="top" align="start" data-emoji-picker>
               <EmojiPicker onEmojiSelect={insertEmoji} />
             </PopoverContent>
           </Popover>

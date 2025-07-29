@@ -36,9 +36,24 @@ export function ThreadView({
   // Handle clicking outside the modal to close it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-        onClose()
+      const target = event.target as Node
+      
+      // Don't close if clicking inside the modal
+      if (modalRef.current && modalRef.current.contains(target)) {
+        return
       }
+      
+      // Don't close if clicking on an emoji picker or its buttons
+      const clickedElement = target as Element
+      if (clickedElement && (
+        clickedElement.closest('.emoji-picker') ||
+        clickedElement.closest('[data-emoji-picker]') ||
+        clickedElement.closest('button[data-emoji]')
+      )) {
+        return
+      }
+      
+      onClose()
     }
 
     // Add event listener when modal is mounted
@@ -114,6 +129,7 @@ export function ThreadView({
                       size="sm"
                       className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-all duration-200"
                       onClick={() => onEmojiPickerToggle(parentMessage.id, !openEmojiPickers.has(parentMessage.id))}
+                      data-emoji-picker
                     >
                       <Smiley className="h-4 w-4" />
                     </Button>
