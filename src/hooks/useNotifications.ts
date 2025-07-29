@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback } from 'react'
-import { useSettings } from './useSettings'
+import { useSettings, Settings } from './useSettings'
 import { Message, UserInfo, Channel, NotificationSound } from '@/types'
 
 // Web Audio API based sound generation for different notification types
@@ -160,22 +160,22 @@ export const useNotifications = (
   messages: Message[]
 ) => {
   const { settings } = useSettings()
-  const { notifications } = settings
+  const { notifications } = settings || {}
   const lastMessageCountRef = useRef(0)
   const hasPermissionRef = useRef(false)
   
   // Request notification permission on mount
   useEffect(() => {
-    if (notifications.desktopNotifications) {
+    if (notifications?.desktopNotifications) {
       requestNotificationPermission().then(granted => {
         hasPermissionRef.current = granted
       })
     }
-  }, [notifications.desktopNotifications])
+  }, [notifications?.desktopNotifications])
   
   // Monitor new messages and trigger notifications
   useEffect(() => {
-    if (!user || !messages || messages.length === 0) return
+    if (!user || !messages || messages.length === 0 || !notifications) return
     
     const newMessages = messages.slice(lastMessageCountRef.current)
     lastMessageCountRef.current = messages.length
@@ -186,24 +186,26 @@ export const useNotifications = (
     }
     
     newMessages.forEach(message => {
-      if (shouldNotifyForMessage(message, user, notifications, channels)) {
+      if (notifications && shouldNotifyForMessage(message, user, notifications, channels)) {
         handleNotification(message, channels)
       }
     })
   }, [messages, user, notifications, channels])
   
   const handleNotification = useCallback(async (message: Message, channels: Channel[]) => {
+    if (!notifications) return
+    
     const channel = channels.find(c => c.id === message.channelId)
-    const channelSettings = notifications.channelSettings[message.channelId]
+    const channelSettings = notifications?.channelSettings?.[message.channelId]
     
     // Play sound notification
-    if (notifications.soundEnabled) {
+    if (notifications?.soundEnabled) {
       const soundType = channelSettings?.customSound || notifications.soundType
       await playNotificationSound(soundType, notifications.soundVolume)
     }
     
     // Show desktop notification
-    if (notifications.desktopNotifications && hasPermissionRef.current) {
+    if (notifications?.desktopNotifications && hasPermissionRef.current) {
       const channelName = channel?.name || 'Unknown Channel'
       const title = `${message.userName} in #${channelName}`
       const body = message.content.length > 100 

@@ -38,6 +38,9 @@ const defaultSettings: Settings = {
 export const useSettings = () => {
   const [settings, setSettings] = useKV('app-settings', defaultSettings)
 
+  // Ensure settings are properly initialized
+  const safeSettings = settings || defaultSettings
+
   // Apply theme to document
   useEffect(() => {
     const root = document.documentElement
@@ -47,9 +50,9 @@ export const useSettings = () => {
     root.classList.remove('theme-blue', 'theme-green', 'theme-purple', 'theme-orange', 'theme-red')
     
     // Add current theme classes
-    root.classList.add(settings.theme)
-    root.classList.add(`theme-${settings.colorTheme}`)
-  }, [settings])
+    root.classList.add(safeSettings.theme)
+    root.classList.add(`theme-${safeSettings.colorTheme}`)
+  }, [safeSettings])
 
   const updateTheme = (theme: Theme) => {
     setSettings(current => ({ ...current, theme }))
@@ -80,7 +83,7 @@ export const useSettings = () => {
   }
 
   return {
-    settings,
+    settings: safeSettings,
     updateTheme,
     updateColorTheme,
     updateNotifications,
