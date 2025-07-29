@@ -38,8 +38,15 @@ const defaultSettings: Settings = {
 export const useSettings = () => {
   const [settings, setSettings] = useKV('app-settings', defaultSettings)
 
-  // Ensure settings are properly initialized
-  const safeSettings = settings || defaultSettings
+  // Ensure settings are properly initialized with all required properties
+  const safeSettings: Settings = {
+    ...defaultSettings,
+    ...settings,
+    notifications: {
+      ...defaultNotificationSettings,
+      ...settings?.notifications
+    }
+  }
 
   // Apply theme to document
   useEffect(() => {
@@ -65,7 +72,11 @@ export const useSettings = () => {
   const updateNotifications = (notifications: Partial<NotificationSettings>) => {
     setSettings(current => ({ 
       ...current, 
-      notifications: { ...current.notifications, ...notifications }
+      notifications: { 
+        ...defaultNotificationSettings,
+        ...current.notifications, 
+        ...notifications 
+      }
     }))
   }
 
@@ -73,9 +84,10 @@ export const useSettings = () => {
     setSettings(current => ({
       ...current,
       notifications: {
+        ...defaultNotificationSettings,
         ...current.notifications,
         channelSettings: {
-          ...current.notifications.channelSettings,
+          ...current.notifications?.channelSettings,
           [channelId]: channelSettings
         }
       }

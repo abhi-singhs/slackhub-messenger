@@ -117,6 +117,9 @@ const shouldNotifyForMessage = (
   // Don't notify for own messages
   if (message.userId === user.id) return false
   
+  // Ensure notifications object is valid
+  if (!notifications) return false
+  
   // Check do not disturb
   if (notifications.doNotDisturb) return false
   
@@ -126,10 +129,10 @@ const shouldNotifyForMessage = (
   }
   
   // Check quiet hours
-  if (isQuietHours(notifications.quietHours)) return false
+  if (notifications.quietHours && isQuietHours(notifications.quietHours)) return false
   
   // Check channel-specific settings
-  const channelSettings = notifications.channelSettings[message.channelId]
+  const channelSettings = notifications.channelSettings?.[message.channelId]
   if (channelSettings?.muted) return false
   
   // Check if it's a direct message (in a DM channel)
@@ -143,7 +146,7 @@ const shouldNotifyForMessage = (
   if (isMentioned && notifications.mentions) return true
   
   // Check for keywords
-  const hasKeyword = notifications.keywords.some(keyword => 
+  const hasKeyword = notifications.keywords?.some(keyword => 
     keyword.length > 0 && message.content.toLowerCase().includes(keyword.toLowerCase())
   )
   if (hasKeyword) return true
@@ -196,16 +199,16 @@ export const useNotifications = (
     if (!notifications) return
     
     const channel = channels.find(c => c.id === message.channelId)
-    const channelSettings = notifications?.channelSettings?.[message.channelId]
+    const channelSettings = notifications.channelSettings?.[message.channelId]
     
     // Play sound notification
-    if (notifications?.soundEnabled) {
+    if (notifications.soundEnabled) {
       const soundType = channelSettings?.customSound || notifications.soundType
       await playNotificationSound(soundType, notifications.soundVolume)
     }
     
     // Show desktop notification
-    if (notifications?.desktopNotifications && hasPermissionRef.current) {
+    if (notifications.desktopNotifications && hasPermissionRef.current) {
       const channelName = channel?.name || 'Unknown Channel'
       const title = `${message.userName} in #${channelName}`
       const body = message.content.length > 100 
