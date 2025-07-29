@@ -123,9 +123,18 @@
   --destructive: oklch(0.6 0.245 27.325);
   --destructive-foreground: oklch(0.9 0.01 240);
 
-  --border: oklch(0.2 0.02 240);
+  --border: oklch(0.3 0.03 240);
   --input: oklch(0.2 0.02 240);
   --ring: oklch(0.7 0.15 240);
+}
+
+/* Dark mode popup border enhancements */
+.dark [role="dialog"],
+.dark .popover,
+.dark .dropdown-menu,
+.dark .sheet,
+.dark .alert-dialog {
+  @apply border-2;
 }
 
 /* Color theme variations */
