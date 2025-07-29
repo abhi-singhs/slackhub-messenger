@@ -52,6 +52,17 @@ export interface CallParticipant {
   hasVideo?: boolean
 }
 
+export interface CallRecording {
+  id: string
+  callId: string
+  audioBlob: Blob
+  duration: number // in seconds
+  size: number // in bytes
+  timestamp: number
+  participants: string[] // user names
+  callType: CallType
+}
+
 export interface Call {
   id: string
   type: CallType
@@ -61,6 +72,8 @@ export interface Call {
   startTime: number
   endTime?: number
   channelId?: string // For channel calls
+  recording?: CallRecording // Recording data if call was recorded
+  isRecording?: boolean // Whether call is currently being recorded
 }
 
 export interface NotificationSettings {

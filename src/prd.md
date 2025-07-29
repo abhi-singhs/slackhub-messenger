@@ -33,9 +33,14 @@
 - **Success criteria**: Users can start threads from any message, view thread conversations in dedicated modal, reply to threads, see reply counts on parent messages, and navigate between channel and thread views seamlessly
 
 ### Voice and Video Calling
-- **What it does**: Enables users to initiate and participate in voice and video calls with other team members, including call history and contact management
-- **Why it matters**: Provides richer communication options beyond text messaging, enabling face-to-face collaboration and urgent discussions
-- **Success criteria**: Users can start voice/video calls from contact list or call history, answer/decline incoming calls, use in-call controls (mute, video toggle), see call duration and status, maintain call history, and handle multiple participants
+- **What it does**: Enables users to initiate and participate in voice and video calls with other team members, including call history, contact management, and call recording functionality
+- **Why it matters**: Provides richer communication options beyond text messaging, enabling face-to-face collaboration, urgent discussions, and the ability to record important conversations for future reference
+- **Success criteria**: Users can start voice/video calls from contact list or call history, answer/decline incoming calls, use in-call controls (mute, video toggle, recording), see call duration and status, maintain call history, record and playback calls, download recordings, and handle multiple participants
+
+### Call Recording & Playback
+- **What it does**: Records audio from voice and video calls with full playback controls, downloadable files, and organized storage
+- **Why it matters**: Enables teams to capture important discussions, meeting notes, and decisions for reference, compliance, and team members who couldn't attend
+- **Success criteria**: Users can start/stop recording during active calls with visual indicators, play back recordings with standard audio controls (play/pause, seek, volume), download recordings as audio files, view recording metadata (duration, size, participants), and manage recording storage with delete functionality
 
 ### Real-time Messaging
 - **What it does**: Send and receive messages within channels with user attribution and emoji reactions

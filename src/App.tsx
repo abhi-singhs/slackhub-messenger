@@ -53,16 +53,21 @@ function App() {
     incomingCall,
     isCallUIOpen,
     callHistory,
+    callRecordings,
     localStream,
     remoteStream,
     isMuted,
     hasVideo,
+    isRecording,
     startCall,
     answerCall,
     declineCall,
     endCall,
     toggleMute,
     toggleVideo,
+    startRecording,
+    stopRecording,
+    deleteRecording,
     setIsCallUIOpen
   } = useCalls(user)
 
@@ -381,9 +386,11 @@ function App() {
           searchQuery={searchQuery}
           user={user}
           callHistory={callHistory}
+          callRecordings={callRecordings}
           onSidebarToggle={() => setSidebarOpen(true)}
           onSearchChange={handleSearchChange}
           onStartCall={startCall}
+          onDeleteRecording={deleteRecording}
           searchInputRef={searchInputRef}
         />
 
@@ -460,11 +467,14 @@ function App() {
         remoteStream={remoteStream}
         isMuted={isMuted}
         hasVideo={hasVideo}
+        isRecording={isRecording}
         isOpen={isCallUIOpen}
         onClose={() => setIsCallUIOpen(false)}
         onEndCall={endCall}
         onToggleMute={toggleMute}
         onToggleVideo={toggleVideo}
+        onStartRecording={startRecording}
+        onStopRecording={stopRecording}
       />
 
       {/* Incoming Call Dialog */}

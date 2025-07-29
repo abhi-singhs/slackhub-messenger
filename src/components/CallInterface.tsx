@@ -11,7 +11,9 @@ import {
   Mic, 
   MicOff,
   Minimize2,
-  Maximize2
+  Maximize2,
+  Record,
+  Stop
 } from '@phosphor-icons/react'
 import { Call, UserInfo } from '@/types'
 import { cn } from '@/lib/utils'
@@ -23,11 +25,14 @@ interface CallInterfaceProps {
   remoteStream: MediaStream | null
   isMuted: boolean
   hasVideo: boolean
+  isRecording: boolean
   isOpen: boolean
   onClose: () => void
   onEndCall: () => void
   onToggleMute: () => void
   onToggleVideo: () => void
+  onStartRecording: () => void
+  onStopRecording: () => void
 }
 
 export function CallInterface({
@@ -37,11 +42,14 @@ export function CallInterface({
   remoteStream,
   isMuted,
   hasVideo,
+  isRecording,
   isOpen,
   onClose,
   onEndCall,
   onToggleMute,
-  onToggleVideo
+  onToggleVideo,
+  onStartRecording,
+  onStopRecording
 }: CallInterfaceProps) {
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
@@ -175,6 +183,12 @@ export function CallInterface({
                           <span className="text-sm">Muted</span>
                         </div>
                       )}
+                      {isRecording && (
+                        <div className="flex items-center gap-2 text-red-500">
+                          <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+                          <span className="text-sm">Recording</span>
+                        </div>
+                      )}
                     </>
                   )}
                 </div>
@@ -207,6 +221,21 @@ export function CallInterface({
                   onClick={onToggleVideo}
                 >
                   {hasVideo ? <Video size={24} /> : <VideoOff size={24} />}
+                </Button>
+              )}
+
+              {/* Recording Toggle - Only show when call is connected */}
+              {currentCall.status === 'connected' && (
+                <Button
+                  variant={isRecording ? "destructive" : "secondary"}
+                  size="lg"
+                  className={cn(
+                    "w-14 h-14 rounded-full",
+                    isRecording ? "bg-red-500 hover:bg-red-600 animate-pulse" : ""
+                  )}
+                  onClick={isRecording ? onStopRecording : onStartRecording}
+                >
+                  {isRecording ? <Stop size={24} /> : <Record size={24} />}
                 </Button>
               )}
 
