@@ -1,7 +1,7 @@
 import { FileAttachment } from '@/types'
-import { formatFileSize, getFileIcon, isImageFile, isVideoFile, isAudioFile } from '@/lib/fileUtils'
+import { formatFileSize, getFileIcon, isImageFile, isVideoFile, isAudioFile, isPDFFile } from '@/lib/fileUtils'
 import { Button } from '@/components/ui/button'
-import { Download, ExternalLink, Play } from '@phosphor-icons/react'
+import { Download, ArrowSquareOut, Play } from '@phosphor-icons/react'
 import { useState } from 'react'
 
 interface FileAttachmentViewProps {
@@ -11,6 +11,7 @@ interface FileAttachmentViewProps {
 
 export function FileAttachmentView({ attachment, className = '' }: FileAttachmentViewProps) {
   const [showFullImage, setShowFullImage] = useState(false)
+  const [showPDFPreview, setShowPDFPreview] = useState(false)
 
   const handleDownload = () => {
     const link = document.createElement('a')
@@ -24,6 +25,8 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
   const handleView = () => {
     if (isImageFile(attachment.type)) {
       setShowFullImage(true)
+    } else if (isPDFFile(attachment.type)) {
+      setShowPDFPreview(true)
     } else {
       // Open in new tab for other file types
       window.open(attachment.url, '_blank')
@@ -49,7 +52,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
                 onClick={handleView}
                 className="bg-background/90 hover:bg-background"
               >
-                <ExternalLink size={14} />
+                <ArrowSquareOut size={14} />
               </Button>
               <Button
                 size="sm"
@@ -136,6 +139,89 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
     )
   }
 
+  // PDF attachment
+  if (isPDFFile(attachment.type)) {
+    return (
+      <div className={`inline-block ${className}`}>
+        <div className="flex items-center gap-3 p-3 border border-border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors max-w-lg">
+          <div className="text-2xl">📄</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-medium text-sm truncate">{attachment.name}</div>
+            <div className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</div>
+          </div>
+          <div className="flex gap-1">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleView}
+              className="h-8 w-8 p-0"
+              title="Preview PDF"
+            >
+              <ArrowSquareOut size={14} />
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={handleDownload}
+              className="h-8 w-8 p-0"
+              title="Download PDF"
+            >
+              <Download size={14} />
+            </Button>
+          </div>
+        </div>
+
+        {/* PDF Preview Modal */}
+        {showPDFPreview && (
+          <div 
+            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
+                setShowPDFPreview(false)
+              }
+            }}
+          >
+            <div className="relative bg-background rounded-lg max-w-4xl max-h-[90vh] w-full flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-border">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-sm truncate">{attachment.name}</h3>
+                  <p className="text-xs text-muted-foreground">{formatFileSize(attachment.size)}</p>
+                </div>
+                <div className="flex gap-2 ml-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleDownload}
+                  >
+                    <Download size={14} className="mr-1" />
+                    Download
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setShowPDFPreview(false)}
+                  >
+                    ✕
+                  </Button>
+                </div>
+              </div>
+              
+              {/* PDF Viewer */}
+              <div className="flex-1 min-h-0 p-4">
+                <iframe
+                  src={`${attachment.url}#toolbar=1&navpanes=1&scrollbar=1`}
+                  className="w-full h-full border border-border rounded"
+                  title={`PDF Preview: ${attachment.name}`}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   // Generic file attachment
   return (
     <div className={`inline-block ${className}`}>
@@ -152,7 +238,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
             onClick={handleView}
             className="h-8 w-8 p-0"
           >
-            <ExternalLink size={14} />
+            <ArrowSquareOut size={14} />
           </Button>
           <Button
             size="sm"

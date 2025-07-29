@@ -39,6 +39,10 @@ export function isAudioFile(type: string): boolean {
   return SUPPORTED_FILE_TYPES.audio.includes(type)
 }
 
+export function isPDFFile(type: string): boolean {
+  return type === 'application/pdf'
+}
+
 export function getAllowedFileTypes(): string {
   return Object.values(SUPPORTED_FILE_TYPES).flat().join(',')
 }
