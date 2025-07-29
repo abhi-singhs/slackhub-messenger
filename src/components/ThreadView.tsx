@@ -73,7 +73,7 @@ export function ThreadView({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Parent Message */}
           <div className="pb-4 border-b">
-            <div className="flex items-start gap-3 group">>
+            <div className="flex items-start gap-3 group">
               <img
                 src={parentMessage.userAvatar || '/default-avatar.png'}
                 alt=""
@@ -114,17 +114,17 @@ export function ThreadView({
                     className="prose-sm" 
                     dangerouslySetInnerHTML={{ __html: parentMessage.content }}
                   />
-                  {parentMessage.reactions && Object.keys(parentMessage.reactions).length > 0 && (
+                  {parentMessage.reactions && parentMessage.reactions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
-                      {Object.entries(parentMessage.reactions).map(([emoji, users]) => (
+                      {parentMessage.reactions.map((reaction) => (
                         <button
-                          key={emoji}
-                          onClick={() => onReactionAdd(parentMessage.id, emoji)}
+                          key={reaction.emoji}
+                          onClick={() => onReactionAdd(parentMessage.id, reaction.emoji)}
                           className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-secondary hover:bg-secondary/80 transition-colors"
-                          title={`${users.map(u => u.name).join(', ')} reacted with ${emoji}`}
+                          title={`${reaction.users.length} user${reaction.users.length === 1 ? '' : 's'} reacted with ${reaction.emoji}`}
                         >
-                          <span>{emoji}</span>
-                          <span className="text-xs text-muted-foreground">{users.length}</span>
+                          <span>{reaction.emoji}</span>
+                          <span className="text-xs text-muted-foreground">{reaction.count}</span>
                         </button>
                       ))}
                     </div>
@@ -160,8 +160,8 @@ export function ThreadView({
                     <MessageItem
                       message={message}
                       user={user}
-                      openEmojiPickers={openEmojiPickers}
-                      onEmojiPickerToggle={onEmojiPickerToggle}
+                      isEmojiPickerOpen={openEmojiPickers.has(message.id)}
+                      onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                       onReactionAdd={onReactionAdd}
                       showReactionsOnly={true}
                     />
