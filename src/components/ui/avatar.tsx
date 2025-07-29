@@ -7,13 +7,15 @@ import { cn } from "@/lib/utils"
 
 function Avatar({
   className,
+  showOnlineIndicator = false,
   ...props
-}: ComponentProps<typeof AvatarPrimitive.Root>) {
+}: ComponentProps<typeof AvatarPrimitive.Root> & { showOnlineIndicator?: boolean }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-8 shrink-0 overflow-hidden rounded-full",
+        "relative flex size-8 shrink-0 rounded-full",
+        showOnlineIndicator ? "overflow-visible" : "overflow-hidden",
         className
       )}
       {...props}
@@ -30,7 +32,7 @@ function AvatarImage({
     <div className="relative">
       <AvatarPrimitive.Image
         data-slot="avatar-image"
-        className={cn("aspect-square size-full mr-3", className)}
+        className={cn("aspect-square size-full", className)}
         {...props}
       />
       {showOnlineIndicator && (

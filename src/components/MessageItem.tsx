@@ -89,7 +89,7 @@ export const MessageItem = ({
 
   return (
     <div className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
-      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0">
+      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0" showOnlineIndicator={message.userId === user?.id ? userStatus === 'active' : true}>
         <AvatarImage 
           src={message.userAvatar} 
           alt={message.userName} 

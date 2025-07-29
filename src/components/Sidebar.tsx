@@ -160,7 +160,7 @@ export const Sidebar = ({
             </Button>
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <Avatar className="w-6 h-6">
+            <Avatar className="w-6 h-6" showOnlineIndicator={status === 'active'}>
               <AvatarImage 
                 src={user?.avatarUrl || ''} 
                 alt={user?.login || 'User'} 
