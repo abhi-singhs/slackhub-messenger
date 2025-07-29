@@ -35,13 +35,13 @@ export const MessagesList = ({
   const currentChannelMessages = (messages || []).filter(msg => msg.channelId === currentChannel)
   
   // Apply search filtering if search query exists
-  const filteredMessages = searchQuery.trim() 
+  const filteredMessages = searchQuery && searchQuery.trim() 
     ? searchMessages(currentChannelMessages, searchQuery) 
     : currentChannelMessages
 
   useEffect(() => {
     // Only auto-scroll if there's no active search
-    if (!searchQuery.trim()) {
+    if (!searchQuery || !searchQuery.trim()) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, currentChannel, searchQuery])
@@ -53,7 +53,7 @@ export const MessagesList = ({
       <ScrollArea className="h-full p-2 sm:p-4">
         <div className="space-y-4">
           {/* Show search results info */}
-          {searchQuery.trim() && (
+          {searchQuery && searchQuery.trim() && (
             <div className="flex items-center gap-2 px-3 py-2 bg-accent/10 rounded-lg border border-accent/20">
               <MagnifyingGlass className="h-4 w-4 text-accent" />
               <span className="text-sm text-foreground">
@@ -65,7 +65,7 @@ export const MessagesList = ({
             </div>
           )}
           
-          {filteredMessages.length === 0 && !searchQuery.trim() ? (
+          {filteredMessages.length === 0 && (!searchQuery || !searchQuery.trim()) ? (
             <div className="text-center py-12">
               <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">

@@ -34,7 +34,7 @@ export const SearchResults = ({
 }: SearchResultsProps) => {
   // Search results with context
   const searchResults = useMemo(() => {
-    if (!searchQuery.trim() || !messages || !channels) return []
+    if (!searchQuery || !searchQuery.trim() || !messages || !channels) return []
 
     const query = searchQuery.toLowerCase()
     const results: SearchResult[] = []
@@ -72,7 +72,7 @@ export const SearchResults = ({
 
   // Highlight search terms in text
   const highlightText = (text: string, query: string) => {
-    if (!query.trim()) return text
+    if (!query || !query.trim()) return text
     
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi')
     return text.replace(regex, '<mark>$1</mark>')

@@ -8,7 +8,7 @@ export function cn(...inputs: ClassValue[]) {
 
 // Search utility functions
 export function searchMessages(messages: Message[], query: string): Message[] {
-  if (!messages || !Array.isArray(messages) || !query.trim()) return messages || []
+  if (!messages || !Array.isArray(messages) || !query || !query.trim()) return messages || []
   
   const searchTerm = query.toLowerCase().trim()
   
@@ -29,7 +29,7 @@ export function searchMessages(messages: Message[], query: string): Message[] {
 }
 
 export function highlightSearchTerm(text: string, searchTerm: string): string {
-  if (!searchTerm.trim()) return text
+  if (!searchTerm || !searchTerm.trim()) return text
   
   const regex = new RegExp(`(${escapeRegExp(searchTerm)})`, 'gi')
   return text.replace(regex, '<mark class="bg-accent/20 text-accent-foreground px-0.5 rounded font-medium">$1</mark>')

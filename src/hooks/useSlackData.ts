@@ -61,7 +61,7 @@ export const useSlackData = () => {
 
   const sendMessage = useCallback((content: string, channelId?: string) => {
     try {
-      if (!content.trim() || !user) return
+      if (!content || !content.trim() || !user) return
 
       // Use provided channelId or fall back to currentChannel
       const targetChannelId = channelId || currentChannel

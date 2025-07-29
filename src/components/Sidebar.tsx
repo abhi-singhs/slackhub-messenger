@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -40,7 +39,6 @@ export const Sidebar = ({
   onChannelDelete,
   onSidebarToggle
 }: SidebarProps) => {
-  const { channelId } = useParams<{ channelId: string }>()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -189,7 +187,7 @@ export const Sidebar = ({
                     <div
                       onClick={(e) => handleChannelClick(channel.id, e)}
                       className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
-                        channelId === channel.id
+                        currentChannel === channel.id
                           ? 'bg-accent text-accent-foreground'
                           : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
                       }`}

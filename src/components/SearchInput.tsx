@@ -29,7 +29,7 @@ export const SearchInput = ({ searchQuery, onSearchChange, placeholder = "Search
   }, [])
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && searchQuery.trim()) {
+    if (e.key === 'Enter' && searchQuery && searchQuery.trim()) {
       // Trigger search results when Enter is pressed
       if (searchQuery.length >= 2) {
         // The parent component handles showing search results
