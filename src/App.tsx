@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
-import { UserInfo, FileAttachment } from '@/types'
-import { useSlackData } from '@/hooks/useSlackData'
+import { FileAttachment } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
+import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
-import { useSettings } from '@/hooks/useSettings'
-import { useUserStatus } from '@/hooks/useUserStatus'
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
+import { useSupabaseUserStatus } from '@/hooks/useSupabaseUserStatus'
 import { useNotifications } from '@/hooks/useNotifications'
-import { useCalls } from '@/hooks/useCalls'
+import { useSupabaseCalls } from '@/hooks/useSupabaseCalls'
+import { AuthComponent } from '@/components/AuthComponent'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
@@ -21,19 +23,22 @@ import { Toaster } from '@/components/ui/sonner'
 type ViewState = 'channel' | 'search'
 
 function App() {
-  // Initialize settings hook to apply theme on mount
-  useSettings()
+  // Authentication
+  const { user, loading: authLoading } = useAuth()
+  
+  // Initialize settings hook to apply theme on mount  
+  useSupabaseSettings(user)
   
   // Centralized status management
-  const { status: userStatus, setStatus: setUserStatus } = useUserStatus()
+  const { status: userStatus, setStatus: setUserStatus } = useSupabaseUserStatus(user)
   
   const {
-    user,
     currentChannel,
     setCurrentChannel,
     messages,
     channels,
     lastReadTimestamps,
+    loading: dataLoading,
     sendMessage,
     createChannel,
     updateChannel,
@@ -42,7 +47,7 @@ function App() {
     markChannelAsRead,
     editMessage,
     deleteMessage
-  } = useSlackData()
+  } = useSupabaseData(user)
   
   // Initialize notifications system
   useNotifications(user, channels || [], messages || [])
@@ -69,7 +74,7 @@ function App() {
     stopRecording,
     deleteRecording,
     setIsCallUIOpen
-  } = useCalls(user)
+  } = useSupabaseCalls(user)
 
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -336,12 +341,25 @@ function App() {
     onEditLastMessage: handleEditLastMessage,
   })
 
-  if (!user || !channels) {
-    return (
+  if (authLoading || !user) {
+    return authLoading ? (
       <div className="flex items-center justify-center h-screen bg-background text-foreground">
         <div className="text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
           <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    ) : (
+      <AuthComponent />
+    )
+  }
+
+  if (dataLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background text-foreground">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading your workspace...</p>
         </div>
       </div>
     )

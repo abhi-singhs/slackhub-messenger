@@ -1,19 +1,27 @@
 # Slack Clone - Product Requirements Document
 
 ## Core Purpose & Success
-- **Mission Statement**: Create a real-time team communication platform that enables seamless messaging across organized channels with GitHub integration.
-- **Success Indicators**: Users can create channels, send messages, and maintain conversations that persist across sessions with smooth mobile and desktop experiences.
-- **Experience Qualities**: Responsive, Professional, Intuitive
+- **Mission Statement**: Create a real-time team communication platform that enables seamless messaging across organized channels with secure authentication and data persistence.
+- **Success Indicators**: Users can create accounts, join channels, send messages, and maintain conversations that persist across sessions with smooth mobile and desktop experiences.
+- **Experience Qualities**: Responsive, Professional, Secure
 
 ## Project Classification & Approach
-- **Complexity Level**: Light Application (multiple features with basic state)
-- **Primary User Activity**: Interacting and Creating (real-time messaging with persistent data)
+- **Complexity Level**: Complex Application (advanced functionality, user accounts, real-time data)
+- **Primary User Activity**: Interacting and Creating (real-time messaging with persistent data and user authentication)
 
 ## Thought Process for Feature Selection
-- **Core Problem Analysis**: Teams need organized, persistent communication channels accessible from any device
-- **User Context**: Users engage throughout workdays across desktop and mobile devices
-- **Critical Path**: Join → Select Channel → Send/Read Messages → Switch Channels
-- **Key Moments**: Channel selection, message sending, mobile-to-desktop continuity
+- **Core Problem Analysis**: Teams need organized, persistent communication channels with secure user authentication accessible from any device
+- **User Context**: Users sign up once, then engage throughout workdays across desktop and mobile devices
+- **Critical Path**: Sign Up/Login → Select Channel → Send/Read Messages → Switch Channels
+- **Key Moments**: User authentication, channel selection, message sending, mobile-to-desktop continuity
+
+## Technical Architecture
+
+### Authentication & Data Storage
+- **Database**: PostgreSQL via Supabase for reliable, scalable data storage
+- **Authentication**: Supabase Auth supporting email/password and OAuth providers (GitHub)
+- **Real-time**: Supabase real-time subscriptions for instant message updates
+- **Security**: Row-level security policies ensuring users only access appropriate data
 
 ## Essential Features
 
