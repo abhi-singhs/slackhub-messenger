@@ -90,8 +90,20 @@ export const MessageItem = ({
         <AvatarImage src={message.userAvatar} alt={message.userName} />
         <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
       </Avatar>
-      <div className="flex-1 min-w-0">
-        <div className="flex items-baseline gap-2 mb-1">
+      <div className="flex-1 min-w-0 relative">
+        {/* Full-width thread trigger button */}
+        {onStartThread && !message.threadId && !showReactionsOnly && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute inset-0 w-full h-full opacity-0 hover:opacity-0 z-10 rounded-lg"
+            onClick={() => onStartThread(message.id)}
+          >
+            <span className="sr-only">Start thread</span>
+          </Button>
+        )}
+        
+        <div className="flex items-baseline gap-2 mb-1 relative z-20">
           <span className="font-medium text-sm text-foreground truncate">
             <span dangerouslySetInnerHTML={{ 
               __html: searchQuery && searchQuery.trim() 
@@ -106,16 +118,11 @@ export const MessageItem = ({
           
           {!showReactionsOnly && (
             <>
-              {/* Start Thread Button */}
+              {/* Thread indicator icon */}
               {onStartThread && !message.threadId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
-                  onClick={() => onStartThread(message.id)}
-                >
-                  <Chat className="h-4 w-4" />
-                </Button>
+                <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                  <Chat className="h-4 w-4 text-muted-foreground" />
+                </div>
               )}
 
               {/* Add Reaction Button */}
@@ -127,7 +134,7 @@ export const MessageItem = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                    className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground relative z-30"
                     data-emoji-picker
                   >
                     <Smiley className="h-4 w-4" />
@@ -147,7 +154,7 @@ export const MessageItem = ({
             </>
           )}
         </div>
-        <div className="relative">
+        <div className="relative z-20">
           <div className="text-sm text-foreground leading-relaxed break-words mb-2">
             {renderMessageContent(message.content)}
           </div>
@@ -157,7 +164,7 @@ export const MessageItem = ({
             <Button
               variant="ghost"
               size="sm"
-              className="text-xs text-muted-foreground hover:text-foreground mb-2 p-1 h-auto"
+              className="text-xs text-muted-foreground hover:text-foreground mb-2 p-1 h-auto relative z-30"
               onClick={() => onStartThread(message.id)}
             >
               <Chat className="h-3 w-3 mr-1" />
@@ -166,14 +173,14 @@ export const MessageItem = ({
           )}
           
           {/* Reactions */}
-          <div className="flex items-center gap-1 flex-wrap mb-1">
+          <div className="flex items-center gap-1 flex-wrap mb-1 relative z-20">
             {message.reactions?.map((reaction) => (
               <Tooltip key={reaction.emoji}>
                 <TooltipTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
-                    className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary ${
+                    className={`h-6 px-2 py-0 text-xs rounded-full border-border hover:bg-secondary relative z-30 ${
                       reaction.users.includes(user?.id || '') 
                         ? 'bg-accent/20 border-accent text-accent-foreground' 
                         : ''
