@@ -24,9 +24,6 @@ function App() {
   // Centralized status management
   const { status: userStatus, setStatus: setUserStatus } = useUserStatus()
   
-  // Initialize notifications system
-  useNotifications(user, channels || [], messages || [])
-  
   const {
     user,
     currentChannel,
@@ -43,6 +40,9 @@ function App() {
     editMessage,
     deleteMessage
   } = useSlackData()
+  
+  // Initialize notifications system
+  useNotifications(user, channels || [], messages || [])
 
   const [messageInput, setMessageInput] = useState('')
   const [sidebarOpen, setSidebarOpen] = useState(false)
