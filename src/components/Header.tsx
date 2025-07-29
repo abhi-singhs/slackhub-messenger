@@ -10,9 +10,10 @@ interface HeaderProps {
   searchQuery: string
   onSidebarToggle: () => void
   onSearchChange: (query: string) => void
+  searchInputRef?: React.RefObject<HTMLInputElement>
 }
 
-export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange }: HeaderProps) => {
+export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle, onSearchChange, searchInputRef }: HeaderProps) => {
   const currentChannelData = channels?.find(c => c.id === currentChannel)
   
   return (
@@ -37,6 +38,7 @@ export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle,
       {/* Search input - takes remaining space */}
       <div className="flex-1 flex justify-end">
         <SearchInput
+          ref={searchInputRef}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
           placeholder="Search messages..."

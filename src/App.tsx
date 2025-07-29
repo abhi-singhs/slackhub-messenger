@@ -1,11 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { UserInfo } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
 import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
+import { QuickSwitcher } from '@/components/QuickSwitcher'
+import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 
 // View states for the app
 type ViewState = 'channel' | 'search'
@@ -33,6 +36,12 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewState, setViewState] = useState<ViewState>('channel')
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
+  const [showQuickSwitcher, setShowQuickSwitcher] = useState(false)
+  const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  
+  // Refs for keyboard shortcuts
+  const messageInputRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   // Set initial channel when channels are loaded
   useEffect(() => {
@@ -152,6 +161,91 @@ function App() {
     }
   }
 
+  // Keyboard shortcut handlers
+  const handleQuickSwitcher = () => {
+    setShowQuickSwitcher(true)
+  }
+
+  const handleNextChannel = () => {
+    if (!channels || !currentChannel) return
+    const currentIndex = channels.findIndex(c => c.id === currentChannel)
+    const nextIndex = (currentIndex + 1) % channels.length
+    setCurrentChannel(channels[nextIndex].id)
+  }
+
+  const handlePrevChannel = () => {
+    if (!channels || !currentChannel) return
+    const currentIndex = channels.findIndex(c => c.id === currentChannel)
+    const prevIndex = currentIndex === 0 ? channels.length - 1 : currentIndex - 1
+    setCurrentChannel(channels[prevIndex].id)
+  }
+
+  const handleToggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen)
+  }
+
+  const handleFocusInput = () => {
+    if (viewState === 'channel') {
+      messageInputRef.current?.focus()
+    }
+  }
+
+  const handleFocusSearch = () => {
+    searchInputRef.current?.focus()
+  }
+
+  const handleAddReaction = () => {
+    if (!currentMessages.length) return
+    const lastMessage = currentMessages[currentMessages.length - 1]
+    if (lastMessage) {
+      handleEmojiPickerToggle(lastMessage.id, true)
+    }
+  }
+
+  const handleStartThreadOnLastMessage = () => {
+    if (!currentMessages.length) return
+    const lastMessage = currentMessages[currentMessages.length - 1]
+    if (lastMessage && !lastMessage.threadId) {
+      handleStartThread(lastMessage.id)
+    }
+  }
+
+  const handleEscape = () => {
+    if (showQuickSwitcher) {
+      setShowQuickSwitcher(false)
+    } else if (showKeyboardHelp) {
+      setShowKeyboardHelp(false)
+    } else if (activeThreadId) {
+      setActiveThreadId(null)
+    } else if (openEmojiPickers.size > 0) {
+      setOpenEmojiPickers(new Set())
+    } else if (showInputEmojiPicker) {
+      setShowInputEmojiPicker(false)
+    } else if (searchQuery) {
+      setSearchQuery('')
+      setViewState('channel')
+    }
+  }
+
+  const handleShowHelp = () => {
+    setShowKeyboardHelp(true)
+  }
+
+  // Setup keyboard shortcuts
+  useKeyboardShortcuts({
+    onQuickSwitcher: handleQuickSwitcher,
+    onNextChannel: handleNextChannel,
+    onPrevChannel: handlePrevChannel,
+    onToggleSidebar: handleToggleSidebar,
+    onFocusInput: handleFocusInput,
+    onSendMessage: handleSendMessage,
+    onAddReaction: handleAddReaction,
+    onStartThread: handleStartThreadOnLastMessage,
+    onSearch: handleFocusSearch,
+    onEscape: handleEscape,
+    onHelp: handleShowHelp,
+  })
+
   if (!user || !channels) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -199,6 +293,7 @@ function App() {
           searchQuery={searchQuery}
           onSidebarToggle={() => setSidebarOpen(true)}
           onSearchChange={handleSearchChange}
+          searchInputRef={searchInputRef}
         />
 
         {/* Messages Area */}
@@ -217,6 +312,7 @@ function App() {
         {/* Message Input - Only show for channel view */}
         {viewState === 'channel' && (
           <MessageInput
+            ref={messageInputRef}
             user={user}
             messageInput={messageInput}
             showInputEmojiPicker={showInputEmojiPicker}
@@ -243,6 +339,21 @@ function App() {
           onSendThreadReply={handleSendThreadReply}
         />
       )}
+
+      {/* Quick Switcher Modal */}
+      <QuickSwitcher
+        isOpen={showQuickSwitcher}
+        onClose={() => setShowQuickSwitcher(false)}
+        channels={channels || []}
+        currentChannel={currentChannel}
+        onChannelSelect={handleChannelSelect}
+      />
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsHelp
+        isOpen={showKeyboardHelp}
+        onClose={() => setShowKeyboardHelp(false)}
+      />
     </div>
   );
 }

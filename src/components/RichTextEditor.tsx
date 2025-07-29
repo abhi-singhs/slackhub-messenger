@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { TextB, TextItalic, Minus, Quotes, Code, Smiley, PaperPlaneRight } from '@phosphor-icons/react'
 import { EmojiPicker } from './EmojiPicker'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 
 // Convert TipTap HTML output to markdown-like syntax for storage
 const convertHtmlToMarkdown = (html: string): string => {
@@ -39,7 +39,7 @@ interface RichTextEditorProps {
   showSendButton?: boolean
 }
 
-export const RichTextEditor = ({
+export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
   content,
   placeholder,
   showEmojiPicker,
@@ -47,7 +47,7 @@ export const RichTextEditor = ({
   onEmojiPickerToggle,
   onSubmit,
   showSendButton = false
-}: RichTextEditorProps) => {
+}, ref) => {
   const [, forceUpdate] = useState({})
   
   const editor = useEditor({
@@ -94,6 +94,15 @@ export const RichTextEditor = ({
       },
     },
   }, [placeholder]) // Add placeholder as dependency
+
+  // Expose focus method through ref
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      if (editor) {
+        editor.commands.focus()
+      }
+    }
+  }), [editor])
 
   // Handle keyboard shortcuts
   useEffect(() => {
@@ -287,4 +296,4 @@ export const RichTextEditor = ({
       <EditorContent editor={editor} />
     </div>
   )
-}
+})

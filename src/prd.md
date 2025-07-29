@@ -22,6 +22,11 @@
 - **Why it matters**: Organizes conversations by topic, project, or team
 - **Success criteria**: Channels persist, show message counts, and allow easy switching
 
+### Keyboard Shortcuts
+- **What it does**: Provides comprehensive keyboard shortcuts for navigation, messaging, and productivity including quick channel switching, focus management, and formatting shortcuts
+- **Why it matters**: Power users can navigate and interact with the application efficiently without relying on mouse/touch interactions, improving productivity and accessibility
+- **Success criteria**: Users can access all major functions via keyboard, shortcuts follow standard conventions (Cmd/Ctrl+K for quick switcher), help dialog is accessible, and shortcuts don't interfere with normal typing
+
 ### Message Threading
 - **What it does**: Organize conversations into threaded discussions where users can reply to specific messages, creating nested conversation flows
 - **Why it matters**: Prevents channel clutter, maintains conversation context, and allows parallel discussions within channels
@@ -134,9 +139,10 @@
 - **Testing Focus**: Mobile responsiveness across devices, message persistence, user authentication
 - **Critical Questions**: How to handle message history limits, optimal mobile UX patterns
 - **Architecture Notes**: Refactored into modular components for better maintainability:
-  - Separated data logic into custom hooks (useSlackData)
-  - Created reusable UI components (Sidebar, Header, MessagesList, MessageInput, MessageItem, EmojiPicker)
+  - Separated data logic into custom hooks (useSlackData, useKeyboardShortcuts)
+  - Created reusable UI components (Sidebar, Header, MessagesList, MessageInput, MessageItem, EmojiPicker, QuickSwitcher, KeyboardShortcutsHelp)
   - Centralized utilities and type definitions
+  - Added comprehensive keyboard navigation support
   - Improved code organization and testability
 
 ## Reflection

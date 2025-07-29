@@ -1,5 +1,6 @@
 import { Channel, UserInfo } from '@/types'
 import { RichTextEditor } from './RichTextEditor'
+import { forwardRef } from 'react'
 
 interface MessageInputProps {
   user: UserInfo | null
@@ -14,7 +15,7 @@ interface MessageInputProps {
   onSendMessage: () => void
 }
 
-export const MessageInput = ({
+export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   user,
   channels,
   currentChannel,
@@ -25,13 +26,14 @@ export const MessageInput = ({
   onMessageInput,
   onEmojiPickerToggle,
   onSendMessage
-}: MessageInputProps) => {
+}, ref) => {
   const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
   const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
 
   return (
     <div className={`p-2 sm:p-4 border-t border-border bg-card ${isThreadReply ? 'rounded-b-lg' : ''}`}>
       <RichTextEditor
+        ref={ref}
         content={messageInput}
         placeholder={defaultPlaceholder}
         showEmojiPicker={showInputEmojiPicker}
@@ -42,4 +44,4 @@ export const MessageInput = ({
       />
     </div>
   )
-}
+})
