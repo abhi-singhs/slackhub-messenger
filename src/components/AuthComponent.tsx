@@ -5,11 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Github } from 'lucide-react'
+import { Loader2, Github, UserX } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 export const AuthComponent = () => {
-  const { signIn, signUp, signInWithGitHub } = useAuth()
+  const { signIn, signUp, signInWithGitHub, signInAnonymously } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -87,6 +87,22 @@ export const AuthComponent = () => {
     }
   }
 
+  const handleAnonymousSignIn = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error } = await signInAnonymously()
+      if (error) {
+        setError(error.message)
+      }
+    } catch (err) {
+      setError('Failed to sign in anonymously')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const resetForm = () => {
     setEmail('')
     setPassword('')
@@ -101,7 +117,7 @@ export const AuthComponent = () => {
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold">Welcome to Slack Clone</CardTitle>
           <CardDescription>
-            Sign in to your account or create a new one
+            Sign in to your account, create a new one, or continue as a guest
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -216,19 +232,35 @@ export const AuthComponent = () => {
               </div>
             </div>
             
-            <Button 
-              variant="outline" 
-              className="w-full mt-4" 
-              onClick={handleGitHubSignIn}
-              disabled={loading}
-            >
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Github className="mr-2 h-4 w-4" />
-              )}
-              GitHub
-            </Button>
+            <div className="space-y-2 mt-4">
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGitHubSignIn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Github className="mr-2 h-4 w-4" />
+                )}
+                GitHub
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleAnonymousSignIn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <UserX className="mr-2 h-4 w-4" />
+                )}
+                Continue as Guest
+              </Button>
+            </div>
           </div>
 
           {error && (

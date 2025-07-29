@@ -101,6 +101,35 @@ export const useAuth = () => {
     return { data, error }
   }
 
+  const signInAnonymously = async () => {
+    const { data, error } = await supabase.auth.signInAnonymously()
+    
+    // If anonymous sign in successful, create a user profile
+    if (!error && data?.user) {
+      // Generate a random username for anonymous users
+      const randomUsername = `Anonymous_${Math.random().toString(36).substr(2, 8)}`
+      
+      // Create user profile in users table
+      const { error: profileError } = await supabase
+        .from('users')
+        .upsert({
+          id: data.user.id,
+          username: randomUsername,
+          email: data.user.email || '',
+          avatar_url: '',
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      
+      if (profileError) {
+        console.error('Error creating anonymous user profile:', profileError)
+      }
+    }
+
+    return { data, error }
+  }
+
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
     return { error }
@@ -143,6 +172,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signInWithGitHub,
+    signInAnonymously,
     signOut,
     updateProfile,
     updateUserStatus

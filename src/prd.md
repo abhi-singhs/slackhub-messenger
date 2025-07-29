@@ -19,11 +19,19 @@
 
 ### Authentication & Data Storage
 - **Database**: PostgreSQL via Supabase for reliable, scalable data storage
-- **Authentication**: Supabase Auth supporting email/password and OAuth providers (GitHub)
+- **Authentication**: Supabase Auth supporting multiple authentication methods:
+  - Email/password registration and login
+  - OAuth providers (GitHub integration)
+  - Anonymous authentication for guest users
 - **Real-time**: Supabase real-time subscriptions for instant message updates
 - **Security**: Row-level security policies ensuring users only access appropriate data
 
 ## Essential Features
+
+### User Authentication
+- **What it does**: Provides multiple authentication options including email/password, GitHub OAuth, and anonymous guest access with auto-generated usernames
+- **Why it matters**: Lowers barrier to entry for new users while maintaining security for registered users, accommodates different user preferences and privacy concerns
+- **Success criteria**: Users can register with email/password, sign in via GitHub, or enter as anonymous guests with randomly generated usernames, all authentication methods provide seamless app access
 
 ### Channel Management
 - **What it does**: Create, browse, and switch between organized conversation channels
