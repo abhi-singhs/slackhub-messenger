@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { FileAttachment } from '@/types'
 import { createFileAttachment, getAllowedFileTypes, formatFileSize, MAX_FILE_SIZE } from '@/lib/fileUtils'
 import { Button } from '@/components/ui/button'
