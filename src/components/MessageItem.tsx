@@ -89,11 +89,12 @@ export const MessageItem = ({
 
   return (
     <div className="flex gap-3 group hover:bg-accent/25 transition-colors duration-200 rounded-lg p-3 -m-3">
-      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0" showOnlineIndicator={message.userId === user?.id ? userStatus === 'active' : true}>
+      <Avatar className="w-8 h-8 mt-0.5 flex-shrink-0" showOnlineIndicator={true}>
         <AvatarImage 
           src={message.userAvatar} 
           alt={message.userName} 
-          showOnlineIndicator={message.userId === user?.id ? userStatus === 'active' : true}
+          showOnlineIndicator={true}
+          status={message.userId === user?.id ? userStatus : 'active'}
         />
         <AvatarFallback>{message.userName.charAt(0).toUpperCase()}</AvatarFallback>
       </Avatar> 

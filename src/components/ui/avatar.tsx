@@ -26,8 +26,25 @@ function Avatar({
 function AvatarImage({
   className,
   showOnlineIndicator = false,
+  status = 'active',
   ...props
-}: ComponentProps<typeof AvatarPrimitive.Image> & { showOnlineIndicator?: boolean }) {
+}: ComponentProps<typeof AvatarPrimitive.Image> & { 
+  showOnlineIndicator?: boolean
+  status?: 'active' | 'away' | 'busy'
+}) {
+  const getStatusColor = (status: 'active' | 'away' | 'busy') => {
+    switch (status) {
+      case 'active':
+        return 'bg-green-500'
+      case 'away':
+        return 'bg-yellow-500'
+      case 'busy':
+        return 'bg-red-500'
+      default:
+        return 'bg-green-500'
+    }
+  }
+
   return (
     <div className="relative">
       <AvatarPrimitive.Image
@@ -36,7 +53,10 @@ function AvatarImage({
         {...props}
       />
       {showOnlineIndicator && (
-        <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 border-2 border-background rounded-full" />
+        <div className={cn(
+          "absolute -bottom-0.5 -right-0.5 size-3 border-2 border-background rounded-full",
+          getStatusColor(status)
+        )} />
       )}
     </div>
   )

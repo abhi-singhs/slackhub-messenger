@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { Message, UserInfo, Channel } from '@/types'
 import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
@@ -113,11 +114,15 @@ export function ThreadView({
           {/* Parent Message */}
           <div className="pb-4 border-b">
             <div className="flex items-start gap-3 group">
-              <img
-                src={parentMessage.userAvatar || '/default-avatar.png'}
-                alt=""
-                className="w-10 h-10 rounded-full flex-shrink-0"
-              />
+              <Avatar className="w-10 h-10 flex-shrink-0" showOnlineIndicator={true}>
+                <AvatarImage 
+                  src={parentMessage.userAvatar || ''} 
+                  alt={parentMessage.userName} 
+                  showOnlineIndicator={true}
+                  status={parentMessage.userId === user?.id ? status : 'active'}
+                />
+                <AvatarFallback>{parentMessage.userName.charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="font-semibold text-sm">
