@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button'
-import { COMMON_EMOJIS } from '@/utils'
+import { COMMON_EMOJIS } from '@/constants'
 
 interface EmojiPickerProps {
   onEmojiSelect: (emoji: string) => void

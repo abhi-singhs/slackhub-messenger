@@ -4,7 +4,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { Smiley, Chat } from '@phosphor-icons/react'
 import { Message, UserInfo, UserStatus } from '@/types'
-import { formatTime, getUserName } from '@/utils'
+import { formatTime, getUserName } from '@/lib/utils'
 import { highlightSearchTerm } from '@/lib/utils'
 import { EmojiPicker } from './EmojiPicker'
 import { StatusIndicator } from './StatusIndicator'

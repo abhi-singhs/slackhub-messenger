@@ -1,7 +1,7 @@
-import { useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { getModifierKey } from '@/hooks/useKeyboardShortcuts'
+import { KEYBOARD_SHORTCUTS } from '@/constants'
 
 interface KeyboardShortcutsHelpProps {
   isOpen: boolean

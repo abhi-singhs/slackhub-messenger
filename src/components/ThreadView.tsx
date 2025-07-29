@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
-import { formatTime } from '@/utils'
+import { formatTime } from '@/lib/utils'
 import { X, Smiley } from '@phosphor-icons/react'
 
 interface ThreadViewProps {
@@ -74,13 +74,6 @@ export function ThreadView({
       onSendThreadReply(messageInput, parentMessage.id)
       setMessageInput('')
     }
-  }
-
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString([], { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    })
   }
 
   const sortedThreadMessages = [...threadMessages].sort((a, b) => a.timestamp - b.timestamp)

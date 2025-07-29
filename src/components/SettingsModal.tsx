@@ -6,20 +6,13 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+import { THEME_OPTIONS } from '@/constants'
 
 interface SettingsModalProps {
   trigger?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
-
-const themeOptions = [
-  { value: 'blue' as ColorTheme, name: 'Blue', color: 'oklch(0.65 0.15 240)' },
-  { value: 'green' as ColorTheme, name: 'Green', color: 'oklch(0.65 0.15 140)' },
-  { value: 'purple' as ColorTheme, name: 'Purple', color: 'oklch(0.65 0.15 300)' },
-  { value: 'orange' as ColorTheme, name: 'Orange', color: 'oklch(0.65 0.15 40)' },
-  { value: 'red' as ColorTheme, name: 'Red', color: 'oklch(0.65 0.15 20)' },
-]
 
 export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
   const { settings, updateTheme, updateColorTheme } = useSettings()
@@ -91,7 +84,7 @@ export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: exter
               onValueChange={handleColorThemeChange}
               className="grid grid-cols-5 gap-3"
             >
-              {themeOptions.map((option) => (
+              {THEME_OPTIONS.map((option) => (
                 <div key={option.value} className="flex flex-col items-center gap-2">
                   <RadioGroupItem
                     value={option.value}
