@@ -339,7 +339,7 @@ export const MessageItem = ({
                   </p>
                 </TooltipContent>
               </Tooltip>
-            ))}
+            )) : null}
           </div>
         </div>
       </div>
