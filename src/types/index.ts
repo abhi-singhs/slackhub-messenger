@@ -1,3 +1,12 @@
+export interface FileAttachment {
+  id: string
+  name: string
+  size: number
+  type: string
+  url: string
+  thumbnail?: string // For images and videos
+}
+
 export interface Message {
   id: string
   content: string
@@ -9,6 +18,7 @@ export interface Message {
   reactions?: MessageReaction[]
   threadId?: string // Parent message ID if this is a thread reply
   replyCount?: number // Number of replies to this message
+  attachments?: FileAttachment[] // File attachments
 }
 
 export interface MessageReaction {

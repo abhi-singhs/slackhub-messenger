@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
-import { Message, UserInfo, Channel, UserStatus } from '@/types'
+import { Message, UserInfo, Channel, UserStatus, FileAttachment } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
 import { EmojiPicker } from '@/components/EmojiPicker'
+import { FileAttachmentView } from '@/components/FileAttachmentView'
 import { formatTime } from '@/lib/utils'
 import { X, Smiley } from '@phosphor-icons/react'
 
@@ -18,7 +19,7 @@ interface ThreadViewProps {
   onClose: () => void
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
-  onSendThreadReply: (content: string, threadId: string) => void
+  onSendThreadReply: (content: string, threadId: string, attachments?: FileAttachment[]) => void
 }
 
 export function ThreadView({
@@ -69,9 +70,9 @@ export function ThreadView({
     }
   }, [onClose])
 
-  const handleSendMessage = () => {
-    if (messageInput.trim()) {
-      onSendThreadReply(messageInput, parentMessage.id)
+  const handleSendMessage = (attachments?: FileAttachment[]) => {
+    if (messageInput.trim() || (attachments && attachments.length > 0)) {
+      onSendThreadReply(messageInput, parentMessage.id, attachments)
       setMessageInput('')
     }
   }
@@ -152,6 +153,19 @@ export function ThreadView({
                     className="prose-sm" 
                     dangerouslySetInnerHTML={{ __html: parentMessage.content }}
                   />
+                  
+                  {/* File Attachments */}
+                  {parentMessage.attachments && parentMessage.attachments.length > 0 && (
+                    <div className="mt-2 space-y-2">
+                      {parentMessage.attachments.map((attachment) => (
+                        <FileAttachmentView
+                          key={attachment.id}
+                          attachment={attachment}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  
                   {parentMessage.reactions && parentMessage.reactions.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {parentMessage.reactions.map((reaction) => (

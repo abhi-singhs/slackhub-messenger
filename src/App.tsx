@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { UserInfo } from '@/types'
+import { UserInfo, FileAttachment } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSettings } from '@/hooks/useSettings'
@@ -11,6 +11,7 @@ import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
 import { QuickSwitcher } from '@/components/QuickSwitcher'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
+import { Toaster } from '@/components/ui/sonner'
 
 // View states for the app
 type ViewState = 'channel' | 'search'
@@ -104,16 +105,16 @@ function App() {
     }
   }
 
-  const handleSendMessage = () => {
+  const handleSendMessage = (attachments?: FileAttachment[]) => {
     if (currentChannel) {
-      sendMessage(messageInput, currentChannel)
+      sendMessage(messageInput, currentChannel, undefined, attachments)
       setMessageInput('')
     }
   }
 
-  const handleSendThreadReply = (content: string, threadId: string) => {
+  const handleSendThreadReply = (content: string, threadId: string, attachments?: FileAttachment[]) => {
     if (currentChannel) {
-      sendMessage(content, currentChannel, threadId)
+      sendMessage(content, currentChannel, threadId, attachments)
     }
   }
 
@@ -382,6 +383,9 @@ function App() {
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
       />
+      
+      {/* Toast notifications */}
+      <Toaster />
     </div>
   );
 }

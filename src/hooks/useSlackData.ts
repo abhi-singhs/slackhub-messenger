@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useKV } from '@github/spark/hooks'
-import { Message, Channel, UserInfo } from '@/types'
+import { Message, Channel, UserInfo, FileAttachment } from '@/types'
 
 declare const spark: Window['spark']
 
@@ -59,9 +59,10 @@ export const useSlackData = () => {
 
   // Don't auto-mark channels as read here - let App.tsx handle it when route changes
 
-  const sendMessage = useCallback((content: string, channelId?: string, threadId?: string) => {
+  const sendMessage = useCallback((content: string, channelId?: string, threadId?: string, attachments?: FileAttachment[]) => {
     try {
-      if (!content || !content.trim() || !user) return
+      if ((!content || !content.trim()) && (!attachments || attachments.length === 0)) return
+      if (!user) return
 
       // Use provided channelId or fall back to currentChannel
       const targetChannelId = channelId || currentChannel
@@ -75,7 +76,8 @@ export const useSlackData = () => {
         userAvatar: user.avatarUrl,
         timestamp: Date.now(),
         channelId: targetChannelId,
-        ...(threadId && { threadId })
+        ...(threadId && { threadId }),
+        ...(attachments && attachments.length > 0 && { attachments })
       }
 
       setMessages((current) => {

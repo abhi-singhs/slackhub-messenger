@@ -52,6 +52,11 @@
 - **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels with full context
 - **Success criteria**: Search works across message content and usernames, provides dedicated results page with context, allows navigation to original messages, highlights matches, supports ⌘K shortcut, shows surrounding message context
 
+### File Upload & Sharing
+- **What it does**: Enables uploading and sharing of photos, videos, documents, audio files, and archives with drag-and-drop support, preview generation, and inline display
+- **Why it matters**: Teams need to share visual content, documents, and media files seamlessly within conversations to collaborate effectively
+- **Success criteria**: Supports images (JPEG, PNG, GIF, WebP, SVG), videos (MP4, WebM, OGG), documents (PDF, Word, TXT), audio files, and archives up to 10MB per file, provides drag-and-drop upload, generates thumbnails for images, displays files inline with download options, shows file metadata, and works on both desktop and mobile
+
 ### Settings & Customization
 - **What it does**: Provides user preferences including dark/light mode toggle and color theme selection across multiple accent colors
 - **Why it matters**: Users have different preferences for interface appearance and need customization for comfort and accessibility

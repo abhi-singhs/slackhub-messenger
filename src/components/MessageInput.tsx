@@ -1,6 +1,7 @@
-import { Channel, UserInfo } from '@/types'
+import { Channel, UserInfo, FileAttachment } from '@/types'
 import { RichTextEditor } from './RichTextEditor'
-import { forwardRef } from 'react'
+import { FileUpload } from './FileUpload'
+import { forwardRef, useState } from 'react'
 
 interface MessageInputProps {
   user: UserInfo | null
@@ -12,7 +13,7 @@ interface MessageInputProps {
   isThreadReply?: boolean
   onMessageInput: (content: string) => void
   onEmojiPickerToggle: (show: boolean) => void
-  onSendMessage: () => void
+  onSendMessage: (attachments?: FileAttachment[]) => void
 }
 
 export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
@@ -27,21 +28,38 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   onEmojiPickerToggle,
   onSendMessage
 }, ref) => {
+  const [attachments, setAttachments] = useState<FileAttachment[]>([])
+  
   const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
   const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
 
+  const handleSendMessage = () => {
+    onSendMessage(attachments.length > 0 ? attachments : undefined)
+    setAttachments([]) // Clear attachments after sending
+  }
+
   return (
     <div className={`p-2 sm:p-4 border-t border-border bg-card ${isThreadReply ? 'rounded-b-lg' : ''}`}>
-      <RichTextEditor
-        ref={ref}
-        content={messageInput}
-        placeholder={defaultPlaceholder}
-        showEmojiPicker={showInputEmojiPicker}
-        onUpdate={onMessageInput}
-        onEmojiPickerToggle={onEmojiPickerToggle}
-        onSubmit={onSendMessage}
-        showSendButton={true}
-      />
+      <div className="space-y-2">
+        {/* File Upload Component */}
+        <FileUpload
+          attachments={attachments}
+          onAttachmentsChange={setAttachments}
+        />
+        
+        {/* Rich Text Editor */}
+        <RichTextEditor
+          ref={ref}
+          content={messageInput}
+          placeholder={defaultPlaceholder}
+          showEmojiPicker={showInputEmojiPicker}
+          onUpdate={onMessageInput}
+          onEmojiPickerToggle={onEmojiPickerToggle}
+          onSubmit={handleSendMessage}
+          showSendButton={true}
+          hasAttachments={attachments.length > 0}
+        />
+      </div>
     </div>
   )
 })

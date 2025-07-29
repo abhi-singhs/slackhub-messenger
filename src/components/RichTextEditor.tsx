@@ -37,6 +37,7 @@ interface RichTextEditorProps {
   onEmojiPickerToggle: (show: boolean) => void
   onSubmit: () => void
   showSendButton?: boolean
+  hasAttachments?: boolean
 }
 
 export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
@@ -46,7 +47,8 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
   onUpdate,
   onEmojiPickerToggle,
   onSubmit,
-  showSendButton = false
+  showSendButton = false,
+  hasAttachments = false
 }, ref) => {
   const [, forceUpdate] = useState({})
   
@@ -283,7 +285,7 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
               onSubmit()
               safeEditorAction(() => editor.commands.clearContent())
             }} 
-            disabled={!content.trim()}
+            disabled={!content.trim() && !hasAttachments}
             size="sm"
             className="h-8 px-3"
           >

@@ -8,6 +8,7 @@ import { formatTime, getUserName } from '@/lib/utils'
 import { highlightSearchTerm } from '@/lib/utils'
 import { EmojiPicker } from './EmojiPicker'
 import { StatusIndicator } from './StatusIndicator'
+import { FileAttachmentView } from './FileAttachmentView'
 
 interface MessageItemProps {
   message: Message
@@ -171,6 +172,18 @@ export const MessageItem = ({
           <div className="text-sm text-foreground leading-relaxed break-words mb-2">
             {renderMessageContent(message.content)}
           </div>
+          
+          {/* File Attachments */}
+          {message.attachments && message.attachments.length > 0 && (
+            <div className="mb-2 space-y-2">
+              {message.attachments.map((attachment) => (
+                <FileAttachmentView
+                  key={attachment.id}
+                  attachment={attachment}
+                />
+              ))}
+            </div>
+          )}
           
           {/* Thread Indicator */}
           {!message.threadId && (message.replyCount || 0) > 0 && onStartThread && (
