@@ -29,6 +29,7 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   onSendMessage
 }, ref) => {
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
+  const [fileUploadCallback, setFileUploadCallback] = useState<(() => void) | null>(null)
   
   const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
   const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
@@ -38,6 +39,16 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
     setAttachments([]) // Clear attachments after sending
   }
 
+  const handleFileUploadClick = () => {
+    if (fileUploadCallback) {
+      fileUploadCallback()
+    }
+  }
+
+  const handleFileUploadCallbackRegistration = (callback: () => void) => {
+    setFileUploadCallback(() => callback)
+  }
+
   return (
     <div className={`p-2 sm:p-4 border-t border-border bg-card ${isThreadReply ? 'rounded-b-lg' : ''}`}>
       <div className="space-y-2">
@@ -45,6 +56,7 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
         <FileUpload
           attachments={attachments}
           onAttachmentsChange={setAttachments}
+          onFileUploadClick={handleFileUploadCallbackRegistration}
         />
         
         {/* Rich Text Editor */}
@@ -58,6 +70,7 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
           onSubmit={handleSendMessage}
           showSendButton={true}
           hasAttachments={attachments.length > 0}
+          onFileUploadClick={handleFileUploadClick}
         />
       </div>
     </div>

@@ -3,7 +3,7 @@ import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { TextB, TextItalic, Minus, Quotes, Code, Smiley, PaperPlaneRight } from '@phosphor-icons/react'
+import { TextB, TextItalic, Minus, Quotes, Code, Smiley, PaperPlaneRight, Paperclip } from '@phosphor-icons/react'
 import { EmojiPicker } from './EmojiPicker'
 import { useEffect, useState, forwardRef, useImperativeHandle } from 'react'
 
@@ -38,6 +38,7 @@ interface RichTextEditorProps {
   onSubmit: () => void
   showSendButton?: boolean
   hasAttachments?: boolean
+  onFileUploadClick?: () => void
 }
 
 export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
@@ -48,7 +49,8 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
   onEmojiPickerToggle,
   onSubmit,
   showSendButton = false,
-  hasAttachments = false
+  hasAttachments = false,
+  onFileUploadClick
 }, ref) => {
   const [, forceUpdate] = useState({})
   
@@ -257,6 +259,17 @@ export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
             <Code className="h-4 w-4" />
           </Button>
           <div className="h-4 w-px bg-border mx-1"></div>
+          {onFileUploadClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onFileUploadClick}
+              className="h-8 w-8 p-0 hover:bg-secondary"
+              title="Attach File"
+            >
+              <Paperclip className="h-4 w-4" />
+            </Button>
+          )}
           <Popover 
             open={showEmojiPicker}
             onOpenChange={onEmojiPickerToggle}
