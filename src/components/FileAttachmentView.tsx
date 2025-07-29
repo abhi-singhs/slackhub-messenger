@@ -181,7 +181,7 @@ export function FileAttachmentView({ attachment, className = '' }: FileAttachmen
               }
             }}
           >
-            <div className="relative bg-background rounded-lg max-w-4xl max-h-[90vh] w-full flex flex-col">
+            <div className="relative bg-background rounded-lg max-w-6xl max-h-[95vh] w-full h-[95vh] flex flex-col">
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-border">
                 <div className="flex-1 min-w-0">
