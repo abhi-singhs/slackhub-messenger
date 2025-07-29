@@ -60,6 +60,7 @@ export const Sidebar = ({
   const [editChannelDescription, setEditChannelDescription] = useState('')
   const [hoveredChannel, setHoveredChannel] = useState<string | null>(null)
   const [openMenuChannel, setOpenMenuChannel] = useState<string | null>(null)
+  const [settingsDropdownOpen, setSettingsDropdownOpen] = useState(false)
 
   const handleCreateChannel = () => {
     if (!newChannelName.trim()) return
@@ -273,7 +274,7 @@ export const Sidebar = ({
 
         {/* Settings Section */}
         <div className="p-4 border-t border-border flex-shrink-0">
-          <DropdownMenu>
+          <DropdownMenu open={settingsDropdownOpen} onOpenChange={setSettingsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
@@ -290,6 +291,7 @@ export const Sidebar = ({
                 <button
                   onClick={() => {
                     onShowKeyboardShortcuts?.()
+                    setSettingsDropdownOpen(false)
                   }}
                   className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
                 >
