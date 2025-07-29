@@ -1,0 +1,123 @@
+import { useState } from 'react'
+import { Settings, Moon, Sun, Palette, X } from '@phosphor-icons/react'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Label } from '@/components/ui/label'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Switch } from '@/components/ui/switch'
+import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+
+interface SettingsModalProps {
+  trigger?: React.ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+const themeOptions = [
+  { value: 'blue' as ColorTheme, name: 'Blue', color: 'oklch(0.65 0.15 240)' },
+  { value: 'green' as ColorTheme, name: 'Green', color: 'oklch(0.65 0.15 140)' },
+  { value: 'purple' as ColorTheme, name: 'Purple', color: 'oklch(0.65 0.15 300)' },
+  { value: 'orange' as ColorTheme, name: 'Orange', color: 'oklch(0.65 0.15 40)' },
+  { value: 'red' as ColorTheme, name: 'Red', color: 'oklch(0.65 0.15 20)' },
+]
+
+export const SettingsModal = ({ trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
+  const { settings, updateTheme, updateColorTheme } = useSettings()
+  const [internalOpen, setInternalOpen] = useState(false)
+  
+  // Use external state if provided, otherwise use internal state
+  const open = externalOpen !== undefined ? externalOpen : internalOpen
+  const setOpen = externalOnOpenChange || setInternalOpen
+
+  const handleThemeToggle = (checked: boolean) => {
+    updateTheme(checked ? 'dark' : 'light')
+  }
+
+  const handleColorThemeChange = (value: string) => {
+    updateColorTheme(value as ColorTheme)
+  }
+
+  const defaultTrigger = (
+    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+      <Settings className="h-4 w-4" />
+    </Button>
+  )
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {trigger || defaultTrigger}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Settings className="h-5 w-5" />
+            Settings
+          </DialogTitle>
+        </DialogHeader>
+        
+        <div className="space-y-6 py-4">
+          {/* Dark Mode Toggle */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              {settings.theme === 'dark' ? (
+                <Moon className="h-5 w-5 text-muted-foreground" />
+              ) : (
+                <Sun className="h-5 w-5 text-muted-foreground" />
+              )}
+              <div>
+                <Label className="text-sm font-medium">Dark Mode</Label>
+                <p className="text-xs text-muted-foreground">Toggle between light and dark themes</p>
+              </div>
+            </div>
+            <Switch
+              checked={settings.theme === 'dark'}
+              onCheckedChange={handleThemeToggle}
+            />
+          </div>
+
+          {/* Color Theme Picker */}
+          <div className="space-y-3">
+            <div className="flex items-center gap-3">
+              <Palette className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <Label className="text-sm font-medium">Color Theme</Label>
+                <p className="text-xs text-muted-foreground">Choose your preferred accent color</p>
+              </div>
+            </div>
+            
+            <RadioGroup
+              value={settings.colorTheme}
+              onValueChange={handleColorThemeChange}
+              className="grid grid-cols-5 gap-3"
+            >
+              {themeOptions.map((option) => (
+                <div key={option.value} className="flex flex-col items-center gap-2">
+                  <RadioGroupItem
+                    value={option.value}
+                    id={option.value}
+                    className="sr-only"
+                  />
+                  <Label
+                    htmlFor={option.value}
+                    className="flex flex-col items-center gap-1 cursor-pointer"
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 transition-all ${
+                        settings.colorTheme === option.value
+                          ? 'border-foreground scale-110'
+                          : 'border-border hover:border-muted-foreground'
+                      }`}
+                      style={{ backgroundColor: option.color }}
+                    />
+                    <span className="text-xs text-muted-foreground">{option.name}</span>
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

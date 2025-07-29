@@ -52,6 +52,11 @@
 - **Why it matters**: Users need to quickly find specific messages, conversations, or information across channels with full context
 - **Success criteria**: Search works across message content and usernames, provides dedicated results page with context, allows navigation to original messages, highlights matches, supports ⌘K shortcut, shows surrounding message context
 
+### Settings & Customization
+- **What it does**: Provides user preferences including dark/light mode toggle and color theme selection across multiple accent colors
+- **Why it matters**: Users have different preferences for interface appearance and need customization for comfort and accessibility
+- **Success criteria**: Settings persist across sessions, dark mode provides full theme coverage, color themes are visually distinct, settings are accessible via UI and keyboard shortcut (⌘,), theme changes apply immediately
+
 ### Mobile Responsiveness
 - **What it does**: Adapts interface for mobile screens with touch-friendly interactions
 - **Why it matters**: Users need access from phones and tablets throughout the day
@@ -76,16 +81,17 @@
 - **Simplicity Spectrum**: Minimal interface that prioritizes content readability
 
 ### Color Strategy
-- **Color Scheme Type**: Analogous (professional blue-gray base with warm orange accents)
+- **Color Scheme Type**: Customizable themes with professional base and multiple accent options
 - **Primary Color**: Deep blue-gray (oklch(0.3 0.05 240)) for primary actions and focus
 - **Secondary Colors**: Light blue-gray (oklch(0.95 0.02 240)) for subtle backgrounds
-- **Accent Color**: Warm orange (oklch(0.65 0.15 40)) for active states and attention
-- **Color Psychology**: Blue-gray conveys professionalism and trust, orange adds energy and focus
-- **Color Accessibility**: All combinations exceed WCAG AA contrast requirements
+- **Accent Color**: User-selectable from blue, green, purple, orange, or red variations
+- **Dark Mode**: Complete dark theme with appropriate contrast adjustments
+- **Color Psychology**: Base colors convey professionalism, accent colors allow personality expression
+- **Color Accessibility**: All combinations exceed WCAG AA contrast requirements in both light and dark modes
 - **Foreground/Background Pairings**:
-  - Primary text on background: oklch(0.2 0.02 240) on oklch(0.98 0.005 240) - 16.8:1 contrast
-  - Accent text on accent background: oklch(1 0 0) on oklch(0.65 0.15 40) - 4.9:1 contrast
-  - Secondary text on secondary background: oklch(0.25 0.03 240) on oklch(0.95 0.02 240) - 11.2:1 contrast
+  - Light mode: oklch(0.2 0.02 240) on oklch(0.98 0.005 240) - 16.8:1 contrast
+  - Dark mode: oklch(0.9 0.01 240) on oklch(0.09 0.02 240) - 14.2:1 contrast
+  - Accent combinations maintain 4.5:1+ contrast in both themes
 
 ### Typography System
 - **Font Pairing Strategy**: Single family (Inter) with varied weights for hierarchy

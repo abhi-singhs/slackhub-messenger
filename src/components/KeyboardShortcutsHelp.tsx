@@ -36,6 +36,7 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
       items: [
         { keys: ['Esc'], description: 'Close dialogs/cancel actions' },
         { keys: [`${modKey}`, '/'], description: 'Show keyboard shortcuts' },
+        { keys: [`${modKey}`, ','], description: 'Open settings' },
       ]
     }
   ]

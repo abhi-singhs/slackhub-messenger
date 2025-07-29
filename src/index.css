@@ -75,7 +75,7 @@
 }
 
 :root {
-  /* Professional blue-gray base with warm orange accents */
+  /* Light theme base */
   --background: oklch(0.98 0.005 240);
   --foreground: oklch(0.2 0.02 240);
 
@@ -100,6 +100,83 @@
   --ring: oklch(0.65 0.15 40);
 
   --radius: 0.5rem;
+}
+
+/* Dark theme */
+.dark {
+  --background: oklch(0.09 0.02 240);
+  --foreground: oklch(0.9 0.01 240);
+
+  --card: oklch(0.12 0.02 240);
+  --card-foreground: oklch(0.9 0.01 240);
+  --popover: oklch(0.12 0.02 240);
+  --popover-foreground: oklch(0.9 0.01 240);
+
+  --primary: oklch(0.8 0.08 240);
+  --primary-foreground: oklch(0.1 0.02 240);
+  --secondary: oklch(0.15 0.02 240);
+  --secondary-foreground: oklch(0.8 0.01 240);
+  --muted: oklch(0.15 0.02 240);
+  --muted-foreground: oklch(0.6 0.02 240);
+  --accent: oklch(0.7 0.15 240);
+  --accent-foreground: oklch(0.1 0.02 240);
+  --destructive: oklch(0.6 0.245 27.325);
+  --destructive-foreground: oklch(0.9 0.01 240);
+
+  --border: oklch(0.2 0.02 240);
+  --input: oklch(0.2 0.02 240);
+  --ring: oklch(0.7 0.15 240);
+}
+
+/* Color theme variations */
+.theme-blue {
+  --accent: oklch(0.65 0.15 240);
+  --ring: oklch(0.65 0.15 240);
+}
+
+.dark.theme-blue {
+  --accent: oklch(0.7 0.15 240);
+  --ring: oklch(0.7 0.15 240);
+}
+
+.theme-green {
+  --accent: oklch(0.65 0.15 140);
+  --ring: oklch(0.65 0.15 140);
+}
+
+.dark.theme-green {
+  --accent: oklch(0.7 0.15 140);
+  --ring: oklch(0.7 0.15 140);
+}
+
+.theme-purple {
+  --accent: oklch(0.65 0.15 300);
+  --ring: oklch(0.65 0.15 300);
+}
+
+.dark.theme-purple {
+  --accent: oklch(0.7 0.15 300);
+  --ring: oklch(0.7 0.15 300);
+}
+
+.theme-orange {
+  --accent: oklch(0.65 0.15 40);
+  --ring: oklch(0.65 0.15 40);
+}
+
+.dark.theme-orange {
+  --accent: oklch(0.7 0.15 40);
+  --ring: oklch(0.7 0.15 40);
+}
+
+.theme-red {
+  --accent: oklch(0.65 0.15 20);
+  --ring: oklch(0.65 0.15 20);
+}
+
+.dark.theme-red {
+  --accent: oklch(0.7 0.15 20);
+  --ring: oklch(0.7 0.15 20);
 }
 
 @theme {

@@ -3,6 +3,7 @@ import { Separator } from '@/components/ui/separator'
 import { Hash, List } from '@phosphor-icons/react'
 import { Channel } from '@/types'
 import { SearchInput } from '@/components/SearchInput'
+import { SettingsModal } from '@/components/SettingsModal'
 
 interface HeaderProps {
   channels: Channel[]
@@ -35,14 +36,15 @@ export const Header = ({ channels, currentChannel, searchQuery, onSidebarToggle,
         {currentChannelData?.description || ''}
       </p>
       
-      {/* Search input - takes remaining space */}
-      <div className="flex-1 flex justify-end">
+      {/* Search input and settings */}
+      <div className="flex-1 flex items-center justify-end gap-2">
         <SearchInput
           ref={searchInputRef}
           searchQuery={searchQuery}
           onSearchChange={onSearchChange}
           placeholder="Search messages..."
         />
+        <SettingsModal />
       </div>
     </div>
   )

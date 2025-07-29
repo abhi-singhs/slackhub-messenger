@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { UserInfo } from '@/types'
 import { useSlackData } from '@/hooks/useSlackData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
+import { useSettings } from '@/hooks/useSettings'
 import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
@@ -9,11 +10,15 @@ import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
 import { QuickSwitcher } from '@/components/QuickSwitcher'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
+import { SettingsModal } from '@/components/SettingsModal'
 
 // View states for the app
 type ViewState = 'channel' | 'search'
 
 function App() {
+  // Initialize settings hook to apply theme on mount
+  useSettings()
+  
   const {
     user,
     currentChannel,
@@ -38,6 +43,7 @@ function App() {
   const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
   const [showQuickSwitcher, setShowQuickSwitcher] = useState(false)
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   
   // Refs for keyboard shortcuts
   const messageInputRef = useRef<HTMLDivElement>(null)
@@ -195,6 +201,14 @@ function App() {
   }
 
   const handleAddReaction = () => {
+    // Get current messages for the active view
+    const currentMessages = viewState === 'search' 
+      ? (messages?.filter(message => 
+          message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          message.userName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) || [])
+      : (messages?.filter(message => message.channelId === currentChannel) || [])
+    
     if (!currentMessages.length) return
     const lastMessage = currentMessages[currentMessages.length - 1]
     if (lastMessage) {
@@ -203,6 +217,14 @@ function App() {
   }
 
   const handleStartThreadOnLastMessage = () => {
+    // Get current messages for the active view
+    const currentMessages = viewState === 'search' 
+      ? (messages?.filter(message => 
+          message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          message.userName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) || [])
+      : (messages?.filter(message => message.channelId === currentChannel) || [])
+    
     if (!currentMessages.length) return
     const lastMessage = currentMessages[currentMessages.length - 1]
     if (lastMessage && !lastMessage.threadId) {
@@ -215,6 +237,8 @@ function App() {
       setShowQuickSwitcher(false)
     } else if (showKeyboardHelp) {
       setShowKeyboardHelp(false)
+    } else if (showSettings) {
+      setShowSettings(false)
     } else if (activeThreadId) {
       setActiveThreadId(null)
     } else if (openEmojiPickers.size > 0) {
@@ -231,6 +255,10 @@ function App() {
     setShowKeyboardHelp(true)
   }
 
+  const handleShowSettings = () => {
+    setShowSettings(true)
+  }
+
   // Setup keyboard shortcuts
   useKeyboardShortcuts({
     onQuickSwitcher: handleQuickSwitcher,
@@ -244,6 +272,7 @@ function App() {
     onSearch: handleFocusSearch,
     onEscape: handleEscape,
     onHelp: handleShowHelp,
+    onSettings: handleShowSettings,
   })
 
   if (!user || !channels) {
@@ -353,6 +382,12 @@ function App() {
       <KeyboardShortcutsHelp
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        open={showSettings}
+        onOpenChange={setShowSettings}
       />
     </div>
   );
