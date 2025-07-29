@@ -19,6 +19,8 @@ export interface Message {
   threadId?: string // Parent message ID if this is a thread reply
   replyCount?: number // Number of replies to this message
   attachments?: FileAttachment[] // File attachments
+  edited?: boolean // Whether the message has been edited
+  editedAt?: number // Timestamp when the message was last edited
 }
 
 export interface MessageReaction {

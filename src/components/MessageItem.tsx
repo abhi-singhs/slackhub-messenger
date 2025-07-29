@@ -1,8 +1,11 @@
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Smiley, Chat } from '@phosphor-icons/react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Smiley, Chat, Pencil, Trash, DotsThree } from '@phosphor-icons/react'
 import { Message, UserInfo, UserStatus } from '@/types'
 import { formatTime, getUserName } from '@/lib/utils'
 import { highlightSearchTerm } from '@/lib/utils'
@@ -21,6 +24,8 @@ interface MessageItemProps {
   onEmojiPickerToggle?: (open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onStartThread?: (messageId: string) => void
+  onEditMessage?: (messageId: string, newContent: string) => void
+  onDeleteMessage?: (messageId: string) => void
 }
 
 export const MessageItem = ({
@@ -33,8 +38,41 @@ export const MessageItem = ({
   userStatus = 'active',
   onEmojiPickerToggle = () => {},
   onReactionAdd,
-  onStartThread
+  onStartThread,
+  onEditMessage,
+  onDeleteMessage
 }: MessageItemProps) => {
+  const [isEditing, setIsEditing] = useState(false)
+  const [editContent, setEditContent] = useState(message.content)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showMessageMenu, setShowMessageMenu] = useState(false)
+  
+  const isOwnMessage = user?.id === message.userId
+  
+  const handleEdit = () => {
+    setIsEditing(true)
+    setEditContent(message.content)
+    setShowMessageMenu(false)
+  }
+  
+  const handleSaveEdit = () => {
+    if (onEditMessage && editContent.trim() !== message.content) {
+      onEditMessage(message.id, editContent.trim())
+    }
+    setIsEditing(false)
+  }
+  
+  const handleCancelEdit = () => {
+    setIsEditing(false)
+    setEditContent(message.content)
+  }
+  
+  const handleDelete = () => {
+    if (onDeleteMessage) {
+      onDeleteMessage(message.id)
+    }
+    setShowDeleteDialog(false)
+  }
   const renderMessageContent = (content: string) => {
     return content.split('\n').map((line, index, array) => {
       // Handle different formatting
@@ -122,11 +160,58 @@ export const MessageItem = ({
           </span>
           <span className="text-xs text-muted-foreground flex-shrink-0">
             {formatTime(message.timestamp)}
+            {message.edited && (
+              <span className="ml-1 text-xs text-muted-foreground">(edited)</span>
+            )}
           </span>
           <div className="flex-1"></div>
           
           {!showReactionsOnly && (
             <>
+              {/* Message Options Menu - Only for own messages */}
+              {isOwnMessage && onEditMessage && onDeleteMessage && (
+                <Popover 
+                  open={showMessageMenu}
+                  onOpenChange={setShowMessageMenu}
+                >
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                    >
+                      <DotsThree className="h-4 w-4" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-1" side="top" align="end">
+                    <div className="flex flex-col">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start gap-2 h-8"
+                        onClick={handleEdit}
+                        data-edit-button
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit message
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="justify-start gap-2 h-8 text-destructive hover:text-destructive"
+                        onClick={() => {
+                          setShowDeleteDialog(true)
+                          setShowMessageMenu(false)
+                        }}
+                      >
+                        <Trash className="h-4 w-4" />
+                        Delete message
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              )}
+              
               {/* Thread button */}
               {onStartThread && !message.threadId && (
                 <Button
@@ -169,9 +254,37 @@ export const MessageItem = ({
           )}
         </div>
         <div className="relative z-20">
-          <div className="text-sm text-foreground leading-relaxed break-words mb-2">
-            {renderMessageContent(message.content)}
-          </div>
+          {isEditing ? (
+            <div className="mb-2">
+              <Input
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    handleSaveEdit()
+                  } else if (e.key === 'Escape') {
+                    handleCancelEdit()
+                  }
+                }}
+                className="text-sm mb-2"
+                placeholder="Edit your message..."
+                autoFocus
+              />
+              <div className="flex gap-2">
+                <Button size="sm" onClick={handleSaveEdit}>
+                  Save
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleCancelEdit}>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-sm text-foreground leading-relaxed break-words mb-2">
+              {renderMessageContent(message.content)}
+            </div>
+          )}
           
           {/* File Attachments */}
           {message.attachments && message.attachments.length > 0 && (
@@ -230,6 +343,31 @@ export const MessageItem = ({
           </div>
         </div>
       </div>
+      
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Message</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this message? This action cannot be undone.
+              {message.replyCount && message.replyCount > 0 && (
+                <span className="block mt-2 text-destructive">
+                  This will also delete {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}.
+                </span>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDelete}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -12,6 +12,7 @@ interface KeyboardShortcutsConfig {
   onSendMessage?: () => void
   onAddReaction?: () => void
   onStartThread?: () => void
+  onEditLastMessage?: () => void
   
   // Search
   onSearch?: () => void
@@ -91,6 +92,11 @@ export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
 
     if (event.key === 't' && !event.metaKey && !event.ctrlKey && !event.altKey) {
       config.onStartThread?.()
+      return
+    }
+
+    if (event.key === 'e' && !event.metaKey && !event.ctrlKey && !event.altKey) {
+      config.onEditLastMessage?.()
       return
     }
 

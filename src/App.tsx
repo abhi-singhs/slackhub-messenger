@@ -35,7 +35,9 @@ function App() {
     updateChannel,
     deleteChannel,
     addReaction,
-    markChannelAsRead
+    markChannelAsRead,
+    editMessage,
+    deleteMessage
   } = useSlackData()
 
   const [messageInput, setMessageInput] = useState('')
@@ -251,6 +253,38 @@ function App() {
     }
   }
 
+  const handleEditLastMessage = () => {
+    if (!user) return
+    
+    // Get current messages for the active view
+    const currentMessages = viewState === 'search' 
+      ? (messages?.filter(message => 
+          message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          message.userName.toLowerCase().includes(searchQuery.toLowerCase())
+        ) || [])
+      : (messages?.filter(message => message.channelId === currentChannel) || [])
+    
+    // Find the last message by this user
+    const userMessages = currentMessages.filter(msg => msg.userId === user.id)
+    if (userMessages.length === 0) return
+    
+    const lastMessage = userMessages[userMessages.length - 1]
+    // For now, we'll just focus on the message. In a real implementation,
+    // we could trigger the edit mode directly on the MessageItem
+    if (lastMessage) {
+      const messageElement = document.getElementById(`message-${lastMessage.id}`)
+      if (messageElement) {
+        messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+        
+        // Find the edit button and click it
+        const editButton = messageElement.querySelector('[data-edit-button]') as HTMLButtonElement
+        if (editButton) {
+          editButton.click()
+        }
+      }
+    }
+  }
+
   const handleShowHelp = () => {
     setShowKeyboardHelp(true)
   }
@@ -268,6 +302,7 @@ function App() {
     onSearch: handleFocusSearch,
     onEscape: handleEscape,
     onHelp: handleShowHelp,
+    onEditLastMessage: handleEditLastMessage,
   })
 
   if (!user || !channels) {
@@ -334,6 +369,8 @@ function App() {
           onReactionAdd={addReaction}
           onMessageClick={viewState === 'search' ? handleSearchMessageClick : undefined}
           onStartThread={handleStartThread}
+          onEditMessage={editMessage}
+          onDeleteMessage={deleteMessage}
           searchQuery={viewState === 'search' ? searchQuery : ''}
         />
 
@@ -366,6 +403,8 @@ function App() {
           onEmojiPickerToggle={handleEmojiPickerToggle}
           onReactionAdd={addReaction}
           onSendThreadReply={handleSendThreadReply}
+          onEditMessage={editMessage}
+          onDeleteMessage={deleteMessage}
         />
       )}
 

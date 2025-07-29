@@ -12,6 +12,8 @@ interface MessagesViewProps {
   onReactionAdd: (messageId: string, emoji: string) => void
   onMessageClick?: (messageId: string) => void
   onStartThread?: (messageId: string) => void
+  onEditMessage?: (messageId: string, newContent: string) => void
+  onDeleteMessage?: (messageId: string) => void
   searchQuery?: string
 }
 
@@ -25,6 +27,8 @@ export function MessagesView({
   onReactionAdd,
   onMessageClick,
   onStartThread,
+  onEditMessage,
+  onDeleteMessage,
   searchQuery
 }: MessagesViewProps) {
   
@@ -41,6 +45,8 @@ export function MessagesView({
         onEmojiPickerToggle={onEmojiPickerToggle}
         onReactionAdd={onReactionAdd}
         onMessageClick={onMessageClick}
+        onEditMessage={onEditMessage}
+        onDeleteMessage={onDeleteMessage}
       />
     )
   }
@@ -55,6 +61,8 @@ export function MessagesView({
       onEmojiPickerToggle={onEmojiPickerToggle}
       onReactionAdd={onReactionAdd}
       onStartThread={onStartThread}
+      onEditMessage={onEditMessage}
+      onDeleteMessage={onDeleteMessage}
     />
   )
 }

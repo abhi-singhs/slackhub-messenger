@@ -13,6 +13,8 @@ interface MessagesListProps {
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onStartThread?: (messageId: string) => void
+  onEditMessage?: (messageId: string, newContent: string) => void
+  onDeleteMessage?: (messageId: string) => void
 }
 
 export const MessagesList = ({
@@ -22,7 +24,9 @@ export const MessagesList = ({
   userStatus = 'active',
   onEmojiPickerToggle,
   onReactionAdd,
-  onStartThread
+  onStartThread,
+  onEditMessage,
+  onDeleteMessage
 }: MessagesListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -61,6 +65,8 @@ export const MessagesList = ({
                     onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                     onReactionAdd={onReactionAdd}
                     onStartThread={onStartThread}
+                    onEditMessage={onEditMessage}
+                    onDeleteMessage={onDeleteMessage}
                   />
                 </div>
               ))}

@@ -20,6 +20,8 @@ interface ThreadViewProps {
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onSendThreadReply: (content: string, threadId: string, attachments?: FileAttachment[]) => void
+  onEditMessage?: (messageId: string, newContent: string) => void
+  onDeleteMessage?: (messageId: string) => void
 }
 
 export function ThreadView({
@@ -32,7 +34,9 @@ export function ThreadView({
   onClose,
   onEmojiPickerToggle,
   onReactionAdd,
-  onSendThreadReply
+  onSendThreadReply,
+  onEditMessage,
+  onDeleteMessage
 }: ThreadViewProps) {
   const [messageInput, setMessageInput] = useState('')
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
@@ -107,83 +111,17 @@ export function ThreadView({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Parent Message */}
           <div className="pb-4 border-b">
-            <div className="flex items-start gap-3 group">
-              <Avatar className="w-10 h-10 flex-shrink-0" showOnlineIndicator={true}>
-                <AvatarImage 
-                  src={parentMessage.userAvatar || ''} 
-                  alt={parentMessage.userName} 
-                  showOnlineIndicator={true}
-                  status={parentMessage.userId === user?.id ? userStatus : 'active'}
-                />
-                <AvatarFallback>{parentMessage.userName.charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-semibold text-sm">
-                    {parentMessage.userName}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {formatTime(parentMessage.timestamp)}
-                  </span>
-                  <div className="relative ml-auto">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-all duration-200"
-                      onClick={() => onEmojiPickerToggle(parentMessage.id, !openEmojiPickers.has(parentMessage.id))}
-                      data-emoji-picker
-                    >
-                      <Smiley className="h-4 w-4" />
-                    </Button>
-                    {openEmojiPickers.has(parentMessage.id) && (
-                      <div className="absolute top-8 right-0 z-50">
-                        <div className="w-0.5 h-2 bg-border mx-auto mb-1"></div>
-                        <EmojiPicker
-                          onEmojiSelect={(emoji) => {
-                            onReactionAdd(parentMessage.id, emoji.native)
-                            onEmojiPickerToggle(parentMessage.id, false)
-                          }}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="text-sm">
-                  <div 
-                    className="prose-sm" 
-                    dangerouslySetInnerHTML={{ __html: parentMessage.content }}
-                  />
-                  
-                  {/* File Attachments */}
-                  {parentMessage.attachments && parentMessage.attachments.length > 0 && (
-                    <div className="mt-2 space-y-2">
-                      {parentMessage.attachments.map((attachment) => (
-                        <FileAttachmentView
-                          key={attachment.id}
-                          attachment={attachment}
-                        />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {parentMessage.reactions && parentMessage.reactions.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {parentMessage.reactions.map((reaction) => (
-                        <button
-                          key={reaction.emoji}
-                          onClick={() => onReactionAdd(parentMessage.id, reaction.emoji)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-secondary hover:bg-secondary/80 transition-colors"
-                          title={`${reaction.users.length} user${reaction.users.length === 1 ? '' : 's'} reacted with ${reaction.emoji}`}
-                        >
-                          <span>{reaction.emoji}</span>
-                          <span className="text-xs text-muted-foreground">{reaction.count}</span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <MessageItem
+              message={parentMessage}
+              user={user}
+              userStatus={userStatus}
+              isEmojiPickerOpen={openEmojiPickers.has(parentMessage.id)}
+              onEmojiPickerToggle={(open) => onEmojiPickerToggle(parentMessage.id, open)}
+              onReactionAdd={onReactionAdd}
+              onEditMessage={onEditMessage}
+              onDeleteMessage={onDeleteMessage}
+              showReactionsOnly={false}
+            />
           </div>
 
           {/* Thread Replies */}
@@ -198,6 +136,8 @@ export function ThreadView({
                   isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                   onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                   onReactionAdd={onReactionAdd}
+                  onEditMessage={onEditMessage}
+                  onDeleteMessage={onDeleteMessage}
                 />
               ))}
             </div>

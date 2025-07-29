@@ -29,6 +29,7 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
         { keys: [`${modKey}`, 'Enter'], description: 'Send message' },
         { keys: ['R'], description: 'Add reaction to last message' },
         { keys: ['T'], description: 'Start thread on last message' },
+        { keys: ['E'], description: 'Edit last message' },
       ]
     },
     {
@@ -78,7 +79,7 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
         
         <div className="mt-6 p-4 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
-            <strong>Note:</strong> Navigation shortcuts (C, R, T) work when not typing in input fields. 
+            <strong>Note:</strong> Navigation shortcuts (C, R, T, E) work when not typing in input fields. 
             Use {modKey}+Enter to send messages while typing.
           </p>
         </div>

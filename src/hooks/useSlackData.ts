@@ -200,6 +200,61 @@ export const useSlackData = () => {
     setMessages((current) => (current || []).filter(message => message.channelId !== channelId))
   }, [])
 
+  const editMessage = useCallback((messageId: string, newContent: string) => {
+    if (!user) return
+    
+    setMessages((current) => 
+      (current || []).map(message => {
+        if (message.id === messageId && message.userId === user.id) {
+          return {
+            ...message,
+            content: newContent.trim(),
+            edited: true,
+            editedAt: Date.now()
+          }
+        }
+        return message
+      })
+    )
+  }, [user])
+
+  const deleteMessage = useCallback((messageId: string) => {
+    if (!user) return
+    
+    setMessages((current) => {
+      const messageToDelete = (current || []).find(m => m.id === messageId)
+      
+      // Only allow deleting own messages
+      if (!messageToDelete || messageToDelete.userId !== user.id) return current || []
+      
+      // If this message has thread replies, we need to handle them
+      const updatedMessages = (current || []).filter(message => {
+        // Remove the main message
+        if (message.id === messageId) return false
+        
+        // Remove thread replies to this message
+        if (message.threadId === messageId) return false
+        
+        return true
+      })
+      
+      // Update reply counts for any parent messages if this was a thread reply
+      if (messageToDelete.threadId) {
+        return updatedMessages.map(msg => {
+          if (msg.id === messageToDelete.threadId) {
+            return {
+              ...msg,
+              replyCount: Math.max((msg.replyCount || 1) - 1, 0)
+            }
+          }
+          return msg
+        })
+      }
+      
+      return updatedMessages
+    })
+  }, [user])
+
   return {
     user,
     currentChannel,
@@ -212,6 +267,8 @@ export const useSlackData = () => {
     updateChannel,
     deleteChannel,
     addReaction,
-    markChannelAsRead
+    markChannelAsRead,
+    editMessage,
+    deleteMessage
   }
 }

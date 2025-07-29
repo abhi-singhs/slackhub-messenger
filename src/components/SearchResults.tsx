@@ -21,6 +21,8 @@ interface SearchResultsProps {
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onMessageClick?: (messageId: string) => void
+  onEditMessage?: (messageId: string, newContent: string) => void
+  onDeleteMessage?: (messageId: string) => void
 }
 
 export const SearchResults = ({
@@ -32,7 +34,9 @@ export const SearchResults = ({
   openEmojiPickers,
   onEmojiPickerToggle,
   onReactionAdd,
-  onMessageClick
+  onMessageClick,
+  onEditMessage,
+  onDeleteMessage
 }: SearchResultsProps) => {
   // Search results with context
   const searchResults = useMemo(() => {
