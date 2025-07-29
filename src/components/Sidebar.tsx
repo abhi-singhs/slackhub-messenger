@@ -13,7 +13,7 @@ import { Channel, UserInfo } from '@/types'
 import { getChannelUnreadCount } from '@/utils'
 
 interface SidebarProps {
-  user: UserInfo
+  user: UserInfo | null
   channels: Channel[]
   currentChannel: string
   messages: any[]
@@ -134,10 +134,10 @@ export const Sidebar = ({
           </div>
           <div className="flex items-center gap-2 mt-2">
             <Avatar className="w-6 h-6">
-              <AvatarImage src={user.avatarUrl} alt={user.login} />
-              <AvatarFallback>{user.login.charAt(0).toUpperCase()}</AvatarFallback>
+              <AvatarImage src={user?.avatarUrl || ''} alt={user?.login || 'User'} />
+              <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
-            <span className="text-sm text-muted-foreground">{user.login}</span>
+            <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
           </div>
         </div>
         

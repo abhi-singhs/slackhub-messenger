@@ -15,7 +15,7 @@ interface SearchResultsProps {
   searchQuery: string
   messages: Message[]
   channels: Channel[]
-  user: UserInfo
+  user: UserInfo | null
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void

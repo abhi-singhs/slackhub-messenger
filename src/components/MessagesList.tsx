@@ -7,7 +7,7 @@ import { MessageItem } from './MessageItem'
 
 interface MessagesListProps {
   messages: Message[]
-  user: UserInfo
+  user: UserInfo | null
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void

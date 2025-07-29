@@ -1,7 +1,8 @@
-import { Channel } from '@/types'
+import { Channel, UserInfo } from '@/types'
 import { RichTextEditor } from './RichTextEditor'
 
 interface MessageInputProps {
+  user: UserInfo | null
   channels: Channel[]
   currentChannel: string
   messageInput: string
@@ -12,6 +13,7 @@ interface MessageInputProps {
 }
 
 export const MessageInput = ({
+  user,
   channels,
   currentChannel,
   messageInput,

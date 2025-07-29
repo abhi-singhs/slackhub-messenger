@@ -150,7 +150,7 @@ function App() {
   const currentMessages = viewState === 'search' 
     ? (messages?.filter(message => 
         message.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        message.user.login.toLowerCase().includes(searchQuery.toLowerCase())
+        message.userName.toLowerCase().includes(searchQuery.toLowerCase())
       ) || [])
     : (messages?.filter(message => message.channelId === currentChannel) || [])
 
