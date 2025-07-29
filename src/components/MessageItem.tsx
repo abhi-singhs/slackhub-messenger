@@ -126,11 +126,16 @@ export const MessageItem = ({
           
           {!showReactionsOnly && (
             <>
-              {/* Thread indicator icon */}
+              {/* Thread button */}
               {onStartThread && !message.threadId && (
-                <div className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => onStartThread(message.id)}
+                >
                   <Chat className="h-4 w-4 text-muted-foreground" />
-                </div>
+                </Button>
               )}
 
               {/* Add Reaction Button */}
