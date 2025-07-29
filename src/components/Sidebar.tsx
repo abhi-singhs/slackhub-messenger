@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Switch } from '@/components/ui/switch'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear } from '@phosphor-icons/react'
+import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard } from '@phosphor-icons/react'
 import { Channel, UserInfo } from '@/types'
 import { getChannelUnreadCount } from '@/utils'
 import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
@@ -35,6 +35,7 @@ interface SidebarProps {
   onChannelUpdate: (channelId: string, name: string, description: string) => void
   onChannelDelete: (channelId: string) => void
   onSidebarToggle: (open: boolean) => void
+  onShowKeyboardShortcuts?: () => void
 }
 
 export const Sidebar = ({
@@ -48,7 +49,8 @@ export const Sidebar = ({
   onChannelCreate,
   onChannelUpdate,
   onChannelDelete,
-  onSidebarToggle
+  onSidebarToggle,
+  onShowKeyboardShortcuts
 }: SidebarProps) => {
   const { settings, updateTheme, updateColorTheme } = useSettings()
   const [newChannelName, setNewChannelName] = useState('')
@@ -283,6 +285,19 @@ export const Sidebar = ({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56 p-4 space-y-4">
+              {/* Keyboard Shortcuts */}
+              <div className="pb-2 border-b border-border">
+                <button
+                  onClick={() => {
+                    onShowKeyboardShortcuts?.()
+                  }}
+                  className="w-full flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-1"
+                >
+                  <Keyboard className="h-4 w-4" />
+                  Keyboard Shortcuts
+                </button>
+              </div>
+
               {/* Dark Mode Toggle */}
               <div className="flex items-center justify-between">
                 <Label className="text-sm">Dark Mode</Label>

@@ -302,6 +302,7 @@ function App() {
         onChannelUpdate={updateChannel}
         onChannelDelete={handleChannelDelete}
         onSidebarToggle={setSidebarOpen}
+        onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
       />
       
       {/* Main Content */}
