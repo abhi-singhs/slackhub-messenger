@@ -3,7 +3,8 @@ import { Message, UserInfo, Channel } from '@/types'
 import { Button } from '@/components/ui/button'
 import { MessageItem } from '@/components/MessageItem'
 import { MessageInput } from '@/components/MessageInput'
-import { X } from '@phosphor-icons/react'
+import { EmojiPicker } from '@/components/EmojiPicker'
+import { X, Smiley } from '@phosphor-icons/react'
 
 interface ThreadViewProps {
   parentMessage: Message
@@ -72,7 +73,7 @@ export function ThreadView({
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {/* Parent Message */}
           <div className="pb-4 border-b">
-            <div className="flex items-start gap-3">
+            <div className="flex items-start gap-3 group">>
               <img
                 src={parentMessage.userAvatar || '/default-avatar.png'}
                 alt=""
@@ -86,15 +87,49 @@ export function ThreadView({
                   <span className="text-xs text-muted-foreground">
                     {formatTime(parentMessage.timestamp)}
                   </span>
+                  <div className="relative ml-auto">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 hover:bg-muted-foreground/20 transition-all duration-200"
+                      onClick={() => onEmojiPickerToggle(parentMessage.id, !openEmojiPickers.has(parentMessage.id))}
+                    >
+                      <Smiley className="h-4 w-4" />
+                    </Button>
+                    {openEmojiPickers.has(parentMessage.id) && (
+                      <div className="absolute top-8 right-0 z-50">
+                        <div className="w-0.5 h-2 bg-border mx-auto mb-1"></div>
+                        <EmojiPicker
+                          onEmojiSelect={(emoji) => {
+                            onReactionAdd(parentMessage.id, emoji.native)
+                            onEmojiPickerToggle(parentMessage.id, false)
+                          }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <MessageItem
-                  message={parentMessage}
-                  user={user}
-                  openEmojiPickers={openEmojiPickers}
-                  onEmojiPickerToggle={onEmojiPickerToggle}
-                  onReactionAdd={onReactionAdd}
-                  showReactionsOnly={false}
-                />
+                <div className="text-sm">
+                  <div 
+                    className="prose-sm" 
+                    dangerouslySetInnerHTML={{ __html: parentMessage.content }}
+                  />
+                  {parentMessage.reactions && Object.keys(parentMessage.reactions).length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-2">
+                      {Object.entries(parentMessage.reactions).map(([emoji, users]) => (
+                        <button
+                          key={emoji}
+                          onClick={() => onReactionAdd(parentMessage.id, emoji)}
+                          className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-secondary hover:bg-secondary/80 transition-colors"
+                          title={`${users.map(u => u.name).join(', ')} reacted with ${emoji}`}
+                        >
+                          <span>{emoji}</span>
+                          <span className="text-xs text-muted-foreground">{users.length}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
