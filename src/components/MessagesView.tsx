@@ -10,6 +10,7 @@ interface MessagesViewProps {
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
   onMessageClick?: (messageId: string) => void
+  onStartThread?: (messageId: string) => void
   searchQuery?: string
 }
 
@@ -21,6 +22,7 @@ export function MessagesView({
   onEmojiPickerToggle,
   onReactionAdd,
   onMessageClick,
+  onStartThread,
   searchQuery
 }: MessagesViewProps) {
   // If we have a search query, show search results
@@ -47,6 +49,7 @@ export function MessagesView({
       openEmojiPickers={openEmojiPickers}
       onEmojiPickerToggle={onEmojiPickerToggle}
       onReactionAdd={onReactionAdd}
+      onStartThread={onStartThread}
     />
   )
 }

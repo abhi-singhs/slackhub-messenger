@@ -5,6 +5,7 @@ import { Sidebar } from '@/components/Sidebar'
 import { Header } from '@/components/Header'
 import { MessagesView } from '@/components/MessagesView'
 import { MessageInput } from '@/components/MessageInput'
+import { ThreadView } from '@/components/ThreadView'
 
 // View states for the app
 type ViewState = 'channel' | 'search'
@@ -31,6 +32,7 @@ function App() {
   const [showInputEmojiPicker, setShowInputEmojiPicker] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewState, setViewState] = useState<ViewState>('channel')
+  const [activeThreadId, setActiveThreadId] = useState<string | null>(null)
 
   // Set initial channel when channels are loaded
   useEffect(() => {
@@ -66,6 +68,7 @@ function App() {
     setSidebarOpen(false)
     setSearchQuery('')
     setViewState('channel')
+    setActiveThreadId(null) // Close any open thread
   }
 
   const handleChannelCreate = (name: string) => {
@@ -90,6 +93,20 @@ function App() {
       sendMessage(messageInput, currentChannel)
       setMessageInput('')
     }
+  }
+
+  const handleSendThreadReply = (content: string, threadId: string) => {
+    if (currentChannel) {
+      sendMessage(content, currentChannel, threadId)
+    }
+  }
+
+  const handleStartThread = (messageId: string) => {
+    setActiveThreadId(messageId)
+  }
+
+  const handleCloseThread = () => {
+    setActiveThreadId(null)
   }
 
   const handleEmojiPickerToggle = (messageId: string, open: boolean) => {
@@ -154,6 +171,10 @@ function App() {
       ) || [])
     : (messages?.filter(message => message.channelId === currentChannel) || [])
 
+  // Get thread data
+  const activeThread = activeThreadId ? messages?.find(m => m.id === activeThreadId) : null
+  const threadMessages = activeThreadId ? (messages?.filter(m => m.threadId === activeThreadId) || []) : []
+
   return (
     <div className="flex h-screen bg-background relative">
       <Sidebar
@@ -189,6 +210,7 @@ function App() {
           onEmojiPickerToggle={handleEmojiPickerToggle}
           onReactionAdd={addReaction}
           onMessageClick={viewState === 'search' ? handleSearchMessageClick : undefined}
+          onStartThread={handleStartThread}
           searchQuery={viewState === 'search' ? searchQuery : ''}
         />
 
@@ -206,6 +228,21 @@ function App() {
           />
         )}
       </div>
+
+      {/* Thread View Modal */}
+      {activeThread && (
+        <ThreadView
+          parentMessage={activeThread}
+          threadMessages={threadMessages}
+          user={user}
+          channels={channels || []}
+          openEmojiPickers={openEmojiPickers}
+          onClose={handleCloseThread}
+          onEmojiPickerToggle={handleEmojiPickerToggle}
+          onReactionAdd={addReaction}
+          onSendThreadReply={handleSendThreadReply}
+        />
+      )}
     </div>
   );
 }

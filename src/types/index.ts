@@ -7,6 +7,8 @@ export interface Message {
   timestamp: number
   channelId: string
   reactions?: MessageReaction[]
+  threadId?: string // Parent message ID if this is a thread reply
+  replyCount?: number // Number of replies to this message
 }
 
 export interface MessageReaction {

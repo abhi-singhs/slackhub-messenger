@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Smiley } from '@phosphor-icons/react'
+import { Smiley, Chat } from '@phosphor-icons/react'
 import { Message, UserInfo } from '@/types'
 import { formatTime, getUserName } from '@/utils'
 import { highlightSearchTerm } from '@/lib/utils'
@@ -11,21 +11,25 @@ import { EmojiPicker } from './EmojiPicker'
 interface MessageItemProps {
   message: Message
   user: UserInfo | null
-  messages: Message[]
-  isEmojiPickerOpen: boolean
+  messages?: Message[]
+  isEmojiPickerOpen?: boolean
   searchQuery?: string
-  onEmojiPickerToggle: (open: boolean) => void
+  showReactionsOnly?: boolean
+  onEmojiPickerToggle?: (open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
+  onStartThread?: (messageId: string) => void
 }
 
 export const MessageItem = ({
   message,
   user,
-  messages,
-  isEmojiPickerOpen,
+  messages = [],
+  isEmojiPickerOpen = false,
   searchQuery,
-  onEmojiPickerToggle,
-  onReactionAdd
+  showReactionsOnly = false,
+  onEmojiPickerToggle = () => {},
+  onReactionAdd,
+  onStartThread
 }: MessageItemProps) => {
   const renderMessageContent = (content: string) => {
     return content.split('\n').map((line, index, array) => {
@@ -100,36 +104,65 @@ export const MessageItem = ({
           </span>
           <div className="flex-1"></div>
           
-          {/* Add Reaction Button - Top Right */}
-          <Popover 
-            open={isEmojiPickerOpen}
-            onOpenChange={onEmojiPickerToggle}
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+          {!showReactionsOnly && (
+            <>
+              {/* Start Thread Button */}
+              {onStartThread && !message.threadId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                  onClick={() => onStartThread(message.id)}
+                >
+                  <Chat className="h-4 w-4" />
+                </Button>
+              )}
+
+              {/* Add Reaction Button */}
+              <Popover 
+                open={isEmojiPickerOpen}
+                onOpenChange={onEmojiPickerToggle}
               >
-                <Smiley className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 border-accent/20 mb-2 md:mb-0" side="top" align="end">
-              <div className="relative">
-                {/* Connecting line to message */}
-                <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
-                <EmojiPicker onEmojiSelect={(emoji) => {
-                  onReactionAdd(message.id, emoji)
-                  onEmojiPickerToggle(false)
-                }} />
-              </div>
-            </PopoverContent>
-          </Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity hover:bg-accent hover:text-accent-foreground"
+                  >
+                    <Smiley className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 border-accent/20 mb-2 md:mb-0" side="top" align="end">
+                  <div className="relative">
+                    {/* Connecting line to message */}
+                    <div className="absolute -bottom-2 right-4 w-px h-2 bg-accent/30"></div>
+                    <EmojiPicker onEmojiSelect={(emoji) => {
+                      onReactionAdd(message.id, emoji)
+                      onEmojiPickerToggle(false)
+                    }} />
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </>
+          )}
         </div>
         <div className="relative">
           <div className="text-sm text-foreground leading-relaxed break-words mb-2">
             {renderMessageContent(message.content)}
           </div>
+          
+          {/* Thread Indicator */}
+          {!message.threadId && (message.replyCount || 0) > 0 && onStartThread && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-xs text-muted-foreground hover:text-foreground mb-2 p-1 h-auto"
+              onClick={() => onStartThread(message.id)}
+            >
+              <Chat className="h-3 w-3 mr-1" />
+              {message.replyCount} {message.replyCount === 1 ? 'reply' : 'replies'}
+            </Button>
+          )}
           
           {/* Reactions */}
           <div className="flex items-center gap-1 flex-wrap mb-1">

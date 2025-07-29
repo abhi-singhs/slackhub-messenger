@@ -22,6 +22,11 @@
 - **Why it matters**: Organizes conversations by topic, project, or team
 - **Success criteria**: Channels persist, show message counts, and allow easy switching
 
+### Message Threading
+- **What it does**: Organize conversations into threaded discussions where users can reply to specific messages, creating nested conversation flows
+- **Why it matters**: Prevents channel clutter, maintains conversation context, and allows parallel discussions within channels
+- **Success criteria**: Users can start threads from any message, view thread conversations in dedicated modal, reply to threads, see reply counts on parent messages, and navigate between channel and thread views seamlessly
+
 ### Real-time Messaging
 - **What it does**: Send and receive messages within channels with user attribution and emoji reactions
 - **Why it matters**: Core communication functionality with GitHub user integration and emotional expression

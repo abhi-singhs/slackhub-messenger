@@ -7,6 +7,8 @@ interface MessageInputProps {
   currentChannel: string
   messageInput: string
   showInputEmojiPicker: boolean
+  placeholder?: string
+  isThreadReply?: boolean
   onMessageInput: (content: string) => void
   onEmojiPickerToggle: (show: boolean) => void
   onSendMessage: () => void
@@ -18,17 +20,20 @@ export const MessageInput = ({
   currentChannel,
   messageInput,
   showInputEmojiPicker,
+  placeholder,
+  isThreadReply = false,
   onMessageInput,
   onEmojiPickerToggle,
   onSendMessage
 }: MessageInputProps) => {
   const currentChannelName = channels?.find(c => c.id === currentChannel)?.name || currentChannel
+  const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
 
   return (
-    <div className="p-2 sm:p-4 border-t border-border bg-card">
+    <div className={`p-2 sm:p-4 border-t border-border bg-card ${isThreadReply ? 'rounded-b-lg' : ''}`}>
       <RichTextEditor
         content={messageInput}
-        placeholder={`Message #${currentChannelName}`}
+        placeholder={defaultPlaceholder}
         showEmojiPicker={showInputEmojiPicker}
         onUpdate={onMessageInput}
         onEmojiPickerToggle={onEmojiPickerToggle}

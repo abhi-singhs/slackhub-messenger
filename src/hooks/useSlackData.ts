@@ -59,7 +59,7 @@ export const useSlackData = () => {
 
   // Don't auto-mark channels as read here - let App.tsx handle it when route changes
 
-  const sendMessage = useCallback((content: string, channelId?: string) => {
+  const sendMessage = useCallback((content: string, channelId?: string, threadId?: string) => {
     try {
       if (!content || !content.trim() || !user) return
 
@@ -74,10 +74,28 @@ export const useSlackData = () => {
         userName: user.login,
         userAvatar: user.avatarUrl,
         timestamp: Date.now(),
-        channelId: targetChannelId
+        channelId: targetChannelId,
+        ...(threadId && { threadId })
       }
 
-      setMessages((current) => [...(current || []), newMessage])
+      setMessages((current) => {
+        const updatedMessages = [...(current || []), newMessage]
+        
+        // If this is a thread reply, update the parent message's reply count
+        if (threadId) {
+          return updatedMessages.map(msg => {
+            if (msg.id === threadId) {
+              return {
+                ...msg,
+                replyCount: (msg.replyCount || 0) + 1
+              }
+            }
+            return msg
+          })
+        }
+        
+        return updatedMessages
+      })
     } catch (error) {
       console.error('Error sending message:', error)
     }

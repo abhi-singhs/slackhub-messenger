@@ -11,6 +11,7 @@ interface MessagesListProps {
   openEmojiPickers: Set<string>
   onEmojiPickerToggle: (messageId: string, open: boolean) => void
   onReactionAdd: (messageId: string, emoji: string) => void
+  onStartThread?: (messageId: string) => void
 }
 
 export const MessagesList = ({
@@ -18,7 +19,8 @@ export const MessagesList = ({
   user,
   openEmojiPickers,
   onEmojiPickerToggle,
-  onReactionAdd
+  onReactionAdd,
+  onStartThread
 }: MessagesListProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -26,11 +28,14 @@ export const MessagesList = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // Filter out thread replies - only show main messages
+  const mainMessages = messages.filter(message => !message.threadId)
+
   return (
     <div className="flex-1 overflow-hidden">
       <ScrollArea className="h-full p-2 sm:p-4">
         <div className="space-y-4">
-          {messages.length === 0 ? (
+          {mainMessages.length === 0 ? (
             <div className="text-center py-12">
               <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-foreground mb-2">
@@ -42,7 +47,7 @@ export const MessagesList = ({
             </div>
           ) : (
             <TooltipProvider>
-              {messages.map((message) => (
+              {mainMessages.map((message) => (
                 <div key={message.id} id={`message-${message.id}`}>
                   <MessageItem
                     message={message}
@@ -52,6 +57,7 @@ export const MessagesList = ({
                     isEmojiPickerOpen={openEmojiPickers.has(message.id)}
                     onEmojiPickerToggle={(open) => onEmojiPickerToggle(message.id, open)}
                     onReactionAdd={onReactionAdd}
+                    onStartThread={onStartThread}
                   />
                 </div>
               ))}
