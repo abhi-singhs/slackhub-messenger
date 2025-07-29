@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Github, UserX } from 'lucide-react'
+import { Loader2, Github, UserX, AlertTriangle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
+import { isSupabaseConfigured, getConfigurationMessage } from '@/lib/supabase'
 
 export const AuthComponent = () => {
   const { signIn, signUp, signInWithGitHub, signInAnonymously } = useAuth()
@@ -119,6 +120,16 @@ export const AuthComponent = () => {
           <CardDescription>
             Sign in to your account, create a new one, or continue as a guest
           </CardDescription>
+          
+          {/* Configuration Warning */}
+          {!isSupabaseConfigured() && (
+            <Alert className="mt-4">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription className="text-sm">
+                {getConfigurationMessage()}
+              </AlertDescription>
+            </Alert>
+          )}
         </CardHeader>
         <CardContent>
           <Tabs defaultValue="signin" onValueChange={resetForm}>

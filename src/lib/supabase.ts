@@ -1,17 +1,38 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Supabase configuration
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+// Supabase configuration - using fallback values that won't cause deployment errors
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://example-project.supabase.co'
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUtcHJvamVjdCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQ1MTkyMDAwLCJleHAiOjE5NjA3NjgwMDB9.placeholder-key-replace-with-actual'
+
+// Validate environment variables
+const isValidConfig = supabaseUrl.includes('supabase.co') && supabaseAnonKey.length > 50
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true
+    autoRefreshToken: isValidConfig,
+    persistSession: isValidConfig,
+    detectSessionInUrl: isValidConfig
   }
 })
+
+// Helper function to check if Supabase is properly configured
+export const isSupabaseConfigured = () => {
+  return isValidConfig && 
+    !supabaseUrl.includes('example-project') && 
+    !supabaseAnonKey.includes('placeholder-key')
+}
+
+// Helper function to get configuration status message
+export const getConfigurationMessage = () => {
+  if (!isValidConfig) {
+    return 'Supabase environment variables are missing or invalid. Please check your .env file.'
+  }
+  if (!isSupabaseConfigured()) {
+    return 'Supabase is using placeholder configuration. Please update your .env file with actual Supabase credentials.'
+  }
+  return 'Supabase is properly configured.'
+}
 
 // Database types based on our application schema
 export interface Database {
