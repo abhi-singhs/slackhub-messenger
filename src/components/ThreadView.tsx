@@ -87,17 +87,13 @@ export function ThreadView({
                     {formatTime(parentMessage.timestamp)}
                   </span>
                 </div>
-                <div
-                  className="text-sm prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: parentMessage.content }}
-                />
                 <MessageItem
                   message={parentMessage}
                   user={user}
                   openEmojiPickers={openEmojiPickers}
                   onEmojiPickerToggle={onEmojiPickerToggle}
                   onReactionAdd={onReactionAdd}
-                  showReactionsOnly={true}
+                  showReactionsOnly={false}
                 />
               </div>
             </div>
