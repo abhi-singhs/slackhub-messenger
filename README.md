@@ -1,4 +1,4 @@
-# Slack Clone with Supabase
+# SlackHub Messenger with Supabase
 
 A modern Slack-like chat application built with React, TypeScript, and Supabase for authentication and real-time data storage.
 

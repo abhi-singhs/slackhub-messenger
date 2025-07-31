@@ -110,6 +110,40 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     fetchSettings()
   }, [fetchSettings])
 
+  // Set up real-time subscription for settings changes
+  useEffect(() => {
+    if (!user) return
+
+    console.log('🔄 Setting up real-time subscription for user settings')
+
+    const subscription = supabase
+      .channel(`user-settings-${user.id}`)
+      .on('postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_settings',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('📡 Real-time settings update received:', payload)
+          if (payload.new) {
+            const settings = payload.new as any
+            console.log('🎨 Applying settings from real-time update:', settings)
+            setTheme(settings.theme || 'blue')
+            setIsDarkMode(settings.dark_mode || false)
+            setNotificationSettings(settings.notification_settings || notificationSettings)
+          }
+        }
+      )
+      .subscribe()
+
+    return () => {
+      console.log('🔄 Cleaning up settings real-time subscription')
+      supabase.removeChannel(subscription)
+    }
+  }, [user, notificationSettings])
+
   // Apply theme and dark mode to document
   useEffect(() => {
     const root = document.documentElement

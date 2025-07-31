@@ -1,3 +1,4 @@
+// Base types
 export interface FileAttachment {
   id: string
   name: string
@@ -35,12 +36,21 @@ export interface Channel {
   description?: string
 }
 
-export type UserStatus = 'active' | 'away' | 'busy'
+// User and status types
+export type UserStatus = 'active' | 'away' | 'busy' | 'offline'
 
+export interface UserInfo {
+  id: string
+  login: string
+  avatarUrl: string
+  email: string
+  isOwner: boolean
+  status?: UserStatus
+}
+
+// Call related types
 export type NotificationSound = 'subtle' | 'classic' | 'modern' | 'none'
-
 export type CallType = 'voice' | 'video'
-
 export type CallStatus = 'idle' | 'calling' | 'ringing' | 'connected' | 'ended' | 'declined' | 'missed'
 
 export interface CallParticipant {
@@ -48,17 +58,17 @@ export interface CallParticipant {
   userName: string
   userAvatar: string
   status: UserStatus
-  isMuted?: boolean
-  hasVideo?: boolean
 }
 
 export interface CallRecording {
   id: string
   callId: string
-  audioBlob: Blob
+  fileName: string
+  fileSize: number
   duration: number // in seconds
-  size: number // in bytes
-  timestamp: number
+  recordedAt: number
+  url: string
+  audioBlob?: Blob // For local recordings
   participants: string[] // user names
   callType: CallType
 }
@@ -116,4 +126,52 @@ export interface UserInfo {
   email: string
   isOwner: boolean
   status?: UserStatus
+}
+
+// Utility types for better type safety
+export type MessageId = string
+export type ChannelId = string
+export type UserId = string
+export type Timestamp = number
+
+// UI state types
+export type ViewState = 'channel' | 'search'
+export type ThemeMode = 'light' | 'dark' | 'system'
+
+// API response types
+export interface ApiResponse<T = any> {
+  data?: T
+  error?: string
+  loading?: boolean
+}
+
+// Hook return types for better type inference
+export interface MessageOperations {
+  sendMessage: (content: string, channelId?: string, threadId?: string, attachments?: FileAttachment[]) => void
+  editMessage: (messageId: string, content: string) => void
+  deleteMessage: (messageId: string) => void
+  addReaction: (messageId: string, emoji: string) => void
+}
+
+export interface ChannelOperations {
+  createChannel: (name: string) => Promise<string>
+  updateChannel: (channelId: string, updates: Partial<Channel>) => void
+  deleteChannel: (channelId: string) => void
+  markChannelAsRead: (channelId: string) => void
+}
+
+// Event handler types
+export type MessageEventHandler = (messageId: MessageId) => void
+export type ChannelEventHandler = (channelId: ChannelId) => void
+export type UserEventHandler = (userId: UserId) => void
+
+// Form data types
+export interface ChannelFormData {
+  name: string
+  description?: string
+}
+
+export interface MessageFormData {
+  content: string
+  attachments?: FileAttachment[]
 }

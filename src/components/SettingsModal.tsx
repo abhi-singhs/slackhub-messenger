@@ -13,15 +13,42 @@ import { UserInfo, Channel } from '@/types'
 import { THEME_OPTIONS } from '@/constants'
 
 interface SettingsModalProps {
-  user: UserInfo | null
-  channels: Channel[]
+  user?: UserInfo | null
+  channels?: Channel[]
   trigger?: React.ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  // Theme management props passed from parent
+  settings?: {
+    theme: 'light' | 'dark'
+    colorTheme: string
+    notifications: any
+  }
+  updateTheme?: (theme: 'light' | 'dark') => void
+  updateColorTheme?: (theme: string) => void
+  updateNotificationSettings?: (settings: any) => void
 }
 
-export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
-  const { settings, updateTheme, updateColorTheme } = useSupabaseSettings(user)
+export const SettingsModal = ({ 
+  user, 
+  channels = [], 
+  trigger, 
+  open: externalOpen, 
+  onOpenChange: externalOnOpenChange,
+  settings: passedSettings,
+  updateTheme: passedUpdateTheme,
+  updateColorTheme: passedUpdateColorTheme,
+  updateNotificationSettings: passedUpdateNotificationSettings
+}: SettingsModalProps) => {
+  // Conditionally call hook only if no props are passed (for backward compatibility)
+  const hookResult = passedSettings ? null : useSupabaseSettings(user || null)
+  
+  // Use passed props if available, otherwise fall back to hook (with safe defaults)
+  const settings = passedSettings || hookResult?.settings || { theme: 'light', colorTheme: 'blue', notifications: {} }
+  const updateTheme = passedUpdateTheme || hookResult?.updateTheme || (() => {})
+  const updateColorTheme = passedUpdateColorTheme || hookResult?.updateColorTheme || (() => {})
+  const updateNotificationSettings = passedUpdateNotificationSettings || hookResult?.updateNotificationSettings || (() => {})
+  
   const [internalOpen, setInternalOpen] = useState(false)
   
   // Use external state if provided, otherwise use internal state
@@ -133,7 +160,7 @@ export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onO
             </TabsContent>
             
             <TabsContent value="notifications" className="pr-4">
-              <NotificationSettings user={user} channels={channels} />
+              <NotificationSettings user={user || null} channels={channels} />
             </TabsContent>
           </ScrollArea>
         </Tabs>

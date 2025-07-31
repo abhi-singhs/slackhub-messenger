@@ -22,7 +22,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
-import { useSettings } from '@/hooks/useSettings'
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
 import { useNotifications } from '@/hooks/useNotifications'
 import { NotificationSound, UserInfo, Channel } from '@/types'
 import { toast } from 'sonner'
@@ -40,8 +40,7 @@ const SOUND_OPTIONS: { value: NotificationSound; label: string; description: str
 ]
 
 export const NotificationSettings = ({ user, channels }: NotificationSettingsProps) => {
-  const { settings, updateNotifications, updateChannelNotifications } = useSettings()
-  const { notifications } = settings
+  const { notificationSettings, updateNotificationSettings } = useSupabaseSettings(user)
   const { testNotificationSound, testDesktopNotification, hasNotificationPermission } = useNotifications(user, channels, [])
   
   const [newKeyword, setNewKeyword] = useState('')
@@ -49,14 +48,14 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
 
   // Initialize do not disturb until input
   useEffect(() => {
-    if (notifications.doNotDisturbUntil) {
-      const date = new Date(notifications.doNotDisturbUntil)
+    if (notificationSettings.doNotDisturbUntil) {
+      const date = new Date(notificationSettings.doNotDisturbUntil)
       setDoNotDisturbUntil(date.toISOString().slice(0, 16))
     }
-  }, [notifications.doNotDisturbUntil])
+  }, [notificationSettings.doNotDisturbUntil])
 
   const handleSoundToggle = (enabled: boolean) => {
-    updateNotifications({ soundEnabled: enabled })
+    updateNotificationSettings({ soundEnabled: enabled })
     if (!enabled) {
       toast.success('Sound notifications disabled')
     } else {
@@ -65,13 +64,13 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
   }
 
   const handleVolumeChange = (volume: number[]) => {
-    updateNotifications({ soundVolume: volume[0] })
+    updateNotificationSettings({ soundVolume: volume[0] })
   }
 
   const handleSoundTypeChange = (soundType: NotificationSound) => {
-    updateNotifications({ soundType })
+    updateNotificationSettings({ soundType })
     if (soundType !== 'none') {
-      testNotificationSound(soundType, notifications.soundVolume)
+      testNotificationSound(soundType, notificationSettings.soundVolume)
     }
   }
 
@@ -79,30 +78,30 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
     if (enabled) {
       const hasPermission = await testDesktopNotification()
       if (hasPermission) {
-        updateNotifications({ desktopNotifications: true })
+        updateNotificationSettings({ desktopNotifications: true })
         toast.success('Desktop notifications enabled')
       } else {
         toast.error('Desktop notifications permission denied')
       }
     } else {
-      updateNotifications({ desktopNotifications: false })
+      updateNotificationSettings({ desktopNotifications: false })
       toast.success('Desktop notifications disabled')
     }
   }
 
   const handleTestSound = async () => {
-    if (notifications.soundType === 'none') {
+    if (notificationSettings.soundType === 'none') {
       toast.error('Please select a sound type first')
       return
     }
-    await testNotificationSound(notifications.soundType, notifications.soundVolume)
+    await testNotificationSound(notificationSettings.soundType, notificationSettings.soundVolume)
     toast.success('Test sound played')
   }
 
   const handleAddKeyword = () => {
-    if (newKeyword.trim() && !notifications.keywords.includes(newKeyword.trim())) {
-      updateNotifications({ 
-        keywords: [...notifications.keywords, newKeyword.trim()] 
+    if (newKeyword.trim() && !notificationSettings.keywords.includes(newKeyword.trim())) {
+      updateNotificationSettings({ 
+        keywords: [...notificationSettings.keywords, newKeyword.trim()] 
       })
       setNewKeyword('')
       toast.success('Keyword added')
@@ -110,16 +109,16 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
   }
 
   const handleRemoveKeyword = (keyword: string) => {
-    updateNotifications({ 
-      keywords: notifications.keywords.filter(k => k !== keyword) 
+    updateNotificationSettings({ 
+      keywords: notificationSettings.keywords.filter(k => k !== keyword) 
     })
     toast.success('Keyword removed')
   }
 
   const handleDoNotDisturbToggle = (enabled: boolean) => {
-    updateNotifications({ 
+    updateNotificationSettings({ 
       doNotDisturb: enabled,
-      doNotDisturbUntil: enabled ? undefined : notifications.doNotDisturbUntil
+      doNotDisturbUntil: enabled ? undefined : notificationSettings.doNotDisturbUntil
     })
     toast.success(enabled ? 'Do not disturb enabled' : 'Do not disturb disabled')
   }
@@ -127,25 +126,30 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
   const handleDoNotDisturbUntilChange = (value: string) => {
     setDoNotDisturbUntil(value)
     const timestamp = value ? new Date(value).getTime() : undefined
-    updateNotifications({ doNotDisturbUntil: timestamp })
+    updateNotificationSettings({ doNotDisturbUntil: timestamp })
   }
 
   const handleQuietHoursToggle = (enabled: boolean) => {
-    updateNotifications({ 
-      quietHours: { ...notifications.quietHours, enabled } 
+    updateNotificationSettings({ 
+      quietHours: { ...notificationSettings.quietHours, enabled } 
     })
     toast.success(enabled ? 'Quiet hours enabled' : 'Quiet hours disabled')
   }
 
   const handleQuietHoursChange = (field: 'startTime' | 'endTime', value: string) => {
-    updateNotifications({ 
-      quietHours: { ...notifications.quietHours, [field]: value } 
+    updateNotificationSettings({ 
+      quietHours: { ...notificationSettings.quietHours, [field]: value } 
     })
   }
 
   const handleChannelMuteToggle = (channelId: string, muted: boolean) => {
-    const currentSettings = notifications.channelSettings[channelId] || { muted: false }
-    updateChannelNotifications(channelId, { ...currentSettings, muted })
+    const currentSettings = notificationSettings.channelSettings[channelId] || { muted: false }
+    updateNotificationSettings({ 
+      channelSettings: {
+        ...notificationSettings.channelSettings,
+        [channelId]: { ...currentSettings, muted }
+      }
+    })
     
     const channel = channels.find(c => c.id === channelId)
     toast.success(`#${channel?.name} ${muted ? 'muted' : 'unmuted'}`)
@@ -167,19 +171,19 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               <p className="text-xs text-muted-foreground">Play notification sounds</p>
             </div>
             <Switch
-              checked={notifications.soundEnabled}
+              checked={notificationSettings.soundEnabled}
               onCheckedChange={handleSoundToggle}
             />
           </div>
 
-          {notifications.soundEnabled && (
+          {notificationSettings.soundEnabled && (
             <>
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Volume</Label>
                 <div className="flex items-center gap-3">
                   <SpeakerX className="h-4 w-4 text-muted-foreground" />
                   <Slider
-                    value={[notifications.soundVolume]}
+                    value={[notificationSettings.soundVolume]}
                     onValueChange={handleVolumeChange}
                     max={100}
                     step={5}
@@ -187,7 +191,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
                   />
                   <SpeakerHigh className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground min-w-[3ch]">
-                    {notifications.soundVolume}%
+                    {notificationSettings.soundVolume}%
                   </span>
                 </div>
               </div>
@@ -195,7 +199,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Sound Type</Label>
                 <div className="flex items-center gap-2">
-                  <Select value={notifications.soundType} onValueChange={handleSoundTypeChange}>
+                  <Select value={notificationSettings.soundType} onValueChange={handleSoundTypeChange}>
                     <SelectTrigger className="flex-1">
                       <SelectValue />
                     </SelectTrigger>
@@ -214,7 +218,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
                     variant="outline"
                     size="sm"
                     onClick={handleTestSound}
-                    disabled={notifications.soundType === 'none'}
+                    disabled={notificationSettings.soundType === 'none'}
                   >
                     <Play className="h-4 w-4" />
                   </Button>
@@ -244,7 +248,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               </p>
             </div>
             <Switch
-              checked={notifications.desktopNotifications}
+              checked={notificationSettings.desktopNotifications}
               onCheckedChange={handleDesktopNotificationsToggle}
             />
           </div>
@@ -270,8 +274,8 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               </div>
             </div>
             <Switch
-              checked={notifications.allMessages}
-              onCheckedChange={(checked) => updateNotifications({ allMessages: checked })}
+              checked={notificationSettings.allMessages}
+              onCheckedChange={(checked) => updateNotificationSettings({ allMessages: checked })}
             />
           </div>
 
@@ -284,8 +288,8 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               </div>
             </div>
             <Switch
-              checked={notifications.directMessages}
-              onCheckedChange={(checked) => updateNotifications({ directMessages: checked })}
+              checked={notificationSettings.directMessages}
+              onCheckedChange={(checked) => updateNotificationSettings({ directMessages: checked })}
             />
           </div>
 
@@ -298,8 +302,8 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               </div>
             </div>
             <Switch
-              checked={notifications.mentions}
-              onCheckedChange={(checked) => updateNotifications({ mentions: checked })}
+              checked={notificationSettings.mentions}
+              onCheckedChange={(checked) => updateNotificationSettings({ mentions: checked })}
             />
           </div>
 
@@ -330,9 +334,9 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               </Button>
             </div>
             
-            {notifications.keywords.length > 0 && (
+            {notificationSettings.keywords.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {notifications.keywords.map((keyword) => (
+                {notificationSettings.keywords.map((keyword) => (
                   <Badge key={keyword} variant="secondary" className="gap-1">
                     {keyword}
                     <Button
@@ -367,7 +371,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               <p className="text-xs text-muted-foreground">Temporarily disable all notifications</p>
             </div>
             <Switch
-              checked={notifications.doNotDisturb}
+              checked={notificationSettings.doNotDisturb}
               onCheckedChange={handleDoNotDisturbToggle}
             />
           </div>
@@ -403,18 +407,18 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               <p className="text-xs text-muted-foreground">Automatically disable notifications during specific hours</p>
             </div>
             <Switch
-              checked={notifications.quietHours.enabled}
+              checked={notificationSettings.quietHours.enabled}
               onCheckedChange={handleQuietHoursToggle}
             />
           </div>
 
-          {notifications.quietHours.enabled && (
+          {notificationSettings.quietHours.enabled && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Start Time</Label>
                 <Input
                   type="time"
-                  value={notifications.quietHours.startTime}
+                  value={notificationSettings.quietHours.startTime}
                   onChange={(e) => handleQuietHoursChange('startTime', e.target.value)}
                 />
               </div>
@@ -422,7 +426,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
                 <Label className="text-sm font-medium">End Time</Label>
                 <Input
                   type="time"
-                  value={notifications.quietHours.endTime}
+                  value={notificationSettings.quietHours.endTime}
                   onChange={(e) => handleQuietHoursChange('endTime', e.target.value)}
                 />
               </div>
@@ -446,7 +450,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
           </p>
           
           {channels && channels.length > 0 ? channels.map((channel) => {
-            const channelSettings = notifications.channelSettings[channel.id] || { muted: false }
+            const channelSettings = notificationSettings.channelSettings[channel.id] || { muted: false }
             return (
               <div key={channel.id} className="flex items-center justify-between py-2">
                 <div className="flex items-center gap-2">

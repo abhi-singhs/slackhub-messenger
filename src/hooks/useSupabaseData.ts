@@ -255,30 +255,238 @@ export const useSupabaseData = (user: UserInfo | null) => {
       fetchMessages().catch(console.error)
     }
 
-    // Subscribe to channel changes
+    // Subscribe to channel changes with optimistic updates
     const channelsSubscription = supabase
       .channel('channels-changes')
       .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'channels' },
-        refetchChannels
+        { event: 'INSERT', schema: 'public', table: 'channels' },
+        (payload) => {
+          console.log('📁 New channel created:', payload.new)
+          const newChannel: Channel = {
+            id: payload.new.id,
+            name: payload.new.name,
+            description: payload.new.description || ''
+          }
+          setChannels(prevChannels => [...prevChannels, newChannel])
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'channels' },
+        (payload) => {
+          console.log('📁 Channel updated:', payload.new)
+          setChannels(prevChannels => 
+            prevChannels.map(channel => 
+              channel.id === payload.new.id 
+                ? { 
+                    ...channel, 
+                    name: payload.new.name, 
+                    description: payload.new.description || '' 
+                  }
+                : channel
+            )
+          )
+        }
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'channels' },
+        (payload) => {
+          console.log('📁 Channel deleted:', payload.old)
+          setChannels(prevChannels => 
+            prevChannels.filter(channel => channel.id !== payload.old.id)
+          )
+          // Switch to general channel if current channel was deleted
+          if (currentChannel === payload.old.id) {
+            const generalChannel = channels.find(c => c.name === 'general')
+            if (generalChannel) {
+              setCurrentChannel(generalChannel.id)
+            }
+          }
+        }
       )
       .subscribe()
 
-    // Subscribe to message changes - simplified approach
+    // Subscribe to message changes with optimistic updates
     const messagesSubscription = supabase
       .channel('messages-changes')
       .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'messages' },
-        refetchMessages
+        { event: 'INSERT', schema: 'public', table: 'messages' },
+        async (payload) => {
+          console.log('💬 New message received:', payload.new)
+          
+          // Fetch user data for the message
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username, avatar_url')
+            .eq('id', payload.new.user_id)
+            .single()
+
+          const newMessage: Message = {
+            id: payload.new.id,
+            content: payload.new.content,
+            userId: payload.new.user_id,
+            userName: userData?.username || 'Unknown',
+            userAvatar: userData?.avatar_url || '',
+            timestamp: new Date(payload.new.created_at).getTime(),
+            channelId: payload.new.channel_id,
+            threadId: payload.new.thread_id || undefined,
+            attachments: payload.new.attachments || undefined,
+            edited: payload.new.edited || false,
+            editedAt: payload.new.edited_at ? new Date(payload.new.edited_at).getTime() : undefined,
+            replyCount: 0
+          }
+
+          setMessages(prevMessages => {
+            // Check if message already exists (to avoid duplicates from optimistic updates)
+            if (prevMessages.some(msg => msg.id === newMessage.id)) {
+              return prevMessages.map(msg => msg.id === newMessage.id ? newMessage : msg)
+            }
+            
+            const newMessages = [...prevMessages, newMessage]
+            
+            // If this is a thread reply, update parent message reply count
+            if (payload.new.thread_id) {
+              return newMessages.map(msg => {
+                if (msg.id === payload.new.thread_id) {
+                  return { ...msg, replyCount: (msg.replyCount || 0) + 1 }
+                }
+                return msg
+              })
+            }
+            
+            return newMessages
+          })
+        }
+      )
+      .on('postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        (payload) => {
+          console.log('💬 Message updated:', payload.new)
+          setMessages(prevMessages => 
+            prevMessages.map(msg => 
+              msg.id === payload.new.id 
+                ? {
+                    ...msg,
+                    content: payload.new.content,
+                    edited: payload.new.edited || false,
+                    editedAt: payload.new.edited_at ? new Date(payload.new.edited_at).getTime() : undefined
+                  }
+                : msg
+            )
+          )
+        }
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'messages' },
+        (payload) => {
+          console.log('💬 Message deleted:', payload.old)
+          setMessages(prevMessages => {
+            const filteredMessages = prevMessages.filter(msg => {
+              // Remove the main message
+              if (msg.id === payload.old.id) return false
+              // Remove thread replies to this message
+              if (msg.threadId === payload.old.id) return false
+              return true
+            })
+
+            // Update reply counts for parent messages if this was a thread reply
+            if (payload.old.thread_id) {
+              return filteredMessages.map(msg => {
+                if (msg.id === payload.old.thread_id) {
+                  return { ...msg, replyCount: Math.max((msg.replyCount || 1) - 1, 0) }
+                }
+                return msg
+              })
+            }
+
+            return filteredMessages
+          })
+        }
       )
       .subscribe()
 
-    // Subscribe to reaction changes - simplified approach
+    // Subscribe to reaction changes with optimistic updates
     const reactionsSubscription = supabase
       .channel('reactions-changes')
       .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'reactions' },
-        refetchMessages
+        { event: 'INSERT', schema: 'public', table: 'reactions' },
+        async (payload) => {
+          console.log('👍 New reaction added:', payload.new)
+          
+          // Fetch user data for the reaction
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', payload.new.user_id)
+            .single()
+
+          setMessages(prevMessages => 
+            prevMessages.map(msg => {
+              if (msg.id === payload.new.message_id) {
+                const reactions = msg.reactions || []
+                const existingReactionIndex = reactions.findIndex(r => r.emoji === payload.new.emoji)
+                
+                if (existingReactionIndex !== -1) {
+                  // Add to existing reaction
+                  const updatedReaction = { ...reactions[existingReactionIndex] }
+                  updatedReaction.users = [...updatedReaction.users, userData?.username || 'Unknown']
+                  updatedReaction.count = updatedReaction.count + 1
+                  
+                  const newReactions = [...reactions]
+                  newReactions[existingReactionIndex] = updatedReaction
+                  return { ...msg, reactions: newReactions }
+                } else {
+                  // Create new reaction
+                  const newReaction: MessageReaction = {
+                    emoji: payload.new.emoji,
+                    count: 1,
+                    users: [userData?.username || 'Unknown']
+                  }
+                  return { ...msg, reactions: [...reactions, newReaction] }
+                }
+              }
+              return msg
+            })
+          )
+        }
+      )
+      .on('postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'reactions' },
+        async (payload) => {
+          console.log('👍 Reaction removed:', payload.old)
+          
+          // Fetch user data for the reaction
+          const { data: userData } = await supabase
+            .from('users')
+            .select('username')
+            .eq('id', payload.old.user_id)
+            .single()
+
+          setMessages(prevMessages => 
+            prevMessages.map(msg => {
+              if (msg.id === payload.old.message_id) {
+                const reactions = msg.reactions || []
+                const existingReactionIndex = reactions.findIndex(r => r.emoji === payload.old.emoji)
+                
+                if (existingReactionIndex !== -1) {
+                  const updatedReaction = { ...reactions[existingReactionIndex] }
+                  updatedReaction.users = updatedReaction.users.filter(user => user !== (userData?.username || 'Unknown'))
+                  updatedReaction.count = Math.max(updatedReaction.count - 1, 0)
+                  
+                  if (updatedReaction.count === 0) {
+                    // Remove reaction entirely if count reaches 0
+                    const newReactions = reactions.filter((_, index) => index !== existingReactionIndex)
+                    return { ...msg, reactions: newReactions }
+                  } else {
+                    const newReactions = [...reactions]
+                    newReactions[existingReactionIndex] = updatedReaction
+                    return { ...msg, reactions: newReactions }
+                  }
+                }
+              }
+              return msg
+            })
+          )
+        }
       )
       .subscribe()
 
@@ -288,7 +496,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
       supabase.removeChannel(messagesSubscription)
       supabase.removeChannel(reactionsSubscription)
     }
-  }, [user, fetchChannels, fetchMessages]) // Include all dependencies to ensure fresh closures
+  }, [user, currentChannel, channels]) // Include dependencies needed for the subscription callbacks
 
   const markChannelAsRead = useCallback(async (channelId: string) => {
     if (!user) return

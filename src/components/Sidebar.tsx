@@ -15,6 +15,16 @@ import { StatusIndicator } from '@/components/StatusIndicator'
 import { StatusSelector } from '@/components/StatusSelector'
 import { SettingsModal } from '@/components/SettingsModal'
 
+import { OnlineUsersList } from '@/components/OnlineUsersList'
+
+interface PresenceUser {
+  userId: string
+  userName: string
+  userAvatar: string
+  status: UserStatus
+  lastSeen: number
+}
+
 interface SidebarProps {
   user: UserInfo | null
   channels: Channel[]
@@ -30,6 +40,18 @@ interface SidebarProps {
   onSidebarToggle: (open: boolean) => void
   onStatusChange: (status: UserStatus) => void
   onShowKeyboardShortcuts?: () => void
+  // Theme management props
+  settings?: {
+    theme: 'light' | 'dark'
+    colorTheme: string
+    notifications: any
+  }
+  updateTheme?: (theme: 'light' | 'dark') => void
+  updateColorTheme?: (theme: string) => void
+  updateNotificationSettings?: (settings: any) => void
+  // Presence props
+  onlineUsers?: PresenceUser[]
+  channelPresence?: PresenceUser[]
 }
 
 export const Sidebar = ({
@@ -46,7 +68,15 @@ export const Sidebar = ({
   onChannelDelete,
   onSidebarToggle,
   onStatusChange,
-  onShowKeyboardShortcuts
+  onShowKeyboardShortcuts,
+  // Theme management props
+  settings,
+  updateTheme,
+  updateColorTheme,
+  updateNotificationSettings,
+  // Presence props
+  onlineUsers,
+  channelPresence
 }: SidebarProps) => {
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
@@ -148,7 +178,7 @@ export const Sidebar = ({
                 src={user?.avatarUrl || ''} 
                 alt={user?.login || 'User'} 
                 showOnlineIndicator={true}
-                status={userStatus}
+                status={userStatus !== 'offline' ? userStatus : undefined}
               />
               <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
@@ -267,6 +297,15 @@ export const Sidebar = ({
           </div>
         </div>
 
+        {/* Online Users Section */}
+        <div className="border-t border-border flex-shrink-0">
+          <OnlineUsersList 
+            onlineUsers={onlineUsers || []}
+            channelPresence={channelPresence}
+            currentChannel={currentChannel}
+          />
+        </div>
+
         {/* Settings Section */}
         <div className="p-4 border-t border-border flex-shrink-0">
           <div className="flex gap-2">
@@ -285,6 +324,10 @@ export const Sidebar = ({
               channels={channels}
               open={settingsModalOpen}
               onOpenChange={setSettingsModalOpen}
+              settings={settings}
+              updateTheme={updateTheme}
+              updateColorTheme={updateColorTheme}
+              updateNotificationSettings={updateNotificationSettings}
               trigger={
                 <Button
                   variant="ghost"

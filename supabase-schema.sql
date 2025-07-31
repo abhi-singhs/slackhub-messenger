@@ -258,3 +258,24 @@ BEGIN
     RETURN result;
 END;
 $$ language 'plpgsql' SECURITY DEFINER;
+
+-- Enable realtime for all tables to support live updates
+-- This allows the frontend to subscribe to real-time changes
+
+-- Enable realtime for users table (for status updates, profile changes)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.users;
+
+-- Enable realtime for channels table (for new channels, updates)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.channels;
+
+-- Enable realtime for messages table (for new messages, edits, deletions)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
+
+-- Enable realtime for reactions table (for emoji reactions)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.reactions;
+
+-- Enable realtime for user_settings table (for theme changes, settings updates)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.user_settings;
+
+-- Enable realtime for calls table (for call status updates, new calls)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.calls;

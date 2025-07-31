@@ -1,9 +1,116 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { Message } from '@/types'
+import { Message, FileAttachment } from '@/types'
+import { MESSAGE_CONFIG, FILE_TYPES } from '@/constants'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+/**
+ * Safely parses JSON with fallback value
+ */
+export function safeParseJSON<T>(json: string, fallback: T): T {
+  try {
+    return JSON.parse(json) as T
+  } catch {
+    return fallback
+  }
+}
+
+/**
+ * Debounce function for performance optimization
+ */
+export function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout
+  
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
+/**
+ * Throttle function for performance optimization
+ */
+export function throttle<T extends (...args: any[]) => any>(
+  func: T,
+  limit: number
+): (...args: Parameters<T>) => void {
+  let inThrottle: boolean
+  
+  return (...args: Parameters<T>) => {
+    if (!inThrottle) {
+      func(...args)
+      inThrottle = true
+      setTimeout(() => inThrottle = false, limit)
+    }
+  }
+}
+
+/**
+ * Validates file attachment before upload
+ */
+export function validateFileAttachment(file: File): { valid: boolean; error?: string } {
+  if (file.size > MESSAGE_CONFIG.maxAttachmentSize) {
+    return {
+      valid: false,
+      error: `File is too large. Maximum size is ${MESSAGE_CONFIG.maxAttachmentSize / (1024 * 1024)}MB.`
+    }
+  }
+  
+  return { valid: true }
+}
+
+/**
+ * Gets file type category for icons and handling
+ */
+export function getFileTypeCategory(fileName: string): keyof typeof FILE_TYPES | 'other' {
+  const extension = fileName.split('.').pop()?.toLowerCase()
+  if (!extension) return 'other'
+  
+  for (const [category, extensions] of Object.entries(FILE_TYPES)) {
+    if ((extensions as readonly string[]).includes(extension)) {
+      return category as keyof typeof FILE_TYPES
+    }
+  }
+  
+  return 'other'
+}
+
+/**
+ * Format file size in bytes to human readable format
+ */
+export function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes'
+  
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+/**
+ * Generates a unique ID
+ */
+export function generateId(): string {
+  return Math.random().toString(36).substring(2) + Date.now().toString(36)
+}
+
+/**
+ * Safely scrolls an element into view
+ */
+export function safeScrollIntoView(
+  element: Element | null,
+  options: ScrollIntoViewOptions = { behavior: 'smooth', block: 'center' }
+): void {
+  if (element && typeof element.scrollIntoView === 'function') {
+    element.scrollIntoView(options)
+  }
 }
 
 /**
@@ -151,17 +258,4 @@ function stripHtml(html: string): string {
 
 function escapeRegExp(string: string): string {
   return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-/**
- * Format file size in bytes to human readable format
- */
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 Bytes'
-  
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
 }
