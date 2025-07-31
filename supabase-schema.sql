@@ -60,7 +60,6 @@ CREATE TABLE IF NOT EXISTS public.user_settings (
     user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
     theme TEXT DEFAULT 'blue',
     dark_mode BOOLEAN DEFAULT FALSE,
-    notification_settings JSONB DEFAULT '{}',
     last_read_timestamps JSONB DEFAULT '{}',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()

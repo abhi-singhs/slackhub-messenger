@@ -5,8 +5,6 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
 import { useSupabaseUserStatus } from '@/hooks/useSupabaseUserStatus'
 import { useSupabasePresence } from '@/hooks/useSupabasePresence'
-import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
-import { useNotifications } from '@/hooks/useNotifications'
 import { useAppState } from '@/hooks/useAppState'
 import { useNavigationHandlers } from '@/hooks/useNavigationHandlers'
 import { useMessageHandlers } from '@/hooks/useMessageHandlers'
@@ -27,7 +25,7 @@ function App() {
   const { user, loading: authLoading, updateUserLocal } = useAuth()
   
   // Initialize settings hook to apply theme on mount  
-  const { settings, updateTheme, updateColorTheme, updateNotificationSettings } = useSupabaseSettings(user)
+  const { settings, updateTheme, updateColorTheme } = useSupabaseSettings(user)
   
   // Centralized status management
   const { status: userStatus, setStatus: setUserStatus } = useSupabaseUserStatus(user, updateUserLocal)
@@ -51,23 +49,12 @@ function App() {
     deleteMessage
   } = useSupabaseData(user)
   
-  // Initialize notifications system
-  useNotifications(user, channels || [], messages || [])
-
   // Initialize presence system for realtime user tracking
   const {
     onlineUsers,
     channelPresence,
     updatePresence
   } = useSupabasePresence(user, currentChannel)
-
-  // Initialize realtime notifications
-  useRealtimeNotifications({
-    user,
-    currentChannel,
-    channels: channels || [],
-    notificationSettings: settings?.notifications
-  })
 
   // App state management
   const {
@@ -262,7 +249,6 @@ function App() {
         settings={settings}
         updateTheme={updateTheme}
         updateColorTheme={updateColorTheme}
-        updateNotificationSettings={updateNotificationSettings}
         onlineUsers={onlineUsers}
         channelPresence={channelPresence[currentChannel]}
       />

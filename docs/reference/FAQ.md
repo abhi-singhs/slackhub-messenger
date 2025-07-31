@@ -77,7 +77,6 @@ The application is designed specifically for Supabase and uses its features exte
 - Multiple theme options with dark mode
 - Keyboard shortcuts
 - Mobile responsive design
-- Notification settings
 
 ### How do real-time updates work?
 

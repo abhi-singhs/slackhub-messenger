@@ -1,34 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { UserInfo, NotificationSettings } from '@/types'
+import { UserInfo } from '@/types'
 
 interface SupabaseSettings {
   theme: string
   darkMode: boolean
-  notificationSettings: NotificationSettings
 }
 
 export const useSupabaseSettings = (user: UserInfo | null) => {
   const [theme, setTheme] = useState('blue')
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const [notificationSettings, setNotificationSettings] = useState<NotificationSettings>({
-    soundEnabled: true,
-    soundVolume: 50,
-    soundType: 'subtle',
-    desktopNotifications: true,
-    allMessages: false,
-    directMessages: true,
-    mentions: true,
-    keywords: [],
-    channelSettings: {},
-    doNotDisturb: false,
-    doNotDisturbUntil: undefined,
-    quietHours: {
-      enabled: false,
-      startTime: '22:00',
-      endTime: '08:00'
-    }
-  })
   const [loading, setLoading] = useState(true)
 
   // Fetch settings from Supabase
@@ -43,7 +24,7 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     try {
       const { data, error } = await supabase
         .from('user_settings')
-        .select('theme, dark_mode, notification_settings')
+        .select('theme, dark_mode')
         .eq('user_id', user.id)
         .single()
 
@@ -55,7 +36,6 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
         console.log('🎨 Settings data received:', data)
         setTheme(data.theme || 'blue')
         setIsDarkMode(data.dark_mode || false)
-        setNotificationSettings(data.notification_settings || notificationSettings)
       } else {
         console.log('🎨 No settings found, using defaults')
         // Set default theme class when no settings exist
@@ -86,10 +66,6 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
       
       if (updates.darkMode !== undefined) {
         dbUpdates.dark_mode = updates.darkMode
-      }
-      
-      if (updates.notificationSettings !== undefined) {
-        dbUpdates.notification_settings = updates.notificationSettings
       }
 
       // Use UPSERT to handle both insert and update cases
@@ -133,7 +109,6 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
             console.log('🎨 Applying settings from real-time update:', settings)
             setTheme(settings.theme || 'blue')
             setIsDarkMode(settings.dark_mode || false)
-            setNotificationSettings(settings.notification_settings || notificationSettings)
           }
         }
       )
@@ -143,7 +118,7 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
       console.log('🔄 Cleaning up settings real-time subscription')
       supabase.removeChannel(subscription)
     }
-  }, [user, notificationSettings])
+  }, [user])
 
   // Apply theme and dark mode to document
   useEffect(() => {
@@ -199,17 +174,15 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     await updateSettings({ darkMode: newDarkMode })
   }, [isDarkMode, updateSettings])
 
-  const updateNotificationSettings = useCallback(async (newSettings: Partial<NotificationSettings>) => {
-    const updatedSettings = { ...notificationSettings, ...newSettings }
-    setNotificationSettings(updatedSettings)
-    await updateSettings({ notificationSettings: updatedSettings })
-  }, [notificationSettings, updateSettings])
+  const updateNotificationSettings = useCallback(async () => {
+    // Function removed - notifications are no longer supported
+    console.warn('Notification settings have been removed from the application')
+  }, [])
 
   // Create settings object compatible with SettingsModal expectations
   const settings = {
     theme: isDarkMode ? 'dark' as const : 'light' as const,
-    colorTheme: theme,
-    notifications: notificationSettings
+    colorTheme: theme
   }
 
   const updateThemeMode = useCallback(async (themeMode: 'light' | 'dark') => {
@@ -222,10 +195,8 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
   return {
     theme,
     isDarkMode,
-    notificationSettings,
     loading,
     toggleDarkMode,
-    updateNotificationSettings,
     // Add SettingsModal-compatible interface
     settings,
     updateTheme: updateThemeMode, // For dark/light mode updates

@@ -152,30 +152,9 @@ const {
   setTheme,                // Set color theme
   isDarkMode,              // Dark mode state
   setIsDarkMode,           // Toggle dark mode
-  notificationSettings,    // Notification preferences
-  setNotificationSettings, // Update notifications
   loading,                 // Settings loading state
   updateSettings          // Batch update settings
 } = useSupabaseSettings(user)
-```
-
-#### Types
-```typescript
-interface NotificationSettings {
-  soundEnabled: boolean
-  soundVolume: number
-  soundType: NotificationSound
-  desktopNotifications: boolean
-  allMessages: boolean
-  directMessages: boolean
-  mentions: boolean
-  keywords: string[]
-  channelSettings: Record<string, ChannelNotificationSettings>
-  doNotDisturb: boolean
-  quietHours: QuietHoursSettings
-}
-
-type NotificationSound = 'subtle' | 'classic' | 'modern' | 'none'
 ```
 
 #### Methods
@@ -188,11 +167,7 @@ setTheme('blue') // 'blue' | 'green' | 'purple' | 'orange' | 'red'
 **`updateSettings(updates: Partial<Settings>)`**
 ```typescript
 await updateSettings({
-  theme: 'dark',
-  notificationSettings: {
-    ...notificationSettings,
-    soundEnabled: false
-  }
+  theme: 'dark'
 })
 ```
 

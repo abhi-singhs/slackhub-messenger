@@ -46,11 +46,9 @@ interface SidebarProps {
   settings?: {
     theme: 'light' | 'dark'
     colorTheme: string
-    notifications: any
   }
   updateTheme?: (theme: 'light' | 'dark') => void
   updateColorTheme?: (theme: string) => void
-  updateNotificationSettings?: (settings: any) => void
   // Presence props
   onlineUsers?: PresenceUser[]
   channelPresence?: PresenceUser[]
@@ -75,7 +73,6 @@ export const Sidebar = ({
   settings,
   updateTheme,
   updateColorTheme,
-  updateNotificationSettings,
   // Presence props
   onlineUsers,
   channelPresence
@@ -349,13 +346,11 @@ export const Sidebar = ({
             
             <SettingsModal
               user={user}
-              channels={channels}
               open={settingsModalOpen}
               onOpenChange={setSettingsModalOpen}
               settings={settings}
               updateTheme={updateTheme}
               updateColorTheme={updateColorTheme}
-              updateNotificationSettings={updateNotificationSettings}
               trigger={
                 <Button
                   variant="ghost"
