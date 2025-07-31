@@ -140,67 +140,6 @@ const channelId = await createChannel('new-channel')
 await addReaction('message-id', '👍')
 ```
 
-## Calling API
-
-### `useSupabaseCalls(user: UserInfo | null)`
-
-Voice and video calling functionality with WebRTC support.
-
-```typescript
-const {
-  currentCall,        // Active call information
-  incomingCall,       // Incoming call notification
-  isCallUIOpen,       // Call interface visibility
-  callHistory,        // Previous calls
-  callRecordings,     // Call recordings
-  localStream,        // Local media stream
-  remoteStream,       // Remote media stream
-  isMuted,           // Audio mute state
-  hasVideo,          // Video enabled state
-  isRecording,       // Recording state
-  startCall,         // Initiate call
-  answerCall,        // Answer incoming call
-  declineCall,       // Decline incoming call
-  endCall,           // End active call
-  toggleMute,        // Toggle audio mute
-  toggleVideo,       // Toggle video
-  startRecording,    // Start call recording
-  stopRecording,     // Stop call recording
-  deleteRecording,   // Delete recording
-  setIsCallUIOpen    // Control call UI visibility
-} = useSupabaseCalls(user)
-```
-
-#### Types
-```typescript
-interface Call {
-  id: string
-  type: CallType
-  initiator: CallParticipant
-  participants: CallParticipant[]
-  status: CallStatus
-  startTime: number
-  endTime?: number
-  channelId?: string
-  recording?: CallRecording
-}
-
-type CallType = 'voice' | 'video'
-type CallStatus = 'idle' | 'calling' | 'ringing' | 'connected' | 'ended' | 'declined' | 'missed'
-```
-
-#### Methods
-
-**`startCall(targetUserId: string, type: CallType)`**
-```typescript
-await startCall('user-id', 'video')
-```
-
-**`answerCall()`**
-```typescript
-await answerCall()
-```
-
 ## Settings API
 
 ### `useSupabaseSettings(user: UserInfo | null)`

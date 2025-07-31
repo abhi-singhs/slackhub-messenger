@@ -44,7 +44,7 @@ This will create all necessary tables:
 - `messages` - Chat messages  
 - `reactions` - Message reactions
 - `user_settings` - User preferences and settings
-- `calls` - Voice/video call history
+- `user_settings` - User preferences and theme settings
 
 ## 5. Configure Authentication
 

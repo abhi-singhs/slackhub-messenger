@@ -4,7 +4,7 @@
 
 ### What is SlackHub Messenger?
 
-SlackHub Messenger is a modern, real-time chat application inspired by Slack. It provides team communication features including channels, direct messaging, file sharing, voice/video calls, and rich text editing. The application is built with React, TypeScript, and Supabase.
+SlackHub Messenger is a modern, real-time chat application inspired by Slack. It provides team communication features including channels, direct messaging, file sharing, and rich text editing. The application is built with React, TypeScript, and Supabase.
 
 ### What technologies does it use?
 
@@ -18,7 +18,6 @@ SlackHub Messenger is a modern, real-time chat application inspired by Slack. It
 **Backend:**
 - Supabase for database, authentication, and real-time features
 - PostgreSQL database with Row Level Security
-- WebRTC for voice/video calling
 
 ### Is it open source?
 
@@ -74,7 +73,6 @@ The application is designed specifically for Supabase and uses its features exte
 - Search functionality
 
 **Advanced Features:**
-- Voice and video calling with recording
 - User status management (active, away, busy)
 - Multiple theme options with dark mode
 - Keyboard shortcuts
@@ -92,15 +90,6 @@ Yes! The application supports:
 - **Multiple color themes** (blue, green, purple, orange, red)
 - **Custom CSS variables** for advanced theming
 - **Responsive design** that adapts to different screen sizes
-
-### How do voice/video calls work?
-
-Voice and video calls use WebRTC technology for peer-to-peer communication. Features include:
-- High-quality audio/video streaming
-- Call recording capabilities
-- Screen sharing support
-- Multiple participants
-- Mobile device support
 
 ### Is file sharing supported?
 

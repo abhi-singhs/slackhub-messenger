@@ -66,8 +66,7 @@ docs/
 - **[MIGRATION.md](./reference/MIGRATION.md)**: Version upgrade and migration assistance
 - **[CHANGELOG.md](./reference/CHANGELOG.md)**: Project history and version changes
 
-### Security & Setup Documents
-- **[SECURITY.md](./security/SECURITY.md)**: Security practices and vulnerability reporting
+### Setup Documents
 - **[SUPABASE_SETUP.md](./setup/SUPABASE_SETUP.md)**: Backend setup instructions
 
 ## 🎯 Documentation Usage Patterns

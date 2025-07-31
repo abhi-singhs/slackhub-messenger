@@ -1,4 +1,4 @@
-import { FileAttachment, CallParticipant, UserStatus } from '@/types'
+import { FileAttachment, UserStatus } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -7,7 +7,6 @@ import { useSupabaseUserStatus } from '@/hooks/useSupabaseUserStatus'
 import { useSupabasePresence } from '@/hooks/useSupabasePresence'
 import { useRealtimeNotifications } from '@/hooks/useRealtimeNotifications'
 import { useNotifications } from '@/hooks/useNotifications'
-import { useSupabaseCalls } from '@/hooks/useSupabaseCalls'
 import { useAppState } from '@/hooks/useAppState'
 import { useNavigationHandlers } from '@/hooks/useNavigationHandlers'
 import { useMessageHandlers } from '@/hooks/useMessageHandlers'
@@ -21,8 +20,6 @@ import { MessageInput } from '@/components/MessageInput'
 import { ThreadView } from '@/components/ThreadView'
 import { QuickSwitcher } from '@/components/QuickSwitcher'
 import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
-import { CallInterface } from '@/components/CallInterface'
-import { IncomingCallDialog } from '@/components/IncomingCallDialog'
 import { Toaster } from '@/components/ui/sonner'
 
 function App() {
@@ -56,30 +53,6 @@ function App() {
   
   // Initialize notifications system
   useNotifications(user, channels || [], messages || [])
-
-  // Initialize calls system
-  const {
-    currentCall,
-    incomingCall,
-    isCallUIOpen,
-    callHistory,
-    callRecordings,
-    localStream,
-    remoteStream,
-    isMuted,
-    hasVideo,
-    isRecording,
-    startCall,
-    answerCall,
-    declineCall,
-    endCall,
-    toggleMute,
-    toggleVideo,
-    startRecording,
-    stopRecording,
-    deleteRecording,
-    setIsCallUIOpen
-  } = useSupabaseCalls(user)
 
   // Initialize presence system for realtime user tracking
   const {
@@ -224,14 +197,6 @@ function App() {
     onEditLastMessage: handleEditLastMessage
   })
 
-  const handleStartCall = (type: 'voice' | 'video', participants: CallParticipant[], channelId?: string) => {
-    // For now, we'll start a call with the first participant
-    // In a real implementation, you might want to handle multiple participants differently
-    if (participants.length > 0) {
-      startCall(participants[0].userId, type as any) // Cast to match the hook's expected type
-    }
-  }
-
   const handleSendMessageWithInput = (attachments?: FileAttachment[]) => {
     handleSendMessage(messageInput, attachments)
     setMessageInput('')
@@ -309,12 +274,8 @@ function App() {
           currentChannel={currentChannel}
           searchQuery={searchQuery}
           user={user}
-          callHistory={callHistory}
-          callRecordings={callRecordings}
           onSidebarToggle={() => setSidebarOpen(true)}
           onSearchChange={handleSearchChange}
-          onStartCall={handleStartCall}
-          onDeleteRecording={deleteRecording}
           searchInputRef={searchInputRef}
         />
 
@@ -381,31 +342,6 @@ function App() {
       <KeyboardShortcutsHelp
         isOpen={showKeyboardHelp}
         onClose={() => setShowKeyboardHelp(false)}
-      />
-
-      {/* Call Interface */}
-      <CallInterface
-        currentCall={currentCall}
-        user={user}
-        localStream={localStream}
-        remoteStream={remoteStream}
-        isMuted={isMuted}
-        hasVideo={hasVideo}
-        isRecording={isRecording}
-        isOpen={isCallUIOpen}
-        onClose={() => setIsCallUIOpen(false)}
-        onEndCall={endCall}
-        onToggleMute={toggleMute}
-        onToggleVideo={toggleVideo}
-        onStartRecording={startRecording}
-        onStopRecording={stopRecording}
-      />
-
-      {/* Incoming Call Dialog */}
-      <IncomingCallDialog
-        incomingCall={incomingCall}
-        onAnswer={answerCall}
-        onDecline={declineCall}
       />
       
       {/* Toast notifications */}

@@ -1,23 +1,17 @@
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
-import { Hash, List, Phone } from '@phosphor-icons/react'
-import { Channel, UserInfo, CallParticipant, CallRecording } from '@/types'
+import { Hash, List } from '@phosphor-icons/react'
+import { Channel, UserInfo } from '@/types'
 import { SearchInput } from '@/components/SearchInput'
 import { SettingsModal } from '@/components/SettingsModal'
-import { CallDialog } from '@/components/CallDialog'
-import { Call } from '@/types'
 
 interface HeaderProps {
   channels: Channel[]
   currentChannel: string
   searchQuery: string
   user?: UserInfo
-  callHistory?: Call[]
-  callRecordings?: CallRecording[]
   onSidebarToggle: () => void
   onSearchChange: (query: string) => void
-  onStartCall?: (type: 'voice' | 'video', participants: CallParticipant[], channelId?: string) => void
-  onDeleteRecording?: (recordingId: string) => void
   searchInputRef?: React.RefObject<HTMLInputElement>
 }
 
@@ -26,12 +20,8 @@ export const Header = ({
   currentChannel, 
   searchQuery, 
   user,
-  callHistory = [],
-  callRecordings = [],
   onSidebarToggle, 
   onSearchChange, 
-  onStartCall,
-  onDeleteRecording,
   searchInputRef 
 }: HeaderProps) => {
   const currentChannelData = Array.isArray(channels) ? channels.find(c => c.id === currentChannel) : null
@@ -63,22 +53,6 @@ export const Header = ({
           onSearchChange={onSearchChange}
           placeholder="Search messages..."
         />
-        
-        {/* Call Dialog */}
-        {user && onStartCall && (
-          <CallDialog
-            user={user}
-            channels={channels}
-            callHistory={callHistory}
-            callRecordings={callRecordings}
-            onStartCall={onStartCall}
-            onDeleteRecording={onDeleteRecording}
-          >
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-              <Phone className="h-4 w-4" />
-            </Button>
-          </CallDialog>
-        )}
         
         <SettingsModal />
       </div>

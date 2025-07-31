@@ -8,12 +8,14 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard } from '@phosphor-icons/react'
+import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard, SignOut } from '@phosphor-icons/react'
 import { Channel, UserInfo, UserStatus } from '@/types'
 import { getChannelUnreadCount } from '@/lib/utils'
 import { StatusIndicator } from '@/components/StatusIndicator'
 import { StatusSelector } from '@/components/StatusSelector'
 import { SettingsModal } from '@/components/SettingsModal'
+import { useAuth } from '@/hooks/useAuth'
+import { toast } from 'sonner'
 
 import { OnlineUsersList } from '@/components/OnlineUsersList'
 
@@ -78,6 +80,7 @@ export const Sidebar = ({
   onlineUsers,
   channelPresence
 }: SidebarProps) => {
+  const { signOut } = useAuth()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -121,6 +124,16 @@ export const Sidebar = ({
 
   const handleDeleteChannel = (channelId: string) => {
     onChannelDelete(channelId)
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      toast.success('Logged out successfully')
+    } catch (error) {
+      console.error('Sign out error:', error)
+      toast.error('Failed to sign out. Please try again.')
+    }
   }
 
   const handleChannelClick = (channelId: string, e: React.MouseEvent) => {
@@ -183,7 +196,22 @@ export const Sidebar = ({
               <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">{user?.login || 'Loading...'}</span>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-auto p-0 justify-start text-sm text-muted-foreground hover:text-foreground"
+                  >
+                    {user?.login || 'Loading...'}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-48">
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
+                    <SignOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <StatusSelector currentStatus={userStatus} onStatusChange={onStatusChange} />
             </div>
           </div>

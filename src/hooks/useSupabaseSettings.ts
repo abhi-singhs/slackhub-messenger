@@ -22,6 +22,7 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     keywords: [],
     channelSettings: {},
     doNotDisturb: false,
+    doNotDisturbUntil: undefined,
     quietHours: {
       enabled: false,
       startTime: '22:00',

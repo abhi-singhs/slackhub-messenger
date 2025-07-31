@@ -15,13 +15,13 @@
 
 ## Overview
 
-SlackHub Messenger is a modern, real-time chat application that provides Slack-like functionality with channels, direct messaging, file sharing, voice/video calls, and rich text editing. The application is built using a serverless architecture with Supabase as the backend-as-a-service provider.
+SlackHub Messenger is a modern, real-time chat application that provides Slack-like functionality with channels, direct messaging, file sharing, and rich text editing. The application is built using a serverless architecture with Supabase as the backend-as-a-service provider.
 
 ### Key Features
 - Real-time messaging with threading support
 - Channel and direct message management
 - File attachments with preview
-- Voice and video calling with recording
+- Keyboard shortcuts and accessibility features
 - Emoji reactions and rich text editing
 - User status management
 - Multiple authentication methods
@@ -81,7 +81,6 @@ graph TD
         D --> F[Sidebar]
         D --> G[MessagesView]
         D --> H[ThreadView]
-        D --> I[CallInterface]
         
         E --> J[SearchInput]
         E --> K[QuickSwitcher]
@@ -104,7 +103,6 @@ graph TD
     subgraph "Custom Hooks"
         V[useAuth]
         W[useSupabaseData]
-        X[useSupabaseCalls]
         Y[useSupabaseSettings]
         Z[useUserStatus]
         AA[useSlackData]

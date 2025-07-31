@@ -42,7 +42,6 @@ VITE_LOG_LEVEL=info
 #### Feature Flags
 ```env
 # Feature Toggles (optional)
-VITE_ENABLE_CALLS=true
 VITE_ENABLE_FILE_UPLOAD=true
 VITE_ENABLE_EMOJI_REACTIONS=true
 VITE_ENABLE_THREADS=true

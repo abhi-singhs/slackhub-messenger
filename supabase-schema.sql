@@ -6,8 +6,6 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Create custom types
 CREATE TYPE user_status AS ENUM ('active', 'away', 'busy');
-CREATE TYPE call_type AS ENUM ('voice', 'video');
-CREATE TYPE call_status AS ENUM ('idle', 'calling', 'ringing', 'connected', 'ended', 'declined', 'missed');
 
 -- Users table (extends auth.users)
 CREATE TABLE IF NOT EXISTS public.users (
@@ -68,21 +66,6 @@ CREATE TABLE IF NOT EXISTS public.user_settings (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Calls table
-CREATE TABLE IF NOT EXISTS public.calls (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    type call_type NOT NULL,
-    initiator_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
-    participants TEXT[] NOT NULL,
-    status call_status DEFAULT 'idle',
-    channel_id UUID REFERENCES public.channels(id) ON DELETE SET NULL,
-    start_time TIMESTAMP WITH TIME ZONE NOT NULL,
-    end_time TIMESTAMP WITH TIME ZONE,
-    recording_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_messages_channel_id ON public.messages(channel_id);
 CREATE INDEX IF NOT EXISTS idx_messages_user_id ON public.messages(user_id);
@@ -90,8 +73,6 @@ CREATE INDEX IF NOT EXISTS idx_messages_thread_id ON public.messages(thread_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON public.messages(created_at);
 CREATE INDEX IF NOT EXISTS idx_reactions_message_id ON public.reactions(message_id);
 CREATE INDEX IF NOT EXISTS idx_reactions_user_id ON public.reactions(user_id);
-CREATE INDEX IF NOT EXISTS idx_calls_participants ON public.calls USING GIN(participants);
-CREATE INDEX IF NOT EXISTS idx_calls_status ON public.calls(status);
 
 -- Enable Row Level Security
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
@@ -99,7 +80,6 @@ ALTER TABLE public.channels ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.calls ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS Policies
 
@@ -159,19 +139,6 @@ CREATE POLICY "Users can update their own settings" ON public.user_settings
 CREATE POLICY "Users can insert their own settings" ON public.user_settings
     FOR INSERT WITH CHECK (auth.uid() = user_id);
 
--- Calls policies
-CREATE POLICY "Users can view calls they participate in" ON public.calls
-    FOR SELECT USING (
-        auth.uid()::text = ANY(participants) OR 
-        auth.uid() = initiator_id
-    );
-
-CREATE POLICY "Authenticated users can create calls" ON public.calls
-    FOR INSERT WITH CHECK (auth.role() = 'authenticated' AND auth.uid() = initiator_id);
-
-CREATE POLICY "Call initiators can update their calls" ON public.calls
-    FOR UPDATE USING (auth.uid() = initiator_id);
-
 -- Create triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -191,9 +158,6 @@ CREATE TRIGGER update_messages_updated_at BEFORE UPDATE ON public.messages
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON public.user_settings
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_calls_updated_at BEFORE UPDATE ON public.calls
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Default channels will be created when the first user registers
@@ -276,6 +240,3 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.reactions;
 
 -- Enable realtime for user_settings table (for theme changes, settings updates)
 ALTER PUBLICATION supabase_realtime ADD TABLE public.user_settings;
-
--- Enable realtime for calls table (for call status updates, new calls)
-ALTER PUBLICATION supabase_realtime ADD TABLE public.calls;

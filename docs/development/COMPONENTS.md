@@ -232,20 +232,6 @@ interface FileAttachmentViewProps {
 - File size display
 - Progress indicators for uploads
 
-#### `<CallInterface />`
-Voice and video calling interface with WebRTC support.
-
-```typescript
-<CallInterface />
-```
-
-**Features:**
-- Video/audio stream display
-- Call controls (mute, video toggle, end call)
-- Participant list
-- Screen sharing
-- Recording functionality
-
 ### Settings Components
 
 #### `<SettingsModal />`

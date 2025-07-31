@@ -48,43 +48,8 @@ export interface UserInfo {
   status?: UserStatus
 }
 
-// Call related types
+// Notification sound types
 export type NotificationSound = 'subtle' | 'classic' | 'modern' | 'none'
-export type CallType = 'voice' | 'video'
-export type CallStatus = 'idle' | 'calling' | 'ringing' | 'connected' | 'ended' | 'declined' | 'missed'
-
-export interface CallParticipant {
-  userId: string
-  userName: string
-  userAvatar: string
-  status: UserStatus
-}
-
-export interface CallRecording {
-  id: string
-  callId: string
-  fileName: string
-  fileSize: number
-  duration: number // in seconds
-  recordedAt: number
-  url: string
-  audioBlob?: Blob // For local recordings
-  participants: string[] // user names
-  callType: CallType
-}
-
-export interface Call {
-  id: string
-  type: CallType
-  initiator: CallParticipant
-  participants: CallParticipant[]
-  status: CallStatus
-  startTime: number
-  endTime?: number
-  channelId?: string // For channel calls
-  recording?: CallRecording // Recording data if call was recorded
-  isRecording?: boolean // Whether call is currently being recorded
-}
 
 export interface NotificationSettings {
   // Sound settings

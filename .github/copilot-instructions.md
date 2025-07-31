@@ -31,7 +31,6 @@ This project has comprehensive documentation that provides context for developme
 ### 🚀 Setup & Operations
 - **[Setup Guide](../docs/setup/SUPABASE_SETUP.md)** - Environment configuration
 - **[Deployment Notes](../docs/deployment/DEPLOYMENT_NOTES.md)** - Production deployment
-- **[Security Guidelines](../docs/security/SECURITY.md)** - Security best practices
 
 ### 📋 Reference Materials
 - **[Troubleshooting Guide](../docs/reference/TROUBLESHOOTING.md)** - Common issues and solutions
@@ -60,6 +59,7 @@ When generating code suggestions, reference these documents for:
 - Use React 19 features appropriately (concurrent features, etc.)
 - Follow the component composition pattern
 - Use custom hooks for business logic abstraction
+- make sure to update the docs files as well when making changes to the codebase.
 
 ### File Organization
 ```
@@ -123,7 +123,7 @@ The project uses a comprehensive CSS variables system:
 ## Supabase Integration
 
 ### Database Operations
-- Use the custom hooks (`useSupabaseData`, `useSupabaseCalls`, etc.) for data operations
+- Use the custom hooks (`useSupabaseData`, `useSupabaseSettings`, etc.) for data operations
 - Implement proper error handling for database operations
 - Use TypeScript types that match the database schema
 - Follow real-time subscription patterns for live updates
