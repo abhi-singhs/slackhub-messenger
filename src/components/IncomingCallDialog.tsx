@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Phone, PhoneOff, Video } from '@phosphor-icons/react'
+import { Phone, PhoneSlash, Video } from '@phosphor-icons/react'
 import { Call } from '@/types'
 
 interface IncomingCallDialogProps {
@@ -22,7 +22,7 @@ export function IncomingCallDialog({
 
   return (
     <Dialog open={!!incomingCall}>
-      <DialogContent className="max-w-md" hideClose>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">
             Incoming {incomingCall.type === 'video' ? 'Video' : 'Voice'} Call
@@ -50,7 +50,7 @@ export function IncomingCallDialog({
               className="w-16 h-16 rounded-full"
               onClick={() => onDecline(incomingCall.id)}
             >
-              <PhoneOff size={28} />
+              <PhoneSlash size={28} />
             </Button>
             
             <Button

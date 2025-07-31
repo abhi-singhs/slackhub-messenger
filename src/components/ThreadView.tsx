@@ -155,7 +155,7 @@ export function ThreadView({
             messageInput={messageInput}
             showInputEmojiPicker={showInputEmojiPicker}
             onMessageInput={setMessageInput}
-            onInputEmojiPickerToggle={setShowInputEmojiPicker}
+            onEmojiPickerToggle={setShowInputEmojiPicker}
             onSendMessage={handleSendMessage}
             currentChannel={parentMessage.channelId}
             channels={channels}

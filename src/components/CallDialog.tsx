@@ -7,7 +7,7 @@ import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
-import { Phone, Video, Search, Clock, Record, Play, Pause, Trash, Download } from '@phosphor-icons/react'
+import { Phone, Video, MagnifyingGlass, Clock, Record, Play, Pause, Trash, Download } from '@phosphor-icons/react'
 import { Call, CallParticipant, UserInfo, Channel, CallRecording } from '@/types'
 import { CallRecordingPlayer } from '@/components/CallRecordingPlayer'
 import { cn, formatDate, formatFileSize } from '@/lib/utils'
@@ -139,7 +139,7 @@ export function CallDialog({
         <div className="flex-1 flex flex-col px-6">
           {/* Search */}
           <div className="relative mb-4">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
+            <MagnifyingGlass className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" size={16} />
             <Input
               placeholder="Search contacts or history..."
               value={searchQuery}

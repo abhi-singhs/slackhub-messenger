@@ -18,7 +18,7 @@ This document explains the deployment setup for the Slack Clone application.
 The application now uses validated environment variables:
 ```env
 VITE_SUPABASE_URL=https://example-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV4YW1wbGUtcHJvamVjdCIsInJvbGUiOiJhbm9uIiwiaWF0IjoxNjQ1MTkyMDAwLCJleHAiOjE5NDA3NjgwMDB9.placeholder-key-replace-with-actual
+VITE_SUPABASE_ANON_KEY=placeholder-key-replace-with-actual
 ```
 
 ### 4. Configuration Validation

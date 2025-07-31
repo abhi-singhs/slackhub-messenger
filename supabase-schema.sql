@@ -4,9 +4,6 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Enable Row Level Security for all tables
-ALTER DATABASE postgres SET "app.jwt_secret" TO 'your-jwt-secret';
-
 -- Create custom types
 CREATE TYPE user_status AS ENUM ('active', 'away', 'busy');
 CREATE TYPE call_type AS ENUM ('voice', 'video');
@@ -199,12 +196,7 @@ CREATE TRIGGER update_user_settings_updated_at BEFORE UPDATE ON public.user_sett
 CREATE TRIGGER update_calls_updated_at BEFORE UPDATE ON public.calls
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert default channels
-INSERT INTO public.channels (name, description, created_by) VALUES
-    ('general', 'General discussion', (SELECT id FROM auth.users LIMIT 1)),
-    ('random', 'Random chatter', (SELECT id FROM auth.users LIMIT 1)),
-    ('dev', 'Development talk', (SELECT id FROM auth.users LIMIT 1))
-ON CONFLICT (name) DO NOTHING;
+-- Default channels will be created when the first user registers
 
 -- Create a function to handle new user registration
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -220,6 +212,14 @@ BEGIN
     
     INSERT INTO public.user_settings (user_id)
     VALUES (NEW.id);
+    
+    -- Create default channels if this is the first user
+    IF NOT EXISTS (SELECT 1 FROM public.channels LIMIT 1) THEN
+        INSERT INTO public.channels (name, description, created_by) VALUES
+            ('general', 'General discussion', NEW.id),
+            ('random', 'Random chatter', NEW.id),
+            ('dev', 'Development talk', NEW.id);
+    END IF;
     
     RETURN NEW;
 END;

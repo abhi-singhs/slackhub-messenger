@@ -33,10 +33,12 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
   // Fetch settings from Supabase
   const fetchSettings = useCallback(async () => {
     if (!user) {
+      console.log('🎨 No user, skipping settings fetch')
       setLoading(false)
       return
     }
 
+    console.log('🎨 Fetching settings for user:', user.id)
     try {
       const { data, error } = await supabase
         .from('user_settings')
@@ -49,12 +51,18 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
       }
 
       if (data) {
+        console.log('🎨 Settings data received:', data)
         setTheme(data.theme || 'blue')
         setIsDarkMode(data.dark_mode || false)
         setNotificationSettings(data.notification_settings || notificationSettings)
+      } else {
+        console.log('🎨 No settings found, using defaults')
+        // Set default theme class when no settings exist
+        setTheme('blue')
+        setIsDarkMode(false)
       }
     } catch (error) {
-      console.error('Error fetching settings:', error)
+      console.error('❌ Error fetching settings:', error)
     } finally {
       setLoading(false)
     }
@@ -64,17 +72,36 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
   const updateSettings = useCallback(async (updates: Partial<SupabaseSettings>) => {
     if (!user) return
 
+    console.log('🎨 Updating settings:', updates)
     try {
+      // Convert the updates to match database column names
+      const dbUpdates: any = {
+        user_id: user.id,
+      }
+      
+      if (updates.theme !== undefined) {
+        dbUpdates.theme = updates.theme
+      }
+      
+      if (updates.darkMode !== undefined) {
+        dbUpdates.dark_mode = updates.darkMode
+      }
+      
+      if (updates.notificationSettings !== undefined) {
+        dbUpdates.notification_settings = updates.notificationSettings
+      }
+
+      // Use UPSERT to handle both insert and update cases
       const { error } = await supabase
         .from('user_settings')
-        .upsert({
-          user_id: user.id,
-          ...updates
+        .upsert(dbUpdates, {
+          onConflict: 'user_id'
         })
 
       if (error) throw error
+      console.log('✅ Settings updated successfully')
     } catch (error) {
-      console.error('Error updating settings:', error)
+      console.error('❌ Error updating settings:', error)
     }
   }, [user])
 
@@ -86,6 +113,8 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
   // Apply theme and dark mode to document
   useEffect(() => {
     const root = document.documentElement
+    
+    console.log('🎨 Applying theme - isDarkMode:', isDarkMode, 'theme:', theme)
     
     // Remove all existing theme classes
     root.classList.remove('theme-blue', 'theme-green', 'theme-purple', 'theme-orange', 'theme-red')
@@ -99,11 +128,34 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     } else {
       root.classList.remove('dark')
     }
+    
+    console.log('🎨 Applied classes:', root.classList.toString())
   }, [theme, isDarkMode])
+
+  // Set initial theme on mount if no user is present
+  useEffect(() => {
+    if (!user && !loading) {
+      const root = document.documentElement
+      // Apply default theme if no user settings
+      if (!root.classList.contains('theme-blue') && 
+          !root.classList.contains('theme-green') && 
+          !root.classList.contains('theme-purple') && 
+          !root.classList.contains('theme-orange') && 
+          !root.classList.contains('theme-red')) {
+        root.classList.add('theme-blue')
+      }
+    }
+  }, [user, loading])
 
   const updateTheme = useCallback(async (newTheme: string) => {
     setTheme(newTheme)
     await updateSettings({ theme: newTheme })
+  }, [updateSettings])
+
+  const updateColorTheme = useCallback(async (newColorTheme: string) => {
+    console.log('🎨 Updating color theme to:', newColorTheme)
+    setTheme(newColorTheme)
+    await updateSettings({ theme: newColorTheme })
   }, [updateSettings])
 
   const toggleDarkMode = useCallback(async () => {
@@ -118,13 +170,30 @@ export const useSupabaseSettings = (user: UserInfo | null) => {
     await updateSettings({ notificationSettings: updatedSettings })
   }, [notificationSettings, updateSettings])
 
+  // Create settings object compatible with SettingsModal expectations
+  const settings = {
+    theme: isDarkMode ? 'dark' as const : 'light' as const,
+    colorTheme: theme,
+    notifications: notificationSettings
+  }
+
+  const updateThemeMode = useCallback(async (themeMode: 'light' | 'dark') => {
+    console.log('🌓 Updating theme mode to:', themeMode)
+    const newDarkMode = themeMode === 'dark'
+    setIsDarkMode(newDarkMode)
+    await updateSettings({ darkMode: newDarkMode })
+  }, [updateSettings])
+
   return {
     theme,
     isDarkMode,
     notificationSettings,
     loading,
-    updateTheme,
     toggleDarkMode,
-    updateNotificationSettings
+    updateNotificationSettings,
+    // Add SettingsModal-compatible interface
+    settings,
+    updateTheme: updateThemeMode, // For dark/light mode updates
+    updateColorTheme
   }
 }

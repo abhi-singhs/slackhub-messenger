@@ -9,12 +9,17 @@ export const useAuth = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    console.log('🔐 Auth effect starting...')
+    
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('🔐 Initial session:', session ? 'exists' : 'none')
       setSession(session)
       if (session?.user) {
+        console.log('🔐 Session user found, fetching profile for:', session.user.id)
         fetchUserProfile(session.user.id)
       } else {
+        console.log('🔐 No session user, setting loading to false')
         setLoading(false)
       }
     })
@@ -23,11 +28,14 @@ export const useAuth = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔐 Auth state change:', event, session ? 'has session' : 'no session')
       setSession(session)
       
       if (session?.user) {
+        console.log('🔐 New session user, fetching profile for:', session.user.id)
         await fetchUserProfile(session.user.id)
       } else {
+        console.log('🔐 No session user, clearing user state')
         setUser(null)
         setLoading(false)
       }
@@ -37,32 +45,112 @@ export const useAuth = () => {
   }, [])
 
   const fetchUserProfile = async (userId: string) => {
+    console.log('👤 Fetching user profile for:', userId)
+    
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Timeout')), 10000)
+      )
+      
+      const queryPromise = supabase
         .from('users')
         .select('*')
         .eq('id', userId)
         .single()
 
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
+
       if (error) {
-        console.error('Error fetching user profile:', error)
-        setLoading(false)
+        console.error('❌ Error fetching user profile:', error)
+        
+        // If the user doesn't exist in the users table, create one from session data
+        if (error.code === 'PGRST116') { // No rows found
+          console.log('📝 User not found in users table, creating from session data')
+          await createUserFromSession(userId)
+          return
+        }
+        
+        // For other errors, fall back to session data
+        console.log('🔧 Falling back to session data due to error')
+        await createUserFromSession(userId)
         return
       }
 
       if (data) {
+        console.log('✅ User profile fetched:', data.username)
         setUser({
           id: data.id,
           login: data.username,
           avatarUrl: data.avatar_url || '',
           email: data.email,
-          isOwner: false, // You can implement ownership logic here
-          status: data.status
+          isOwner: false,
+          status: data.status || 'active'
         })
+        setLoading(false)
       }
     } catch (error) {
-      console.error('Error fetching user profile:', error)
-    } finally {
+      console.error('❌ User profile fetch failed:', error)
+      console.log('🔧 Falling back to session data due to timeout/error')
+      await createUserFromSession(userId)
+    }
+  }
+
+  const createUserFromSession = async (userId: string) => {
+    console.log('🔧 createUserFromSession starting for:', userId)
+    try {
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Session fallback timeout')), 5000)
+      )
+      
+      // Get current session from the existing session state
+      const sessionPromise = supabase.auth.getSession()
+      const { data: sessionData } = await Promise.race([sessionPromise, timeoutPromise]) as any
+      console.log('📋 Session data retrieved:', sessionData.session?.user ? 'has user' : 'no user')
+      
+      if (sessionData.session?.user) {
+        const sessionUser = sessionData.session.user
+        const userData = sessionUser.user_metadata
+        
+        const fallbackUser = {
+          id: sessionUser.id,
+          login: userData.preferred_username || userData.user_name || userData.name || sessionUser.email?.split('@')[0] || 'User',
+          avatarUrl: userData.avatar_url || '',
+          email: sessionUser.email || '',
+          isOwner: false,
+          status: 'active' as const
+        }
+
+        console.log('👤 Setting fallback user:', fallbackUser.login)
+        setUser(fallbackUser)
+        
+        // Try to create the user record in background (don't await)
+        supabase
+          .from('users')
+          .insert({
+            id: sessionUser.id,
+            username: fallbackUser.login,
+            email: sessionUser.email,
+            avatar_url: userData.avatar_url,
+            status: 'active'
+          })
+          .then(({ error: createError }) => {
+            if (createError) {
+              console.log('⚠️ Could not create user record:', createError.message)
+            } else {
+              console.log('✅ User record created successfully')
+            }
+          })
+
+        console.log('✅ Auth loading complete')
+        setLoading(false)
+      } else {
+        console.log('❌ No session user found')
+        setLoading(false)
+      }
+    } catch (error) {
+      console.error('❌ Error creating user from session:', error)
       setLoading(false)
     }
   }
@@ -165,6 +253,10 @@ export const useAuth = () => {
     return updateProfile({ status })
   }
 
+  const updateUserLocal = (updates: Partial<UserInfo>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null)
+  }
+
   return {
     user,
     session,
@@ -175,6 +267,7 @@ export const useAuth = () => {
     signInAnonymously,
     signOut,
     updateProfile,
-    updateUserStatus
+    updateUserStatus,
+    updateUserLocal
   }
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react'
 import { FileAttachment } from '@/types'
 import { createFileAttachment, getAllowedFileTypes, formatFileSize, MAX_FILE_SIZE } from '@/lib/fileUtils'
 import { Button } from '@/components/ui/button'
@@ -10,10 +10,13 @@ interface FileUploadProps {
   attachments: FileAttachment[]
   onAttachmentsChange: (attachments: FileAttachment[]) => void
   disabled?: boolean
-  onFileUploadClick?: (callback: () => void) => void
 }
 
-export function FileUpload({ attachments, onAttachmentsChange, disabled, onFileUploadClick }: FileUploadProps) {
+export const FileUpload = forwardRef<{ triggerFileUpload: () => void }, FileUploadProps>(({ 
+  attachments, 
+  onAttachmentsChange, 
+  disabled 
+}, ref) => {
   const [isDragOver, setIsDragOver] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -24,12 +27,10 @@ export function FileUpload({ attachments, onAttachmentsChange, disabled, onFileU
     }
   }
 
-  // Register the file dialog opener with parent
-  useEffect(() => {
-    if (onFileUploadClick) {
-      onFileUploadClick(openFileDialog)
-    }
-  }, [onFileUploadClick])
+  // Expose the triggerFileUpload method through ref
+  useImperativeHandle(ref, () => ({
+    triggerFileUpload: openFileDialog
+  }), [disabled])
 
   const handleFileSelect = async (files: FileList | null) => {
     if (!files || files.length === 0) return
@@ -162,4 +163,4 @@ export function FileUpload({ attachments, onAttachmentsChange, disabled, onFileU
       )}
     </div>
   )
-}
+})

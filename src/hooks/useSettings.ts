@@ -1,5 +1,4 @@
-import { useKV } from '@github/spark/hooks'
-import { useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { NotificationSettings } from '@/types'
 
 export type Theme = 'light' | 'dark'
@@ -36,7 +35,30 @@ const defaultSettings: Settings = {
 }
 
 export const useSettings = () => {
-  const [settings, setSettings] = useKV('app-settings', defaultSettings)
+  const [settings, setSettings] = useState<Settings>(() => {
+    try {
+      const stored = localStorage.getItem('app-settings')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        return {
+          ...defaultSettings,
+          ...parsed,
+          notifications: {
+            ...defaultNotificationSettings,
+            ...parsed?.notifications
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading settings from localStorage:', error)
+    }
+    return defaultSettings
+  })
+
+  // Save to localStorage whenever settings change
+  useEffect(() => {
+    localStorage.setItem('app-settings', JSON.stringify(settings))
+  }, [settings])
 
   // Ensure settings are properly initialized with all required properties
   const safeSettings: Settings = {

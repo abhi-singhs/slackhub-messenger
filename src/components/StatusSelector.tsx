@@ -27,7 +27,10 @@ export function StatusSelector({ currentStatus, onStatusChange }: StatusSelector
         {statusOptions.map((option) => (
           <DropdownMenuItem
             key={option.value}
-            onClick={() => onStatusChange(option.value)}
+            onClick={() => {
+              console.log('🔘 Status option clicked:', option.value)
+              onStatusChange(option.value)
+            }}
             className="flex items-center gap-3 p-3 cursor-pointer"
           >
             <StatusIndicator status={option.value} size="md" />

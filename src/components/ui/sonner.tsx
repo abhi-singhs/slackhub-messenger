@@ -1,9 +1,27 @@
-import { CSSProperties } from "react"
+import { CSSProperties, useEffect, useState } from "react"
 import { Toaster as Sonner, ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  // Get theme from document class
-  const isDark = document.documentElement.classList.contains('dark')
+  const [isDark, setIsDark] = useState(false)
+
+  useEffect(() => {
+    // Check initial theme
+    const updateTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'))
+    }
+    
+    updateTheme()
+    
+    // Create observer to watch for dark mode changes
+    const observer = new MutationObserver(updateTheme)
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    })
+    
+    return () => observer.disconnect()
+  }, [])
+
   const theme = isDark ? 'dark' : 'light'
 
   return (

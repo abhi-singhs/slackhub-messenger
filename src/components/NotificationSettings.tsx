@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react'
 import { 
   Bell, 
   BellSlash,
-  Volume2, 
-  VolumeX,
+  SpeakerHigh, 
+  SpeakerX,
   Moon,
   Clock,
-  MessageCircle,
-  AtSign,
+  ChatCircle,
+  At,
   Hash,
   Plus,
   X,
@@ -156,7 +156,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
       {/* Sound Settings */}
       <div className="space-y-4">
         <div className="flex items-center gap-2">
-          <Volume2 className="h-5 w-5 text-muted-foreground" />
+          <SpeakerHigh className="h-5 w-5 text-muted-foreground" />
           <h3 className="text-lg font-semibold">Sound Notifications</h3>
         </div>
         
@@ -177,7 +177,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Volume</Label>
                 <div className="flex items-center gap-3">
-                  <VolumeX className="h-4 w-4 text-muted-foreground" />
+                  <SpeakerX className="h-4 w-4 text-muted-foreground" />
                   <Slider
                     value={[notifications.soundVolume]}
                     onValueChange={handleVolumeChange}
@@ -185,7 +185,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
                     step={5}
                     className="flex-1"
                   />
-                  <Volume2 className="h-4 w-4 text-muted-foreground" />
+                  <SpeakerHigh className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground min-w-[3ch]">
                     {notifications.soundVolume}%
                   </span>
@@ -277,7 +277,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4 text-muted-foreground" />
+              <ChatCircle className="h-4 w-4 text-muted-foreground" />
               <div>
                 <Label className="text-sm font-medium">Direct Messages</Label>
                 <p className="text-xs text-muted-foreground">Notify for direct messages</p>
@@ -291,7 +291,7 @@ export const NotificationSettings = ({ user, channels }: NotificationSettingsPro
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AtSign className="h-4 w-4 text-muted-foreground" />
+              <At className="h-4 w-4 text-muted-foreground" />
               <div>
                 <Label className="text-sm font-medium">Mentions</Label>
                 <p className="text-xs text-muted-foreground">Notify when someone mentions you</p>

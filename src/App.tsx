@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { FileAttachment } from '@/types'
+import { FileAttachment, CallParticipant } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
@@ -24,13 +24,15 @@ type ViewState = 'channel' | 'search'
 
 function App() {
   // Authentication
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, updateUserLocal } = useAuth()
   
   // Initialize settings hook to apply theme on mount  
   useSupabaseSettings(user)
   
   // Centralized status management
-  const { status: userStatus, setStatus: setUserStatus } = useSupabaseUserStatus(user)
+  const { status: userStatus, setStatus: setUserStatus } = useSupabaseUserStatus(user, updateUserLocal)
+  
+  console.log('🏠 App render - user:', user?.login, 'userStatus:', userStatus)
   
   const {
     currentChannel,
@@ -87,17 +89,7 @@ function App() {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   
   const messageInputRef = useRef<HTMLDivElement>(null)
-  const searchInputRef = useRef<HTMLInputElement>(null)
-
-  // Set initial channel when channels are loaded
-  useEffect(() => {
-    if (channels && channels.length > 0 && !currentChannel) {
-      const generalChannel = channels.find(c => c.id === 'general') || channels[0]
-      if (generalChannel) {
-        setCurrentChannel(generalChannel.id)
-      }
-    }
-  }, [channels, currentChannel, setCurrentChannel])
+  const searchInputRef = useRef<HTMLInputElement>(null!)
 
   // Mark current channel as read when it changes
   useEffect(() => {
@@ -126,9 +118,11 @@ function App() {
     setActiveThreadId(null) // Close any open thread
   }
 
-  const handleChannelCreate = (name: string) => {
-    const channelId = createChannel(name)
-    setCurrentChannel(channelId)
+  const handleChannelCreate = async (name: string) => {
+    const channelId = await createChannel(name)
+    if (channelId) {
+      setCurrentChannel(channelId)
+    }
     setSidebarOpen(false) // Close sidebar on mobile when new channel is created
   }
 
@@ -325,6 +319,14 @@ function App() {
     setShowKeyboardHelp(true)
   }
 
+  const handleStartCall = (type: 'voice' | 'video', participants: CallParticipant[], channelId?: string) => {
+    // For now, we'll start a call with the first participant
+    // In a real implementation, you might want to handle multiple participants differently
+    if (participants.length > 0) {
+      startCall(participants[0].userId, type as any) // Cast to match the hook's expected type
+    }
+  }
+
   // Setup keyboard shortcuts
   useKeyboardShortcuts({
     onQuickSwitcher: handleQuickSwitcher,
@@ -407,7 +409,7 @@ function App() {
           callRecordings={callRecordings}
           onSidebarToggle={() => setSidebarOpen(true)}
           onSearchChange={handleSearchChange}
-          onStartCall={startCall}
+          onStartCall={handleStartCall}
           onDeleteRecording={deleteRecording}
           searchInputRef={searchInputRef}
         />
@@ -436,7 +438,7 @@ function App() {
             messageInput={messageInput}
             showInputEmojiPicker={showInputEmojiPicker}
             onMessageInput={setMessageInput}
-            onInputEmojiPickerToggle={setShowInputEmojiPicker}
+            onEmojiPickerToggle={setShowInputEmojiPicker}
             onSendMessage={handleSendMessage}
             currentChannel={currentChannel}
             channels={channels || []}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Settings, Moon, Sun, Palette, Bell } from '@phosphor-icons/react'
+import { Gear, Moon, Sun, Palette, Bell } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useSettings, Theme, ColorTheme } from '@/hooks/useSettings'
+import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
 import { NotificationSettings } from '@/components/NotificationSettings'
 import { UserInfo, Channel } from '@/types'
 import { THEME_OPTIONS } from '@/constants'
@@ -21,7 +21,7 @@ interface SettingsModalProps {
 }
 
 export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onOpenChange: externalOnOpenChange }: SettingsModalProps) => {
-  const { settings, updateTheme, updateColorTheme } = useSettings()
+  const { settings, updateTheme, updateColorTheme } = useSupabaseSettings(user)
   const [internalOpen, setInternalOpen] = useState(false)
   
   // Use external state if provided, otherwise use internal state
@@ -29,16 +29,18 @@ export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onO
   const setOpen = externalOnOpenChange || setInternalOpen
 
   const handleThemeToggle = (checked: boolean) => {
+    console.log('🌓 Theme toggle clicked:', checked)
     updateTheme(checked ? 'dark' : 'light')
   }
 
   const handleColorThemeChange = (value: string) => {
-    updateColorTheme(value as ColorTheme)
+    console.log('🎨 Color theme changed:', value)
+    updateColorTheme(value)
   }
 
   const defaultTrigger = (
     <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-      <Settings className="h-4 w-4" />
+      <Gear className="h-4 w-4" />
     </Button>
   )
 
@@ -50,7 +52,7 @@ export const SettingsModal = ({ user, channels, trigger, open: externalOpen, onO
       <DialogContent className="sm:max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Settings className="h-5 w-5" />
+            <Gear className="h-5 w-5" />
             Settings
           </DialogTitle>
         </DialogHeader>

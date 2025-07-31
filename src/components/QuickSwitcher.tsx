@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Search, Hash } from '@phosphor-icons/react'
+import { MagnifyingGlass, Hash } from '@phosphor-icons/react'
 import { Channel } from '@/types'
 
 interface QuickSwitcherProps {
@@ -87,7 +87,7 @@ export const QuickSwitcher = ({
       <DialogContent className="max-w-lg p-0">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-lg font-semibold flex items-center gap-2">
-            <Search size={20} />
+            <MagnifyingGlass size={20} />
             Switch to...
           </DialogTitle>
         </DialogHeader>
@@ -107,7 +107,7 @@ export const QuickSwitcher = ({
           <div className="px-2 pb-4">
             {filteredChannels.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
-                <Search size={32} className="mx-auto mb-2 opacity-50" />
+                <MagnifyingGlass size={32} className="mx-auto mb-2 opacity-50" />
                 <p>No channels found</p>
               </div>
             ) : (

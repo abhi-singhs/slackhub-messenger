@@ -1,20 +1,87 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useSupabaseData } from './useSupabaseData'
+import { useAuth } from './useAuth'
 import { Message, Channel, UserInfo, FileAttachment } from '@/types'
 
-declare const spark: Window['spark']
-
 export const useSlackData = () => {
-  const [user, setUser] = useState<UserInfo | null>(null)
-  const [currentChannel, setCurrentChannel] = useState<string>('')
+  const { user } = useAuth()
+  const supabaseData = useSupabaseData(user)
   
-  const [messages, setMessages] = useKV<Message[]>('slack-messages', [])
-  const [channels, setChannels] = useKV<Channel[]>('slack-channels', [
-    { id: 'general', name: 'general', description: 'General discussion' },
-    { id: 'random', name: 'random', description: 'Random chatter' },
-    { id: 'dev', name: 'dev', description: 'Development talk' }
-  ])
-  const [lastReadTimestamps, setLastReadTimestamps] = useKV<Record<string, number>>('last-read-timestamps', {})
+  // Local state for when not authenticated
+  const [localMessages, setLocalMessages] = useState<Message[]>(() => {
+    try {
+      const stored = localStorage.getItem('slack-messages')
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
+  
+  const [localChannels, setLocalChannels] = useState<Channel[]>(() => {
+    try {
+      const stored = localStorage.getItem('slack-channels')
+      return stored ? JSON.parse(stored) : [
+        { id: 'general', name: 'general', description: 'General discussion' },
+        { id: 'random', name: 'random', description: 'Random chatter' },
+        { id: 'dev', name: 'dev', description: 'Development talk' }
+      ]
+    } catch {
+      return [
+        { id: 'general', name: 'general', description: 'General discussion' },
+        { id: 'random', name: 'random', description: 'Random chatter' },
+        { id: 'dev', name: 'dev', description: 'Development talk' }
+      ]
+    }
+  })
+  
+  const [localLastReadTimestamps, setLocalLastReadTimestamps] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem('last-read-timestamps')
+      return stored ? JSON.parse(stored) : {}
+    } catch {
+      return {}
+    }
+  })
+
+  const [localCurrentChannel, setLocalCurrentChannel] = useState<string>(() => {
+    try {
+      const stored = localStorage.getItem('current-channel')
+      return stored || 'general'
+    } catch {
+      return 'general'
+    }
+  })
+
+  // Save to localStorage when local state changes
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem('slack-messages', JSON.stringify(localMessages))
+    }
+  }, [localMessages, user])
+
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem('slack-channels', JSON.stringify(localChannels))
+    }
+  }, [localChannels, user])
+
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem('last-read-timestamps', JSON.stringify(localLastReadTimestamps))
+    }
+  }, [localLastReadTimestamps, user])
+
+  useEffect(() => {
+    if (!user) {
+      localStorage.setItem('current-channel', localCurrentChannel)
+    }
+  }, [localCurrentChannel, user])
+
+  // Use Supabase data if user is authenticated, otherwise use local data
+  const messages = user ? supabaseData.messages : localMessages
+  const channels = user ? supabaseData.channels : localChannels
+  const lastReadTimestamps = user ? supabaseData.lastReadTimestamps : localLastReadTimestamps
+  const currentChannel = user ? supabaseData.currentChannel : localCurrentChannel
 
   // Ensure we have fallback values
   const safeMessages = messages || []
@@ -22,124 +89,136 @@ export const useSlackData = () => {
   const safeLastReadTimestamps = lastReadTimestamps || {}
 
   const markChannelAsRead = useCallback((channelId: string) => {
-    const now = Date.now()
-    setLastReadTimestamps((current) => ({
-      ...(current || {}),
-      [channelId]: now
-    }))
-  }, [])
+    if (user) {
+      supabaseData.markChannelAsRead(channelId)
+    } else {
+      const now = Date.now()
+      setLocalLastReadTimestamps((current) => ({
+        ...(current || {}),
+        [channelId]: now
+      }))
+    }
+  }, [user, supabaseData])
 
-  useEffect(() => {
-    const fetchUser = async () => {
+  const sendMessage = useCallback((content: string, channelId?: string, threadId?: string, attachments?: FileAttachment[]) => {
+    if (user) {
+      return supabaseData.sendMessage(content, channelId, threadId, attachments)
+    } else {
+      // Local message handling for non-authenticated users
       try {
-        const userData = await spark.user()
-        if (userData) {
-          setUser({
-            id: userData.id.toString(),
-            login: userData.login || 'Anonymous',
-            avatarUrl: userData.avatarUrl || '',
-            email: userData.email || '',
-            isOwner: userData.isOwner || false
-          })
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error)
-        console.log('Using anonymous user')
-        setUser({
+        if ((!content || !content.trim()) && (!attachments || attachments.length === 0)) return
+        
+        const targetChannelId = channelId || localCurrentChannel
+        if (!targetChannelId) return
+
+        // Create anonymous user for local messages
+        const anonymousUser = {
           id: 'anonymous',
           login: 'Anonymous',
           avatarUrl: '',
           email: '',
           isOwner: false
-        })
-      }
-    }
-    fetchUser()
-  }, [])
-
-  // Don't auto-mark channels as read here - let App.tsx handle it when route changes
-
-  const sendMessage = useCallback((content: string, channelId?: string, threadId?: string, attachments?: FileAttachment[]) => {
-    try {
-      if ((!content || !content.trim()) && (!attachments || attachments.length === 0)) return
-      if (!user) return
-
-      // Use provided channelId or fall back to currentChannel
-      const targetChannelId = channelId || currentChannel
-      if (!targetChannelId) return
-
-      const newMessage: Message = {
-        id: Date.now().toString(),
-        content: content.trim(),
-        userId: user.id,
-        userName: user.login,
-        userAvatar: user.avatarUrl,
-        timestamp: Date.now(),
-        channelId: targetChannelId,
-        ...(threadId && { threadId }),
-        ...(attachments && attachments.length > 0 && { attachments })
-      }
-
-      setMessages((current) => {
-        const updatedMessages = [...(current || []), newMessage]
-        
-        // If this is a thread reply, update the parent message's reply count
-        if (threadId) {
-          return updatedMessages.map(msg => {
-            if (msg.id === threadId) {
-              return {
-                ...msg,
-                replyCount: (msg.replyCount || 0) + 1
-              }
-            }
-            return msg
-          })
         }
-        
-        return updatedMessages
-      })
-    } catch (error) {
-      console.error('Error sending message:', error)
+
+        const newMessage: Message = {
+          id: Date.now().toString(),
+          content: content.trim(),
+          userId: anonymousUser.id,
+          userName: anonymousUser.login,
+          userAvatar: anonymousUser.avatarUrl,
+          timestamp: Date.now(),
+          channelId: targetChannelId,
+          ...(threadId && { threadId }),
+          ...(attachments && attachments.length > 0 && { attachments })
+        }
+
+        setLocalMessages((current) => {
+          const updatedMessages = [...(current || []), newMessage]
+          
+          // If this is a thread reply, update the parent message's reply count
+          if (threadId) {
+            return updatedMessages.map(msg => {
+              if (msg.id === threadId) {
+                return {
+                  ...msg,
+                  replyCount: (msg.replyCount || 0) + 1
+                }
+              }
+              return msg
+            })
+          }
+          
+          return updatedMessages
+        })
+      } catch (error) {
+        console.error('Error sending message:', error)
+      }
     }
-  }, [user, currentChannel])
+  }, [user, supabaseData, localCurrentChannel])
 
   const createChannel = useCallback((name: string) => {
-    const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    
-    setChannels((current) => [
-      ...(current || []),
-      {
-        id: channelId,
-        name: name,
-        description: `${name} discussion`
-      }
-    ])
-    
-    return channelId
-  }, [])
+    if (user) {
+      return supabaseData.createChannel(name)
+    } else {
+      const channelId = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      
+      setLocalChannels((current) => [
+        ...(current || []),
+        {
+          id: channelId,
+          name: name,
+          description: `${name} discussion`
+        }
+      ])
+      
+      return channelId
+    }
+  }, [user, supabaseData])
 
   const addReaction = useCallback((messageId: string, emoji: string) => {
-    if (!user) return
+    if (user) {
+      return supabaseData.addReaction(messageId, emoji)
+    } else {
+      // Local reaction handling for anonymous users
+      const anonymousUser = {
+        id: 'anonymous',
+        login: 'Anonymous',
+        avatarUrl: '',
+        email: '',
+        isOwner: false
+      }
 
-    setMessages((current) => 
-      (current || []).map(message => {
-        if (message.id !== messageId) return message
+      setLocalMessages((current) => 
+        (current || []).map(message => {
+          if (message.id !== messageId) return message
 
-        const reactions = message.reactions || []
-        const existingReaction = reactions.find(r => r.emoji === emoji)
+          const reactions = message.reactions || []
+          const existingReaction = reactions.find(r => r.emoji === emoji)
 
-        if (existingReaction) {
-          // If user already reacted with this emoji, remove their reaction
-          if (existingReaction.users.includes(user.id)) {
-            const updatedUsers = existingReaction.users.filter(id => id !== user.id)
-            if (updatedUsers.length === 0) {
-              // Remove the reaction entirely if no users left
-              return {
-                ...message,
-                reactions: reactions.filter(r => r.emoji !== emoji)
+          if (existingReaction) {
+            // If user already reacted with this emoji, remove their reaction
+            if (existingReaction.users.includes(anonymousUser.id)) {
+              const updatedUsers = existingReaction.users.filter(id => id !== anonymousUser.id)
+              if (updatedUsers.length === 0) {
+                // Remove the reaction entirely if no users left
+                return {
+                  ...message,
+                  reactions: reactions.filter(r => r.emoji !== emoji)
+                }
+              } else {
+                // Update the reaction with fewer users
+                return {
+                  ...message,
+                  reactions: reactions.map(r => 
+                    r.emoji === emoji 
+                      ? { ...r, users: updatedUsers, count: updatedUsers.length }
+                      : r
+                  )
+                }
               }
             } else {
-              // Update the reaction with fewer users
+              // Add user to existing reaction
+              const updatedUsers = [...existingReaction.users, anonymousUser.id]
               return {
                 ...message,
                 reactions: reactions.map(r => 
@@ -150,110 +229,119 @@ export const useSlackData = () => {
               }
             }
           } else {
-            // Add user to existing reaction
-            const updatedUsers = [...existingReaction.users, user.id]
+            // Create new reaction
             return {
               ...message,
-              reactions: reactions.map(r => 
-                r.emoji === emoji 
-                  ? { ...r, users: updatedUsers, count: updatedUsers.length }
-                  : r
-              )
+              reactions: [
+                ...reactions,
+                {
+                  emoji,
+                  users: [anonymousUser.id],
+                  count: 1
+                }
+              ]
             }
           }
-        } else {
-          // Create new reaction
-          return {
-            ...message,
-            reactions: [
-              ...reactions,
-              {
-                emoji,
-                users: [user.id],
-                count: 1
-              }
-            ]
-          }
-        }
-      })
-    )
-  }, [user])
+        })
+      )
+    }
+  }, [user, supabaseData])
 
   const updateChannel = useCallback((channelId: string, name: string, description: string) => {
-    setChannels((current) => 
-      (current || []).map(channel => 
-        channel.id === channelId 
-          ? { ...channel, name, description }
-          : channel
+    if (user) {
+      return supabaseData.updateChannel(channelId, name, description)
+    } else {
+      setLocalChannels((current) => 
+        (current || []).map(channel => 
+          channel.id === channelId 
+            ? { ...channel, name, description }
+            : channel
+        )
       )
-    )
-  }, [])
+    }
+  }, [user, supabaseData])
 
   const deleteChannel = useCallback((channelId: string) => {
-    // Don't allow deleting the general channel
-    if (channelId === 'general') return
+    if (user) {
+      return supabaseData.deleteChannel(channelId)
+    } else {
+      // Don't allow deleting the general channel
+      if (channelId === 'general') return
 
-    // Remove the channel
-    setChannels((current) => (current || []).filter(channel => channel.id !== channelId))
-    
-    // Remove all messages from this channel
-    setMessages((current) => (current || []).filter(message => message.channelId !== channelId))
-  }, [])
+      // Remove the channel
+      setLocalChannels((current) => (current || []).filter(channel => channel.id !== channelId))
+      
+      // Remove all messages from this channel
+      setLocalMessages((current) => (current || []).filter(message => message.channelId !== channelId))
+    }
+  }, [user, supabaseData])
 
   const editMessage = useCallback((messageId: string, newContent: string) => {
-    if (!user) return
-    
-    setMessages((current) => 
-      (current || []).map(message => {
-        if (message.id === messageId && message.userId === user.id) {
-          return {
-            ...message,
-            content: newContent.trim(),
-            edited: true,
-            editedAt: Date.now()
-          }
-        }
-        return message
-      })
-    )
-  }, [user])
-
-  const deleteMessage = useCallback((messageId: string) => {
-    if (!user) return
-    
-    setMessages((current) => {
-      const messageToDelete = (current || []).find(m => m.id === messageId)
-      
-      // Only allow deleting own messages
-      if (!messageToDelete || messageToDelete.userId !== user.id) return current || []
-      
-      // If this message has thread replies, we need to handle them
-      const updatedMessages = (current || []).filter(message => {
-        // Remove the main message
-        if (message.id === messageId) return false
-        
-        // Remove thread replies to this message
-        if (message.threadId === messageId) return false
-        
-        return true
-      })
-      
-      // Update reply counts for any parent messages if this was a thread reply
-      if (messageToDelete.threadId) {
-        return updatedMessages.map(msg => {
-          if (msg.id === messageToDelete.threadId) {
+    if (user) {
+      return supabaseData.editMessage(messageId, newContent)
+    } else {
+      setLocalMessages((current) => 
+        (current || []).map(message => {
+          if (message.id === messageId && message.userId === 'anonymous') {
             return {
-              ...msg,
-              replyCount: Math.max((msg.replyCount || 1) - 1, 0)
+              ...message,
+              content: newContent.trim(),
+              edited: true,
+              editedAt: Date.now()
             }
           }
-          return msg
+          return message
         })
-      }
-      
-      return updatedMessages
-    })
-  }, [user])
+      )
+    }
+  }, [user, supabaseData])
+
+  const deleteMessage = useCallback((messageId: string) => {
+    if (user) {
+      return supabaseData.deleteMessage(messageId)
+    } else {
+      setLocalMessages((current) => {
+        const messageToDelete = (current || []).find(m => m.id === messageId)
+        
+        // Only allow deleting own messages
+        if (!messageToDelete || messageToDelete.userId !== 'anonymous') return current || []
+        
+        // If this message has thread replies, we need to handle them
+        const updatedMessages = (current || []).filter(message => {
+          // Remove the main message
+          if (message.id === messageId) return false
+          
+          // Remove thread replies to this message
+          if (message.threadId === messageId) return false
+          
+          return true
+        })
+        
+        // Update reply counts for any parent messages if this was a thread reply
+        if (messageToDelete.threadId) {
+          return updatedMessages.map(msg => {
+            if (msg.id === messageToDelete.threadId) {
+              return {
+                ...msg,
+                replyCount: Math.max((msg.replyCount || 1) - 1, 0)
+              }
+            }
+            return msg
+          })
+        }
+        
+        return updatedMessages
+      })
+    }
+  }, [user, supabaseData])
+
+  const setCurrentChannel = useCallback((channelId: string) => {
+    if (user) {
+      supabaseData.setCurrentChannel(channelId)
+    } else {
+      setLocalCurrentChannel(channelId)
+    }
+  }, [user, supabaseData])
 
   return {
     user,

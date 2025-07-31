@@ -1,7 +1,7 @@
 import { Channel, UserInfo, FileAttachment } from '@/types'
 import { RichTextEditor } from './RichTextEditor'
 import { FileUpload } from './FileUpload'
-import { forwardRef, useState } from 'react'
+import { forwardRef, useState, useRef } from 'react'
 
 interface MessageInputProps {
   user: UserInfo | null
@@ -29,7 +29,7 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   onSendMessage
 }, ref) => {
   const [attachments, setAttachments] = useState<FileAttachment[]>([])
-  const [fileUploadCallback, setFileUploadCallback] = useState<(() => void) | null>(null)
+  const fileUploadRef = useRef<{ triggerFileUpload: () => void } | null>(null)
   
   const currentChannelName = Array.isArray(channels) ? channels.find(c => c.id === currentChannel)?.name : currentChannel || ''
   const defaultPlaceholder = placeholder || `Message #${currentChannelName}`
@@ -40,13 +40,9 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
   }
 
   const handleFileUploadClick = () => {
-    if (fileUploadCallback) {
-      fileUploadCallback()
+    if (fileUploadRef.current) {
+      fileUploadRef.current.triggerFileUpload()
     }
-  }
-
-  const handleFileUploadCallbackRegistration = (callback: () => void) => {
-    setFileUploadCallback(() => callback)
   }
 
   return (
@@ -54,9 +50,9 @@ export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
       <div className="space-y-2">
         {/* File Upload Component */}
         <FileUpload
+          ref={fileUploadRef}
           attachments={attachments}
           onAttachmentsChange={setAttachments}
-          onFileUploadClick={handleFileUploadCallbackRegistration}
         />
         
         {/* Rich Text Editor */}

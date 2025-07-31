@@ -5,13 +5,13 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { 
   Phone, 
-  PhoneOff, 
+  PhoneSlash, 
   Video, 
-  VideoOff, 
-  Mic, 
-  MicOff,
-  Minimize2,
-  Maximize2,
+  VideoCameraSlash, 
+  Microphone, 
+  MicrophoneSlash,
+  Minus,
+  ArrowsOut,
   Record,
   Stop
 } from '@phosphor-icons/react'
@@ -101,7 +101,6 @@ export function CallInterface({
           "max-w-4xl w-full h-[600px] p-0 overflow-hidden",
           isVideoCall ? "bg-black" : "bg-card"
         )}
-        hideClose
       >
         <div className="relative w-full h-full flex flex-col">
           {/* Video Area */}
@@ -179,7 +178,7 @@ export function CallInterface({
                       </div>
                       {isMuted && (
                         <div className="flex items-center gap-2 text-muted-foreground">
-                          <MicOff size={16} />
+                          <MicrophoneSlash size={16} />
                           <span className="text-sm">Muted</span>
                         </div>
                       )}
@@ -209,7 +208,7 @@ export function CallInterface({
                 className="w-14 h-14 rounded-full"
                 onClick={onToggleMute}
               >
-                {isMuted ? <MicOff size={24} /> : <Mic size={24} />}
+                {isMuted ? <MicrophoneSlash size={24} /> : <Microphone size={24} />}
               </Button>
 
               {/* Video Toggle (only for video calls) */}
@@ -220,7 +219,7 @@ export function CallInterface({
                   className="w-14 h-14 rounded-full"
                   onClick={onToggleVideo}
                 >
-                  {hasVideo ? <Video size={24} /> : <VideoOff size={24} />}
+                  {hasVideo ? <Video size={24} /> : <VideoCameraSlash size={24} />}
                 </Button>
               )}
 
@@ -246,7 +245,7 @@ export function CallInterface({
                 className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600"
                 onClick={onEndCall}
               >
-                <PhoneOff size={28} />
+                <PhoneSlash size={28} />
               </Button>
 
               {/* Minimize/Maximize (placeholder for future feature) */}
@@ -258,7 +257,7 @@ export function CallInterface({
                   isVideoCall ? "text-white hover:bg-white/20" : ""
                 )}
               >
-                <Minimize2 size={24} />
+                <Minus size={24} />
               </Button>
             </div>
           </div>

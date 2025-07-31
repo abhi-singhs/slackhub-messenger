@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Slider } from '@/components/ui/slider'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Play, Pause, Download, VolumeX, Volume2, X } from '@phosphor-icons/react'
+import { Play, Pause, Download, SpeakerX, SpeakerHigh, X } from '@phosphor-icons/react'
 import { CallRecording } from '@/types'
 import { formatDate, formatFileSize } from '@/lib/utils'
 
@@ -198,7 +198,7 @@ export function CallRecordingPlayer({
               className="w-8 h-8 p-0"
               onClick={handleMuteToggle}
             >
-              {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+              {isMuted ? <SpeakerX size={16} /> : <SpeakerHigh size={16} />}
             </Button>
             <Slider
               value={[isMuted ? 0 : volume]}
