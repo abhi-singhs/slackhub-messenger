@@ -52,6 +52,7 @@ This will create all necessary tables:
 2. Configure your preferred authentication methods:
    - **Email/Password**: Already enabled by default
    - **GitHub OAuth**: Add your GitHub OAuth app credentials
+   - **Google OAuth**: Add your Google OAuth app credentials
    - **Anonymous Sign-ins**: Enable if you want guest access
 
 ### GitHub OAuth Setup (Optional)
@@ -59,6 +60,15 @@ This will create all necessary tables:
 1. Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers)
 2. Set Authorization callback URL to: `https://your-project-id.supabase.co/auth/v1/callback`
 3. Copy Client ID and Client Secret to Supabase **Authentication > Providers > GitHub**
+
+### Google OAuth Setup (Optional)
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable the Google+ API (now called Google Identity API)
+4. Go to **Credentials** and create OAuth 2.0 Client IDs
+5. Set the authorized redirect URI to: `https://your-project-id.supabase.co/auth/v1/callback`
+6. Copy Client ID and Client Secret to Supabase **Authentication > Providers > Google**
 
 ## 6. Set Up Row Level Security (RLS)
 
@@ -85,6 +95,7 @@ The schema includes RLS policies, but you may want to review and customize them:
 - **Authentication not working**: Check that your Supabase URL and anon key are correct
 - **Database errors**: Verify the schema was applied correctly
 - **GitHub OAuth issues**: Check callback URL and credentials in both GitHub and Supabase
+- **Google OAuth issues**: Check callback URL and credentials in both Google Cloud Console and Supabase
 
 ## Security Notes
 

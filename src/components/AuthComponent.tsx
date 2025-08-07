@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, Github, UserX, AlertTriangle } from 'lucide-react'
+import { Loader2, Github, UserX, AlertTriangle, Globe } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { isSupabaseConfigured, getConfigurationMessage } from '@/lib/supabase'
 
 export const AuthComponent = () => {
-  const { signIn, signUp, signInWithGitHub, signInAnonymously } = useAuth()
+  const { signIn, signUp, signInWithGitHub, signInWithGoogle, signInAnonymously } = useAuth()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
@@ -83,6 +83,22 @@ export const AuthComponent = () => {
       }
     } catch (err) {
       setError('Failed to sign in with GitHub')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error } = await signInWithGoogle()
+      if (error) {
+        setError(error.message)
+      }
+    } catch (err) {
+      setError('Failed to sign in with Google')
     } finally {
       setLoading(false)
     }
@@ -256,6 +272,20 @@ export const AuthComponent = () => {
                   <Github className="mr-2 h-4 w-4" />
                 )}
                 GitHub
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                className="w-full" 
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Globe className="mr-2 h-4 w-4" />
+                )}
+                Google
               </Button>
               
               <Button 

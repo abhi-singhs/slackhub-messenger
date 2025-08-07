@@ -101,6 +101,17 @@ export const useAuth = () => {
     return { data, error }
   }
 
+  const signInWithGoogle = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}`,
+      }
+    })
+
+    return { data, error }
+  }
+
   const signInAnonymously = async () => {
     const { data, error } = await supabase.auth.signInAnonymously()
     
@@ -172,6 +183,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signInWithGitHub,
+    signInWithGoogle,
     signInAnonymously,
     signOut,
     updateProfile,
