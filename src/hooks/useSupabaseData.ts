@@ -153,34 +153,31 @@ export const useSupabaseData = (user: UserInfo | null) => {
     }
   }, [])
 
-  // Fetch user settings including last read timestamps
-  const fetchUserSettings = useCallback(async () => {
+  // Load last read timestamps from localStorage
+  const loadLastReadTimestamps = useCallback(() => {
     if (!user) return
 
     try {
-      // Add timeout to prevent hanging
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('User settings fetch timeout')), 10000)
-      )
-      
-      const queryPromise = supabase
-        .from('user_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      const { data, error } = await Promise.race([queryPromise, timeoutPromise]) as any
-
-      if (error && error.code !== 'PGRST116') { // PGRST116 is the "no rows" error
-        throw error
-      }
-
-      if (data?.last_read_timestamps) {
-        setLastReadTimestamps(data.last_read_timestamps)
+      const stored = localStorage.getItem(`last-read-timestamps-${user.id}`)
+      if (stored) {
+        const timestamps = JSON.parse(stored)
+        setLastReadTimestamps(timestamps)
+        console.log('🔄 Loaded last read timestamps from localStorage:', timestamps)
       }
     } catch (error) {
-      console.error('Error fetching user settings:', error)
-      // Continue with empty settings
+      console.error('❌ Error loading last read timestamps from localStorage:', error)
+    }
+  }, [user])
+
+  // Save last read timestamps to localStorage
+  const saveLastReadTimestamps = useCallback((timestamps: Record<string, number>) => {
+    if (!user) return
+
+    try {
+      localStorage.setItem(`last-read-timestamps-${user.id}`, JSON.stringify(timestamps))
+      console.log('✅ Saved last read timestamps to localStorage:', timestamps)
+    } catch (error) {
+      console.error('❌ Error saving last read timestamps to localStorage:', error)
     }
   }, [user])
 
@@ -203,8 +200,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
         // Add overall timeout to prevent infinite loading
         const loadingPromise = Promise.all([
           fetchChannels(),
-          fetchMessages(),
-          fetchUserSettings()
+          fetchMessages()
         ])
         
         const timeoutPromise = new Promise((_, reject) => 
@@ -212,6 +208,10 @@ export const useSupabaseData = (user: UserInfo | null) => {
         )
         
         await Promise.race([loadingPromise, timeoutPromise])
+        
+        // Load last read timestamps from localStorage
+        loadLastReadTimestamps()
+        
         console.log('✅ All data fetched successfully')
       } catch (error) {
         console.error('❌ Error loading data:', error)
@@ -228,7 +228,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
     }
 
     loadData()
-  }, [user, fetchChannels, fetchMessages, fetchUserSettings]) // Include all dependencies
+  }, [user]) // Only user dependency - callbacks have stable references via useCallback with empty deps
 
   // Set initial channel when channels are loaded
   useEffect(() => {
@@ -496,7 +496,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
       supabase.removeChannel(messagesSubscription)
       supabase.removeChannel(reactionsSubscription)
     }
-  }, [user, currentChannel, channels]) // Include dependencies needed for the subscription callbacks
+  }, [user, currentChannel]) // Remove channels from deps to prevent infinite loop
 
   const markChannelAsRead = useCallback(async (channelId: string) => {
     if (!user) return
@@ -507,24 +507,14 @@ export const useSupabaseData = (user: UserInfo | null) => {
       [channelId]: now
     }
 
-    try {
-      // First try to update the existing record
-      const { error } = await supabase
-        .from('user_settings')
-        .update({
-          last_read_timestamps: newTimestamps
-        })
-        .eq('user_id', user.id)
-
-      if (error) throw error
-
-      setLastReadTimestamps(newTimestamps)
-    } catch (error) {
-      console.error('Error marking channel as read:', error)
-      // Still update the local state even if the database update fails
-      setLastReadTimestamps(newTimestamps)
-    }
-  }, [user, lastReadTimestamps])
+    // Update local state
+    setLastReadTimestamps(newTimestamps)
+    
+    // Save to localStorage
+    saveLastReadTimestamps(newTimestamps)
+    
+    console.log('✅ Marked channel as read:', channelId, 'at', new Date(now).toISOString())
+  }, [user, lastReadTimestamps, saveLastReadTimestamps])
 
   const sendMessage = useCallback(async (
     content: string, 

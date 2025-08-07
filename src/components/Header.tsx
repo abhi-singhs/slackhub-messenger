@@ -3,7 +3,6 @@ import { Separator } from '@/components/ui/separator'
 import { Hash, List } from '@phosphor-icons/react'
 import { Channel, UserInfo } from '@/types'
 import { SearchInput } from '@/components/SearchInput'
-import { SettingsModal } from '@/components/SettingsModal'
 
 interface HeaderProps {
   channels: Channel[]
@@ -53,8 +52,6 @@ export const Header = ({
           onSearchChange={onSearchChange}
           placeholder="Search messages..."
         />
-        
-        <SettingsModal />
       </div>
     </div>
   )

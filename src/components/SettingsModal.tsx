@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Switch } from '@/components/ui/switch'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
 import { UserInfo } from '@/types'
 import { THEME_OPTIONS } from '@/constants'
 
@@ -33,13 +32,10 @@ export const SettingsModal = ({
   updateTheme: passedUpdateTheme,
   updateColorTheme: passedUpdateColorTheme
 }: SettingsModalProps) => {
-  // Conditionally call hook only if no props are passed (for backward compatibility)
-  const hookResult = passedSettings ? null : useSupabaseSettings(user || null)
-  
-  // Use passed props if available, otherwise fall back to hook (with safe defaults)
-  const settings = passedSettings || hookResult?.settings || { theme: 'light', colorTheme: 'blue' }
-  const updateTheme = passedUpdateTheme || hookResult?.updateTheme || (() => {})
-  const updateColorTheme = passedUpdateColorTheme || hookResult?.updateColorTheme || (() => {})
+  // Use only passed props - no hook calls to avoid conflicts with App.tsx
+  const settings = passedSettings || { theme: 'light', colorTheme: 'blue' }
+  const updateTheme = passedUpdateTheme || (() => {})
+  const updateColorTheme = passedUpdateColorTheme || (() => {})
   
   const [internalOpen, setInternalOpen] = useState(false)
   

@@ -25,7 +25,7 @@ function App() {
   const { user, loading: authLoading, updateUserLocal } = useAuth()
   
   // Initialize settings hook to apply theme on mount  
-  const { settings, updateTheme, updateColorTheme } = useSupabaseSettings(user)
+  const { settings, updateTheme, updateColorTheme } = useSupabaseSettings()
   
   // Centralized status management
   const { status: userStatus, setStatus: setUserStatus } = useSupabaseUserStatus(user, updateUserLocal)

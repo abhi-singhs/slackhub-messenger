@@ -144,7 +144,7 @@ await addReaction('message-id', '👍')
 
 ### `useSupabaseSettings(user: UserInfo | null)`
 
-User preferences and application settings management.
+User preferences and application settings management with localStorage persistence.
 
 ```typescript
 const {
@@ -153,9 +153,18 @@ const {
   isDarkMode,              // Dark mode state
   setIsDarkMode,           // Toggle dark mode
   loading,                 // Settings loading state
-  updateSettings          // Batch update settings
+  updateSettings,          // Batch update settings
+  settings,                // SettingsModal-compatible object
+  updateTheme,             // Theme mode updater (light/dark)
+  updateColorTheme         // Color theme updater
 } = useSupabaseSettings(user)
 ```
+
+**Features:**
+- **Immediate theme application** via localStorage on page refresh
+- **Database synchronization** for cross-device consistency  
+- **Real-time updates** across multiple sessions
+- **Offline support** with localStorage fallback
 
 #### Methods
 
@@ -167,9 +176,19 @@ setTheme('blue') // 'blue' | 'green' | 'purple' | 'orange' | 'red'
 **`updateSettings(updates: Partial<Settings>)`**
 ```typescript
 await updateSettings({
-  theme: 'dark'
+  theme: 'dark',
+  notificationSettings: {
+    ...notificationSettings,
+    soundEnabled: false
+  }
 })
 ```
+
+**localStorage Keys:**
+- `user-theme`: Current color theme (e.g., 'blue', 'green')
+- `user-dark-mode`: Dark mode setting ('true' or 'false')
+
+These keys ensure theme persistence across page refreshes and provide instant theme application on app load.
 
 ## User Status API
 

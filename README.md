@@ -9,12 +9,12 @@ A modern Slack-like chat application built with React, TypeScript, and Supabase 
 - **Message threads** for organized conversations
 - **Emoji reactions** with user attribution
 - **File attachments** with preview support
-- **User status** management (active, away, busy)
+- **User status** management (active, away, busy) with local storage
 - **Voice and video calling** with recording
 - **Message search** functionality
 - **Rich text formatting** with TipTap editor
 - **Keyboard shortcuts** for power users
-- **Dark/light themes** with multiple color schemes
+- **Dark/light themes** with multiple color schemes stored locally
 - **Mobile responsive** design
 - **Notification settings** with sound alerts
 
@@ -70,7 +70,7 @@ The application uses the following Supabase tables:
 - **channels** - Chat channels/rooms
 - **messages** - Chat messages with threading support
 - **reactions** - Message reactions with emoji support
-- **user_settings** - User preferences and settings
+- **user_settings** - Optional table for user preferences (app uses localStorage instead)
 - **calls** - Voice/video call history and recordings
 
 ## Authentication
