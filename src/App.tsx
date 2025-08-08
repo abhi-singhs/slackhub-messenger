@@ -1,3 +1,4 @@
+import React, { Suspense, lazy } from 'react'
 import { FileAttachment, UserStatus } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { useSupabaseData } from '@/hooks/useSupabaseData'
@@ -11,14 +12,16 @@ import { useMessageHandlers } from '@/hooks/useMessageHandlers'
 import { useAppKeyboardShortcuts } from '@/hooks/useAppKeyboardShortcuts'
 import { useResponsiveBehavior } from '@/hooks/useResponsiveBehavior'
 import { AuthComponent } from '@/components/AuthComponent'
-import { Sidebar } from '@/components/Sidebar'
-import { Header } from '@/components/Header'
-import { MessagesView } from '@/components/MessagesView'
-import { MessageInput } from '@/components/MessageInput'
-import { ThreadView } from '@/components/ThreadView'
-import { QuickSwitcher } from '@/components/QuickSwitcher'
-import { KeyboardShortcutsHelp } from '@/components/KeyboardShortcutsHelp'
 import { Toaster } from '@/components/ui/sonner'
+
+// Lazy-loaded heavy components to reduce initial JS
+const Sidebar = lazy(() => import('@/components/Sidebar').then(m => ({ default: m.Sidebar })))
+const Header = lazy(() => import('@/components/Header').then(m => ({ default: m.Header })))
+const MessagesView = lazy(() => import('@/components/MessagesView').then(m => ({ default: m.MessagesView })))
+const MessageInput = lazy(() => import('@/components/MessageInput').then(m => ({ default: m.MessageInput })))
+const ThreadView = lazy(() => import('@/components/ThreadView').then(m => ({ default: m.ThreadView })))
+const QuickSwitcher = lazy(() => import('@/components/QuickSwitcher').then(m => ({ default: m.QuickSwitcher })))
+const KeyboardShortcutsHelp = lazy(() => import('@/components/KeyboardShortcutsHelp').then(m => ({ default: m.KeyboardShortcutsHelp })))
 
 function App() {
   // Authentication
@@ -231,104 +234,118 @@ function App() {
 
   return (
     <div className="flex h-screen bg-background relative">
-      <Sidebar
-        user={user}
-        channels={channels || []}
-        currentChannel={currentChannel}
-        messages={messages || []}
-        lastReadTimestamps={lastReadTimestamps}
-        sidebarOpen={sidebarOpen}
-        userStatus={userStatus}
-        onChannelSelect={handleChannelSelect}
-        onChannelCreate={handleChannelCreate}
-        onChannelUpdate={updateChannel}
-        onChannelDelete={handleChannelDelete}
-        onSidebarToggle={setSidebarOpen}
-        onStatusChange={handleStatusChange}
-        onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
-        settings={settings}
-        updateTheme={updateTheme}
-        updateColorTheme={updateColorTheme}
-        onlineUsers={onlineUsers}
-        channelPresence={channelPresence[currentChannel]}
-      />
+      <Suspense fallback={<div className="w-64 shrink-0 border-r border-border hidden md:block" />}> 
+        <Sidebar
+          user={user}
+          channels={channels || []}
+          currentChannel={currentChannel}
+          messages={messages || []}
+          lastReadTimestamps={lastReadTimestamps}
+          sidebarOpen={sidebarOpen}
+          userStatus={userStatus}
+          onChannelSelect={handleChannelSelect}
+          onChannelCreate={handleChannelCreate}
+          onChannelUpdate={updateChannel}
+          onChannelDelete={handleChannelDelete}
+          onSidebarToggle={setSidebarOpen}
+          onStatusChange={handleStatusChange}
+          onShowKeyboardShortcuts={() => setShowKeyboardHelp(true)}
+          settings={settings}
+          updateTheme={updateTheme}
+          updateColorTheme={updateColorTheme}
+          onlineUsers={onlineUsers}
+          channelPresence={channelPresence[currentChannel]}
+        />
+      </Suspense>
       
       {/* Main Content */}
       <div className="flex-1 flex flex-col w-full md:w-auto">
-        <Header
-          channels={channels || []}
-          currentChannel={currentChannel}
-          searchQuery={searchQuery}
-          user={user}
-          onSidebarToggle={() => setSidebarOpen(true)}
-          onSearchChange={handleSearchChange}
-          searchInputRef={searchInputRef}
-        />
+        <Suspense fallback={<div className="h-14 border-b border-border sticky top-0 bg-background" />}> 
+          <Header
+            channels={channels || []}
+            currentChannel={currentChannel}
+            searchQuery={searchQuery}
+            user={user}
+            onSidebarToggle={() => setSidebarOpen(true)}
+            onSearchChange={handleSearchChange}
+            searchInputRef={searchInputRef}
+          />
+        </Suspense>
 
         {/* Messages Area */}
-        <MessagesView
-          messages={currentMessages}
-          channels={channels || []}
-          user={user}
-          userStatus={userStatus}
-          openEmojiPickers={openEmojiPickers}
-          onEmojiPickerToggle={handleEmojiPickerToggle}
-          onReactionAdd={addReaction}
-          onMessageClick={viewState === 'search' ? handleSearchMessageClick : undefined}
-          onStartThread={handleStartThread}
-          onEditMessage={editMessage}
-          onDeleteMessage={deleteMessage}
-          searchQuery={viewState === 'search' ? searchQuery : ''}
-        />
+        <Suspense fallback={<div className="flex-1" />}>
+          <MessagesView
+            messages={currentMessages}
+            channels={channels || []}
+            user={user}
+            userStatus={userStatus}
+            openEmojiPickers={openEmojiPickers}
+            onEmojiPickerToggle={handleEmojiPickerToggle}
+            onReactionAdd={addReaction}
+            onMessageClick={viewState === 'search' ? handleSearchMessageClick : undefined}
+            onStartThread={handleStartThread}
+            onEditMessage={editMessage}
+            onDeleteMessage={deleteMessage}
+            searchQuery={viewState === 'search' ? searchQuery : ''}
+          />
+        </Suspense>
 
         {/* Message Input - Only show for channel view */}
         {viewState === 'channel' && (
-          <MessageInput
-            ref={messageInputRef}
-            user={user}
-            messageInput={messageInput}
-            showInputEmojiPicker={showInputEmojiPicker}
-            onMessageInput={setMessageInput}
-            onEmojiPickerToggle={setShowInputEmojiPicker}
-            onSendMessage={handleSendMessageWithInput}
-            currentChannel={currentChannel}
-            channels={channels || []}
-          />
+          <Suspense fallback={<div className="p-3 border-t border-border" />}> 
+            <MessageInput
+              ref={messageInputRef}
+              user={user}
+              messageInput={messageInput}
+              showInputEmojiPicker={showInputEmojiPicker}
+              onMessageInput={setMessageInput}
+              onEmojiPickerToggle={setShowInputEmojiPicker}
+              onSendMessage={handleSendMessageWithInput}
+              currentChannel={currentChannel}
+              channels={channels || []}
+            />
+          </Suspense>
         )}
       </div>
 
       {/* Thread View Modal */}
       {activeThread && (
-        <ThreadView
-          parentMessage={activeThread}
-          threadMessages={threadMessages}
-          user={user}
-          channels={channels || []}
-          userStatus={userStatus}
-          openEmojiPickers={openEmojiPickers}
-          onClose={handleCloseThread}
-          onEmojiPickerToggle={handleEmojiPickerToggle}
-          onReactionAdd={addReaction}
-          onSendThreadReply={handleSendThreadReply}
-          onEditMessage={editMessage}
-          onDeleteMessage={deleteMessage}
-        />
+        <Suspense fallback={null}>
+          <ThreadView
+            parentMessage={activeThread}
+            threadMessages={threadMessages}
+            user={user}
+            channels={channels || []}
+            userStatus={userStatus}
+            openEmojiPickers={openEmojiPickers}
+            onClose={handleCloseThread}
+            onEmojiPickerToggle={handleEmojiPickerToggle}
+            onReactionAdd={addReaction}
+            onSendThreadReply={handleSendThreadReply}
+            onEditMessage={editMessage}
+            onDeleteMessage={deleteMessage}
+          />
+        </Suspense>
       )}
 
       {/* Quick Switcher Modal */}
-      <QuickSwitcher
-        isOpen={showQuickSwitcher}
-        onClose={() => setShowQuickSwitcher(false)}
-        channels={channels || []}
-        currentChannel={currentChannel}
-        onChannelSelect={handleChannelSelect}
-      />
+      <Suspense fallback={null}>
+        <QuickSwitcher
+          isOpen={showQuickSwitcher}
+          onClose={() => setShowQuickSwitcher(false)}
+          channels={channels || []}
+          currentChannel={currentChannel}
+          onChannelSelect={handleChannelSelect}
+        />
+      </Suspense>
 
       {/* Keyboard Shortcuts Help Modal */}
-      <KeyboardShortcutsHelp
-        isOpen={showKeyboardHelp}
-        onClose={() => setShowKeyboardHelp(false)}
-      />
+      <Suspense fallback={null}>
+        <KeyboardShortcutsHelp
+          isOpen={showKeyboardHelp}
+          onClose={() => setShowKeyboardHelp(false)}
+        />
+      </Suspense>
       
       {/* Toast notifications */}
       <Toaster />

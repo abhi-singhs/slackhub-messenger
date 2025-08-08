@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Message, Channel, UserInfo, FileAttachment, MessageReaction } from '@/types'
 
@@ -8,6 +8,10 @@ export const useSupabaseData = (user: UserInfo | null) => {
   const [channels, setChannels] = useState<Channel[]>([])
   const [lastReadTimestamps, setLastReadTimestamps] = useState<Record<string, number>>({})
   const [loading, setLoading] = useState(true)
+  // Maintain quick lookup of current channel message IDs for filtering realtime reactions
+  const currentMessageIdsRef = useRef<Set<string>>(new Set())
+  // Cache user profiles to avoid repeated fetches during realtime inserts
+  const userProfileCacheRef = useRef<Map<string, { username: string; avatar_url: string }>>(new Map())
 
   // Fetch channels
   const fetchChannels = useCallback(async () => {
@@ -46,22 +50,25 @@ export const useSupabaseData = (user: UserInfo | null) => {
   }, [])
 
   // Fetch messages with their reactions
-  const fetchMessages = useCallback(async () => {
-    console.log('💬 Fetching messages...')
+  const fetchMessages = useCallback(async (channelId: string, limit: number = 50) => {
+    if (!channelId) return
+    console.log('💬 Fetching messages for channel:', channelId)
     try {
       // Add timeout to prevent hanging
       const timeoutPromise = new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Messages fetch timeout')), 15000)
       )
       
-      // Fetch messages with user profiles
+      // Fetch latest messages for the channel with user profiles
       const queryPromise = supabase
         .from('messages')
         .select(`
           *,
           users(id, username, avatar_url)
         `)
-        .order('created_at', { ascending: true })
+        .eq('channel_id', channelId)
+        .order('created_at', { ascending: false })
+        .range(0, Math.max(limit - 1, 0))
 
       const { data: messagesData, error: messagesError } = await Promise.race([queryPromise, timeoutPromise]) as any
 
@@ -71,11 +78,12 @@ export const useSupabaseData = (user: UserInfo | null) => {
       // Skip reactions if no messages
       if (!messagesData || messagesData.length === 0) {
         setMessages([])
+        currentMessageIdsRef.current = new Set()
         return
       }
       
       // Fetch reactions for all messages
-      const messageIds = messagesData.map(m => m.id)
+      const messageIds = messagesData.map((m: any) => m.id)
       let reactionsData: any[] = []
       
       try {
@@ -114,8 +122,8 @@ export const useSupabaseData = (user: UserInfo | null) => {
         }
       })
 
-      // Format messages
-      const formattedMessages: Message[] = messagesData.map(msg => ({
+  // Format messages (reverse to ascending for UI after fetching descending)
+  const formattedMessages: Message[] = [...messagesData].reverse().map((msg: any) => ({
         id: msg.id,
         content: msg.content,
         userId: msg.user_id,
@@ -145,11 +153,13 @@ export const useSupabaseData = (user: UserInfo | null) => {
         replyCount: threadCounts[msg.id] || 0
       }))
 
-      setMessages(messagesWithReplyCounts)
+    setMessages(messagesWithReplyCounts)
+    currentMessageIdsRef.current = new Set(messagesWithReplyCounts.map(m => m.id))
     } catch (error) {
       console.error('Error fetching messages:', error)
       // Set empty messages array to prevent hanging
       setMessages([])
+    currentMessageIdsRef.current = new Set()
     }
   }, [])
 
@@ -196,17 +206,12 @@ export const useSupabaseData = (user: UserInfo | null) => {
       console.log('🔄 Loading set to true, starting fetch operations...')
       
       try {
-        console.log('📡 Starting Promise.all for data fetching...')
+        console.log('📡 Fetching channels...')
         // Add overall timeout to prevent infinite loading
-        const loadingPromise = Promise.all([
-          fetchChannels(),
-          fetchMessages()
-        ])
-        
+        const loadingPromise = fetchChannels()
         const timeoutPromise = new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Overall loading timeout')), 30000)
         )
-        
         await Promise.race([loadingPromise, timeoutPromise])
         
         // Load last read timestamps from localStorage
@@ -238,9 +243,17 @@ export const useSupabaseData = (user: UserInfo | null) => {
     }
   }, [channels, currentChannel])
 
+  // Fetch messages when current channel changes
+  useEffect(() => {
+    if (!currentChannel) return
+    // Clear previous messages quickly to show skeleton state
+    setMessages([])
+    fetchMessages(currentChannel).catch(console.error)
+  }, [currentChannel, fetchMessages])
+
   // Set up real-time subscriptions
   useEffect(() => {
-    if (!user) return
+    if (!user || !currentChannel) return
 
     console.log('🔄 Setting up real-time subscriptions')
 
@@ -248,11 +261,6 @@ export const useSupabaseData = (user: UserInfo | null) => {
     const refetchChannels = () => {
       console.log('📁 Channel change detected, refetching...')
       fetchChannels().catch(console.error)
-    }
-
-    const refetchMessages = () => {
-      console.log('� Message/reaction change detected, refetching...')
-      fetchMessages().catch(console.error)
     }
 
     // Subscribe to channel changes with optimistic updates
@@ -303,29 +311,34 @@ export const useSupabaseData = (user: UserInfo | null) => {
           }
         }
       )
-      .subscribe()
+  .subscribe()
 
     // Subscribe to message changes with optimistic updates
     const messagesSubscription = supabase
-      .channel('messages-changes')
+      .channel(`messages-changes-${currentChannel}`)
       .on('postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages' },
+        { event: 'INSERT', schema: 'public', table: 'messages', filter: `channel_id=eq.${currentChannel}` },
         async (payload) => {
           console.log('💬 New message received:', payload.new)
           
-          // Fetch user data for the message
-          const { data: userData } = await supabase
-            .from('users')
-            .select('username, avatar_url')
-            .eq('id', payload.new.user_id)
-            .single()
+          // Get user data for the message using cache to avoid repeated requests
+          let userData = userProfileCacheRef.current.get(payload.new.user_id)
+          if (!userData) {
+            const { data } = await supabase
+              .from('users')
+              .select('username, avatar_url')
+              .eq('id', payload.new.user_id)
+              .single()
+            userData = { username: data?.username || 'Unknown', avatar_url: data?.avatar_url || '' }
+            userProfileCacheRef.current.set(payload.new.user_id, userData)
+          }
 
           const newMessage: Message = {
             id: payload.new.id,
             content: payload.new.content,
             userId: payload.new.user_id,
-            userName: userData?.username || 'Unknown',
-            userAvatar: userData?.avatar_url || '',
+            userName: userData.username || 'Unknown',
+            userAvatar: userData.avatar_url || '',
             timestamp: new Date(payload.new.created_at).getTime(),
             channelId: payload.new.channel_id,
             threadId: payload.new.thread_id || undefined,
@@ -342,6 +355,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
             }
             
             const newMessages = [...prevMessages, newMessage]
+            currentMessageIdsRef.current.add(newMessage.id)
             
             // If this is a thread reply, update parent message reply count
             if (payload.new.thread_id) {
@@ -358,7 +372,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
         }
       )
       .on('postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'messages' },
+        { event: 'UPDATE', schema: 'public', table: 'messages', filter: `channel_id=eq.${currentChannel}` },
         (payload) => {
           console.log('💬 Message updated:', payload.new)
           setMessages(prevMessages => 
@@ -376,7 +390,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
         }
       )
       .on('postgres_changes',
-        { event: 'DELETE', schema: 'public', table: 'messages' },
+        { event: 'DELETE', schema: 'public', table: 'messages', filter: `channel_id=eq.${currentChannel}` },
         (payload) => {
           console.log('💬 Message deleted:', payload.old)
           setMessages(prevMessages => {
@@ -398,6 +412,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
               })
             }
 
+            currentMessageIdsRef.current.delete(payload.old.id)
             return filteredMessages
           })
         }
@@ -406,11 +421,13 @@ export const useSupabaseData = (user: UserInfo | null) => {
 
     // Subscribe to reaction changes with optimistic updates
     const reactionsSubscription = supabase
-      .channel('reactions-changes')
+      .channel(`reactions-changes-${currentChannel}`)
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'reactions' },
         async (payload) => {
           console.log('👍 New reaction added:', payload.new)
+          // Ignore reactions for messages not in current channel
+          if (!currentMessageIdsRef.current.has(payload.new.message_id)) return
           
           // Fetch user data for the reaction
           const { data: userData } = await supabase
@@ -453,6 +470,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
         { event: 'DELETE', schema: 'public', table: 'reactions' },
         async (payload) => {
           console.log('👍 Reaction removed:', payload.old)
+          if (!currentMessageIdsRef.current.has(payload.old.message_id)) return
           
           // Fetch user data for the reaction
           const { data: userData } = await supabase
@@ -496,7 +514,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
       supabase.removeChannel(messagesSubscription)
       supabase.removeChannel(reactionsSubscription)
     }
-  }, [user, currentChannel]) // Remove channels from deps to prevent infinite loop
+  }, [user, currentChannel]) // Scoped to current channel
 
   const markChannelAsRead = useCallback(async (channelId: string) => {
     if (!user) return
@@ -780,7 +798,7 @@ export const useSupabaseData = (user: UserInfo | null) => {
     } catch (error) {
       console.error('Error toggling reaction:', error)
       // Revert optimistic update on error by refetching
-      fetchMessages().catch(console.error)
+  fetchMessages(currentChannel).catch(console.error)
     }
   }, [user, fetchMessages])
 
