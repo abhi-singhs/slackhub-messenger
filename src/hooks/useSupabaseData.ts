@@ -502,19 +502,16 @@ export const useSupabaseData = (user: UserInfo | null) => {
     if (!user) return
 
     const now = Date.now()
-    const newTimestamps = {
-      ...lastReadTimestamps,
-      [channelId]: now
-    }
 
-    // Update local state
-    setLastReadTimestamps(newTimestamps)
-    
-    // Save to localStorage
-    saveLastReadTimestamps(newTimestamps)
-    
-    console.log('✅ Marked channel as read:', channelId, 'at', new Date(now).toISOString())
-  }, [user, lastReadTimestamps, saveLastReadTimestamps])
+    // Use functional update to avoid depending on lastReadTimestamps
+    setLastReadTimestamps(prev => {
+      const updated = { ...prev, [channelId]: now }
+      // Persist to localStorage via stable callback
+      saveLastReadTimestamps(updated)
+      console.log('✅ Marked channel as read:', channelId, 'at', new Date(now).toISOString())
+      return updated
+    })
+  }, [user, saveLastReadTimestamps])
 
   const sendMessage = useCallback(async (
     content: string, 

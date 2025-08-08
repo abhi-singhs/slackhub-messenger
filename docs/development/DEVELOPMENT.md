@@ -391,6 +391,17 @@ const LazyComponent = lazy(() => import('./LazyComponent'))
 </Suspense>
 ```
 
+## UI Polish (2025-08-08)
+
+- Sticky Header in `Header.tsx` for constant channel context and quick search access.
+- Centered Messages column (`max-w-3xl`) with responsive padding for readability on large screens.
+- Improved active channel styling in `Sidebar.tsx` for better focus and contrast.
+
+These are low-risk visual changes that don’t alter behavior. Validate by running the dev server and confirming:
+- Header stays visible while scrolling the messages list.
+- Messages are centered and constrained on desktop widths.
+- Active channel has higher visual prominence.
+
 ## Debugging
 
 ### Development Tools

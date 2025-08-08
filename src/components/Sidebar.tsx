@@ -261,7 +261,7 @@ export const Sidebar = ({
                       onClick={(e) => handleChannelClick(channel.id, e)}
                       className={`w-full flex items-center gap-2 px-2 py-1.5 text-sm rounded-md transition-colors cursor-pointer ${
                         currentChannel === channel.id
-                          ? 'bg-accent text-accent-foreground'
+                          ? 'bg-accent/90 text-accent-foreground shadow-sm'
                           : 'text-muted-foreground hover:bg-secondary hover:text-secondary-foreground'
                       }`}
                     >

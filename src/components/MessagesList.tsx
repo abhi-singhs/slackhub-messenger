@@ -39,8 +39,8 @@ export const MessagesList = ({
 
   return (
     <div className="flex-1 overflow-hidden">
-      <ScrollArea className="h-full p-2 sm:p-4">
-        <div className="space-y-4">
+      <ScrollArea className="h-full px-2 sm:px-4">
+        <div className="mx-auto w-full max-w-3xl py-3 sm:py-4 space-y-4">
           {mainMessages.length === 0 ? (
             <div className="text-center py-12">
               <Hash className="h-12 w-12 text-muted-foreground mx-auto mb-4" />

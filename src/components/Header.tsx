@@ -26,7 +26,7 @@ export const Header = ({
   const currentChannelData = Array.isArray(channels) ? channels.find(c => c.id === currentChannel) : null
   
   return (
-    <div className="h-14 px-4 flex items-center gap-2 border-b border-border bg-card">
+    <div className="sticky top-0 z-10 h-14 px-4 flex items-center gap-3 border-b border-border bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <Button
         variant="ghost"
         size="sm"
@@ -35,17 +35,19 @@ export const Header = ({
       >
         <List className="h-4 w-4" />
       </Button>
-      <Hash className="h-5 w-5 text-muted-foreground" />
-      <h2 className="font-semibold text-foreground truncate">
-        {currentChannelData?.name || 'Loading...'}
-      </h2>
+      <div className="flex items-center gap-2 min-w-0">
+        <Hash className="h-5 w-5 text-muted-foreground" />
+        <h2 className="font-semibold text-foreground truncate">
+          {currentChannelData?.name || 'Loading...'}
+        </h2>
+      </div>
       <Separator orientation="vertical" className="h-6 hidden sm:block" />
       <p className="text-sm text-muted-foreground hidden sm:block truncate">
         {currentChannelData?.description || ''}
       </p>
       
       {/* Search input, call button, and settings */}
-      <div className="flex-1 flex items-center justify-end gap-2">
+  <div className="flex-1 flex items-center justify-end gap-2">
         <SearchInput
           ref={searchInputRef}
           searchQuery={searchQuery}

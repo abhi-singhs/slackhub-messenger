@@ -530,6 +530,25 @@ const MessageItem = ({ message, className, ...props }) => {
 }
 ```
 
+### Layout Patterns (Updated)
+
+- Sticky Header: Keep the channel header visible while scrolling for quick context and search access.
+
+  - Use: `sticky top-0 z-10 bg-card/80 backdrop-blur supports-[backdrop-filter]:bg-card/60`
+  - Separator: Keep a subtle bottom border `border-b border-border`
+
+- Centered Messages Column: Improve readability on wide screens by constraining message width.
+
+  - Wrap the messages container with: `mx-auto w-full max-w-3xl`
+  - Apply responsive padding: `py-3 sm:py-4` and move lateral padding to the scroll area (`px-2 sm:px-4`)
+
+- Active Channel Emphasis: Increase contrast and add a light shadow for the active channel in the sidebar.
+
+  - Active class: `bg-accent/90 text-accent-foreground shadow-sm`
+  - Inactive/hover: `text-muted-foreground hover:bg-secondary hover:text-secondary-foreground`
+
+These patterns keep the UI clean, readable, and consistent with our Tailwind tokens and shadcn/ui conventions.
+
 ## Testing Components
 
 ### Testing Best Practices
