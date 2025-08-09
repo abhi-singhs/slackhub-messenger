@@ -1,4 +1,4 @@
--- Supabase Database Schema for Slack Clone
+-- Supabase Database Schema for Slackhub
 -- Run this SQL in your Supabase SQL Editor to set up the database
 
 -- Enable UUID extension

@@ -1,6 +1,6 @@
 # SlackHub Messenger - Project Structure
 
-This document outlines the organization and structure of the Slack Clone project.
+This document outlines the organization and structure of the Slackhub project.
 
 ## Directory Structure
 

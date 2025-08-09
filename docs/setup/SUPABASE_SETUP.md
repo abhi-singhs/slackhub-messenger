@@ -7,7 +7,7 @@ This SlackHub Messenger application uses Supabase for authentication and data st
 1. Go to [supabase.com](https://supabase.com) and create an account
 2. Click "New Project" 
 3. Fill in your project details:
-   - Name: `slack-clone` (or any name you prefer)
+   - Name: `slackhub` (or any name you prefer)
    - Database Password: Choose a strong password
    - Region: Select the region closest to your users
 

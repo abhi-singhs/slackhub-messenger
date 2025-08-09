@@ -59,7 +59,7 @@ export const AuthComponent = () => {
         <CardHeader className="text-center">
           <div className="flex items-center justify-between">
             <div className="text-left">
-              <CardTitle className="text-2xl font-bold">Welcome to SlackHub Messenger</CardTitle>
+              <CardTitle className="text-2xl font-bold">Welcome to Slackhub</CardTitle>
               <CardDescription>Sign in with GitHub or Google</CardDescription>
             </div>
             <Button

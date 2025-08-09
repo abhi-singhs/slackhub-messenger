@@ -1,6 +1,6 @@
 # Deployment Configuration
 
-This document explains the deployment setup for the Slack Clone application.
+This document explains the deployment setup for the Slackhub application.
 
 ## Key Fixes Applied
 

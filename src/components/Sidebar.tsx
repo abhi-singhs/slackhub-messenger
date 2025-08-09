@@ -172,7 +172,7 @@ export const Sidebar = ({
       `}>
         <div className="p-4 border-b border-border">
           <div className="flex items-center justify-between">
-            <h1 className="text-xl font-bold text-foreground">Slack Clone</h1>
+            <h1 className="text-xl font-bold text-foreground">Slackhub</h1>
             <Button
               variant="ghost"
               size="sm"
