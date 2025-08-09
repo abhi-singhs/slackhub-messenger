@@ -1,4 +1,4 @@
-# Slack Clone - Project Structure
+# SlackHub Messenger - Project Structure
 
 This document outlines the organization and structure of the Slack Clone project.
 
@@ -27,9 +27,9 @@ src/
 ├── hooks/              # Custom React hooks
 │   ├── use-mobile.ts   # Mobile detection hook
 │   ├── useKeyboardShortcuts.ts # Keyboard shortcuts handler
-│   ├── useSettings.ts  # Settings management
-│   ├── useSlackData.ts # Main data management hook
-│   └── useUserStatus.ts # User status management
+│   ├── useSupabaseSettings.ts  # Settings (theme, notifications)
+│   ├── useSupabaseData.ts # Main data management (channels, messages, reactions)
+│   └── useSupabaseUserStatus.ts # User status/presence management
 ├── lib/                # Utility libraries
 │   └── utils.ts        # Utility functions
 ├── constants/          # Application constants
@@ -41,8 +41,7 @@ src/
 ├── index.css           # Main styles and theme
 ├── main.css           # Structural CSS (do not edit)
 ├── main.tsx           # App entry point (do not edit)
-├── prd.md             # Product Requirements Document
-└── vite-env.d.ts      # Vite environment types
+└── vite-env.d.ts or vite-end.d.ts # Vite environment types (file name may vary)
 ```
 
 ## Component Architecture
@@ -66,16 +65,16 @@ src/
 ## Data Management
 
 ### Hooks
-- **useSlackData.ts**: Central data management for messages, channels, and reactions
-- **useUserStatus.ts**: User presence and status management
-- **useSettings.ts**: Theme and user preferences
-- **useKeyboardShortcuts.ts**: Global keyboard shortcut handling
+- **useSupabaseData.ts**: Central data management for messages, channels, and reactions
+- **useSupabaseUserStatus.ts**: User presence and status management via Supabase Presence
+- **useSupabaseSettings.ts**: Theme and user preferences with local caching and DB sync
+- **useKeyboardShortcuts.ts** / **useAppKeyboardShortcuts.ts**: Global keyboard shortcut handling
 
 ### Data Flow
-1. Data persistence uses the `useKV` hook for cross-session storage
-2. Real-time updates through reactive state management
-3. User status synchronized across components
-4. Message reactions and threads stored with message data
+1. Supabase is the source of truth for channels, messages, reactions, calls, and settings (enforced via RLS)
+2. Real-time updates delivered through Supabase real-time subscriptions (WebSocket)
+3. User status/presence synchronized via `useSupabaseUserStatus` and presence channels
+4. Theme and UI preferences are cached locally for instant load and synchronized via `useSupabaseSettings`
 
 ## Styling & Theming
 
@@ -121,7 +120,7 @@ src/
 - Types provide comprehensive TypeScript coverage
 
 ### Best Practices
-- Use `useKV` for persistent data, `useState` for temporary state
+- Use Supabase hooks (`useSupabaseData`, `useSupabaseSettings`, `useSupabaseUserStatus`) for persistent data; use `useState` for local UI state
 - Import paths use `@/` aliases for clean imports
 - Components use shadcn UI library for consistency
 - Error boundaries handle runtime failures gracefully

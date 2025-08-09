@@ -128,26 +128,13 @@ export const useAuth = () => {
   }
 
   const signUp = async (email: string, password: string, username: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          username,
-        }
-      }
-    })
-
-    return { data, error }
+    // Email/password sign-up is disabled in this app.
+    return { data: null, error: new Error('Email/password sign-up is disabled') }
   }
 
-  const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
-
-    return { data, error }
+  const signIn = async (_email: string, _password: string) => {
+    // Email/password sign-in is disabled in this app.
+    return { data: null, error: new Error('Email/password sign-in is disabled') }
   }
 
   const signInWithGitHub = async () => {
@@ -233,10 +220,11 @@ export const useAuth = () => {
     user,
     session,
     loading,
-    signUp,
-    signIn,
+  // Email/password methods intentionally disabled; not exposed in UI
+  // signUp,
+  // signIn,
     signInWithGitHub,
-    signInAnonymously,
+    // Anonymous sign-in removed
     signOut,
     updateProfile,
     updateUserStatus,

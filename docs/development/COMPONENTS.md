@@ -18,7 +18,7 @@ For architectural patterns and guidelines, see our [Copilot Instructions](../../
 ### Authentication Components
 
 #### `<AuthComponent />`
-Main authentication interface supporting multiple sign-in methods.
+Authentication screen with GitHub OAuth (only) plus theme controls.
 
 ```typescript
 import { AuthComponent } from '@/components/AuthComponent'
@@ -27,11 +27,10 @@ import { AuthComponent } from '@/components/AuthComponent'
 ```
 
 **Features:**
-- Email/password authentication
-- GitHub OAuth integration
-- Anonymous sign-in
-- Form validation and error handling
-- Responsive design
+- GitHub OAuth integration (only)
+- Theme color picker and dark mode toggle on the login screen
+- Configuration warning if Supabase env vars are missing/invalid
+- Error handling and responsive layout
 
 ### Messaging Components
 

@@ -13,10 +13,8 @@ const {
   user,           // Current authenticated user
   session,        // Supabase session object
   loading,        // Authentication loading state
-  signUp,         // Sign up with email/password
-  signIn,         // Sign in with email/password
-  signInWithGitHub, // OAuth sign in
-  signInAnonymously, // Anonymous sign in
+  // Email/password disabled
+  signInWithGitHub, // OAuth sign in (only supported method)
   signOut,        // Sign out current user
   updateProfile,  // Update user profile
   updateUserStatus, // Update user status
@@ -40,19 +38,7 @@ type UserStatus = 'active' | 'away' | 'busy'
 
 #### Methods
 
-**`signUp(email: string, password: string, username: string)`**
-```typescript
-const { data, error } = await signUp(
-  'user@example.com',
-  'password123',
-  'username'
-)
-```
-
-**`signIn(email: string, password: string)`**
-```typescript
-const { data, error } = await signIn('user@example.com', 'password123')
-```
+Email/password sign-in and sign-up are disabled in this app. Use GitHub OAuth.
 
 **`updateProfile(updates: Partial<UserProfile>)`**
 ```typescript

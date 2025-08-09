@@ -1,6 +1,6 @@
 # Supabase Setup Guide
 
-This Slack Clone application uses Supabase for authentication and data storage. Follow these steps to set up your Supabase project:
+This SlackHub Messenger application uses Supabase for authentication and data storage. Follow these steps to set up your Supabase project:
 
 ## 1. Create a Supabase Project
 
@@ -43,22 +43,19 @@ This will create all necessary tables:
 - `channels` - Chat channels
 - `messages` - Chat messages  
 - `reactions` - Message reactions
-- `user_settings` - User preferences and settings
 - `user_settings` - User preferences and theme settings
 
 ## 5. Configure Authentication
 
 1. Go to **Authentication > Settings** in your Supabase dashboard
-2. Configure your preferred authentication methods:
-   - **Email/Password**: Already enabled by default
-   - **GitHub OAuth**: Add your GitHub OAuth app credentials
-   - **Anonymous Sign-ins**: Enable if you want guest access
+2. Configure authentication:
+   - **GitHub OAuth**: Add your GitHub OAuth app credentials (required)
 
-### GitHub OAuth Setup (Optional)
+### GitHub OAuth Setup (Required)
 
 1. Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers)
-2. Set Authorization callback URL to: `https://your-project-id.supabase.co/auth/v1/callback`
-3. Copy Client ID and Client Secret to Supabase **Authentication > Providers > GitHub**
+2. Authorization callback URL: `https://your-project-id.supabase.co/auth/v1/callback`
+3. Add the Client ID and Client Secret in Supabase under **Authentication > Providers > GitHub**, and enable the provider
 
 ## 6. Set Up Row Level Security (RLS)
 
