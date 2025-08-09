@@ -48,8 +48,9 @@ This will create all necessary tables:
 ## 5. Configure Authentication
 
 1. Go to **Authentication > Settings** in your Supabase dashboard
-2. Configure authentication:
-   - **GitHub OAuth**: Add your GitHub OAuth app credentials (required)
+ 2. Configure authentication providers:
+    - GitHub OAuth: Add your GitHub OAuth app credentials (required)
+    - Google OAuth: Optional support; enable if you want Google sign-in
 
 ### GitHub OAuth Setup (Recommended)
 

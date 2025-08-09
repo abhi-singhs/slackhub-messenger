@@ -31,7 +31,7 @@ VITE_SUPABASE_ANON_KEY=placeholder-key-replace-with-actual
 1. **Set up Supabase project** following `SUPABASE_SETUP.md`
 2. **Update `.env` file** with actual Supabase credentials
 3. **Run database schema** from `supabase-schema.sql`
-4. **Configure authentication providers** as needed
+4. **Configure OAuth providers** (GitHub required, Google optional)
 
 ## Deployment Status
 

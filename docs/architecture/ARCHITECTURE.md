@@ -19,13 +19,15 @@ SlackHub Messenger is a modern, real-time chat application that provides Slack-l
 
 ### Key Features
 - Real-time messaging with threading support
-- Channel and direct message management
+- Channel management
 - File attachments with preview
 - Keyboard shortcuts and accessibility features
 - Emoji reactions and rich text editing
-- User status management
-- Multiple authentication methods
+- User status management (presence-backed)
+- OAuth authentication (GitHub, optional Google)
 - Responsive design with theming support
+
+Note: Voice/video calling is planned; the `calls` table exists but UI features are not implemented yet.
 
 ## System Architecture
 
@@ -48,7 +50,7 @@ graph TB
     
     subgraph "Real-time Features"
         L[WebSocket Connections]
-        M[WebRTC for Calls]
+    M[(WebRTC for Calls - future)]
         N[Live Data Sync]
     end
     

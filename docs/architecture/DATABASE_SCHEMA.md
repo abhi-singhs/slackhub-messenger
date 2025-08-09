@@ -4,7 +4,7 @@ This document provides detailed information about the SlackHub Messenger databas
 
 ## Overview
 
-The SlackHub Messenger application uses PostgreSQL as the primary database, hosted on Supabase. The schema is designed to support real-time chat functionality, user management, and calling features.
+The SlackHub Messenger application uses PostgreSQL as the primary database, hosted on Supabase. The schema is designed to support real-time chat functionality and user management. Calling features are planned and documented below for future reference.
 
 ## Database Schema Diagram
 
@@ -166,7 +166,7 @@ Emoji reactions to messages.
 - Index on `user_id`
 
 ### user_settings
-User preferences and application settings.
+User preferences and application settings (optional; UI currently uses localStorage, DB sync planned).
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
@@ -206,7 +206,7 @@ User preferences and application settings.
 ```
 
 ### calls
-Voice and video call records.
+Voice and video call records (future; proposed table; not present in current SQL schema; UI not implemented yet).
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|

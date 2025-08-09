@@ -1,6 +1,6 @@
-# SlackHub Messenger with Supabase
+# SlackHub Messenger
 
-A modern Slack-like chat application built with React, TypeScript, and Supabase for authentication and real-time data storage.
+A modern Slack-like chat application built with React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui (Radix UI), and Supabase for authentication, database, storage, and real-time updates.
 
 ## Screenshots
 
@@ -16,40 +16,42 @@ Below are automatic screenshots captured with Playwright from the running dev se
 
 </div>
 
-## Features
+## Current Capabilities
 
-- **Real-time messaging** with instant updates
-- **Channel management** - create, edit, and delete channels
-- **Message threads** for organized conversations
-- **Emoji reactions** with user attribution
-- **File attachments** with preview support
-- **User status** management (active, away, busy) with local storage
-- **Voice and video calling** with recording
-- **Message search** functionality
-- **Rich text formatting** with TipTap editor
-- **Keyboard shortcuts** for power users
-- **Dark/light themes** with multiple color schemes stored locally
-- **Mobile responsive** design
-- **Notification settings** with sound alerts
+- Real-time messaging via Supabase Realtime
+- Channels: create, edit, delete
+- Threads: reply to messages and view thread counts
+- Emoji reactions with per-user attribution
+- File attachments with preview (images/video) via Supabase Storage
+- User status (active, away, busy) with presence and profile sync
+- Search UI for messages and channels
+- Rich text editing with TipTap
+- Keyboard shortcuts and quick switcher
+- Theming: light/dark + color themes (persisted via localStorage; DB sync planned)
+- Responsive layout (mobile/desktop)
+
+Notes:
+- Email/password auth is disabled. OAuth (GitHub and optional Google) is supported.
+- Voice/video calling is planned, but not implemented yet.
 
 ## Prerequisites
 
 - Node.js 18+ and npm
 - A Supabase account and project
 
-## Setup Instructions
+## Setup
 
-### 1. Supabase Setup
+### 1) Supabase Setup
 
 1. Create a new project at [supabase.com](https://supabase.com)
 2. Go to your project's SQL Editor
 3. Copy and paste the contents of `supabase-schema.sql` and run it
 4. Go to Authentication > Settings and configure your auth providers:
-   - For GitHub OAuth: Add your GitHub OAuth app credentials
-   - For email/password: Configure email templates as needed
+   - GitHub OAuth: Add your GitHub OAuth app credentials (required)
+   - Google OAuth: Optional
 5. Go to Settings > API to find your project URL and anon key
 
-### 2. Environment Configuration
+### 2) Environment Configuration
 
 1. Copy the environment template:
    ```bash
@@ -62,64 +64,59 @@ Below are automatic screenshots captured with Playwright from the running dev se
    VITE_SUPABASE_ANON_KEY=your-anon-key-here
    ```
 
-### 3. Install Dependencies
+### 3) Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 4. Run the Application
+### 4) Run the Application
 
 ```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`
+The app will be available at `http://localhost:5173`.
 
-## Database Schema
+## Database Schema (high level)
 
-The application uses the following Supabase tables:
+Key tables used by the app (see `docs/architecture/DATABASE_SCHEMA.md` for details):
 
-- **users** - User profiles extending Supabase auth
-- **channels** - Chat channels/rooms
-- **messages** - Chat messages with threading support
-- **reactions** - Message reactions with emoji support
-- **user_settings** - Optional table for user preferences (app uses localStorage instead)
-- **calls** - Voice/video call history and recordings
+- `users` — Profile data synced with Supabase Auth metadata
+- `channels` — Chat channels
+- `messages` — Messages with optional `thread_id`
+- `reactions` — Emoji reactions per user and message
+- `user_settings` — Optional: theme/notification preferences (not used by UI yet)
 
 ## Authentication
 
-The app supports multiple authentication methods:
+- OAuth (GitHub required, Google optional)
+- Email/password is intentionally disabled
+- Profile bootstrap on first login (user row upserted from OAuth metadata)
 
-- **Email/Password** - Traditional signup and login
-- **GitHub OAuth** - Sign in with GitHub account
-- **Automatic profile creation** - User profiles are created automatically on first login
+## Real-time
 
-## Real-time Features
+Backed by Supabase Realtime (Postgres CDC over WebSocket):
 
-All data updates happen in real-time using Supabase's real-time subscriptions:
+- Instant message inserts/edits/deletes
+- Channel create/update/delete
+- Reactions add/remove
+- Presence-backed user status updates
 
-- New messages appear instantly
-- Channel updates are synchronized
-- User status changes are live
-- Reactions update in real-time
+## Key Modules
 
-## Key Components
+- `AuthComponent` — OAuth sign-in UI and configuration warnings
+- `useAuth` — Auth/session + profile bootstrap (OAuth only)
+- `useSupabaseData` — Channels/messages/reactions + realtime subscriptions
+- `useSupabaseSettings` — Theme + settings (DB sync with local cache)
+- `useSupabaseUserStatus` — Presence and profile status
 
-- **AuthComponent** - Handles login/signup UI
-- **useAuth** - Authentication state management
-- **useSupabaseData** - Real-time data synchronization
-- **useSupabaseSettings** - User preferences and theming
-- **useSupabaseUserStatus** - User status management
+## Migration Notes (from earlier KV-based versions)
 
-## Migration from Spark KV
-
-This version replaces the previous Spark authentication and KV storage with Supabase:
-
-- **Authentication**: Now uses Supabase Auth instead of `spark.user()`
-- **Data Storage**: PostgreSQL database instead of KV store
-- **Real-time**: Supabase real-time instead of local state
-- **User Management**: Full user profiles with status and settings
+- Authentication: moved to Supabase Auth (OAuth)
+- Data storage: PostgreSQL (Supabase) with RLS
+- Real-time: Supabase Realtime replaces local-only state
+- User profiles/settings: normalized in database
 
 ## Deployment
 
@@ -134,10 +131,10 @@ This version replaces the previous Spark authentication and KV storage with Supa
 
 ## Development
 
-- **Hot reload** - Changes reflect immediately during development
-- **TypeScript** - Full type safety throughout the application
-- **ESLint** - Code quality and consistency
-- **Tailwind CSS** - Utility-first styling with custom theme system
+- Hot reload with Vite
+- TypeScript (strict)
+- ESLint + project conventions
+- Tailwind CSS v4 with design tokens
 
 ## Contributing
 
@@ -150,3 +147,14 @@ This version replaces the previous Spark authentication and KV storage with Supa
 ## License
 
 MIT License - feel free to use this code for your own projects.
+
+---
+
+More docs:
+
+- Architecture: `docs/architecture/ARCHITECTURE.md`
+- Database Schema: `docs/architecture/DATABASE_SCHEMA.md`
+- Development Guide: `docs/development/DEVELOPMENT.md`
+- API Reference: `docs/development/API.md`
+- Components: `docs/development/COMPONENTS.md`
+- Setup: `docs/setup/SUPABASE_SETUP.md`

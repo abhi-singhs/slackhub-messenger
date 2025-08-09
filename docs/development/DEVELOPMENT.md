@@ -5,12 +5,20 @@ This guide covers everything you need to know for developing SlackHub Messenger,
 ## Quick Reference
 
 
-**Authentication**: GitHub and Google OAuth integration
+Authentication: GitHub (required) and Google (optional) OAuth integration
 
 - **Node.js** 18+ and npm
 - **Git** for version control
 - **VS Code** (recommended) with suggested extensions
 - **Supabase account** for backend services
+
+## Current Capabilities (Summary)
+
+- Real-time channels, messages, threads, reactions
+- File uploads with previews
+- OAuth (GitHub required, Google optional); email/password disabled
+- User profiles, status, and presence
+- Theming with dark/light and color themes (localStorage persistence)
 
 ## Development Setup
 

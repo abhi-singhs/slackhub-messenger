@@ -168,28 +168,19 @@ Permission denied for table: messages
 
 ---
 
-#### Issue: Anonymous authentication fails
+#### Issue: OAuth authentication fails (any provider)
 **Symptoms:**
-```
-Error: Anonymous sign-ins are disabled
-User session not created for anonymous user
-```
+- "OAuth error" during redirect
+- Redirect loop back to login
+- "Invalid client" or "redirect_uri_mismatch"
 
 **Solutions:**
-1. **Enable anonymous auth in Supabase:**
-   - Go to Authentication > Settings
-   - Enable "Enable anonymous sign-ins"
+1. Verify provider configuration in Supabase (Authentication > Providers) and that the provider is enabled
+2. Ensure callback URL matches exactly: `https://<project-id>.supabase.co/auth/v1/callback`
+3. For local dev, add your origin to the provider (when applicable): `http://localhost:5173`
+4. Confirm `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are correct in `.env`
 
-2. **Verify user profile creation:**
-   ```typescript
-   // Check if user profile is created after anonymous sign-in
-   const { data, error } = await supabase.auth.signInAnonymously()
-   if (data.user) {
-     console.log('Anonymous user created:', data.user.id)
-   }
-   ```
-
-**Related Docs:** [Development Guide](../development/DEVELOPMENT.md)
+**Related Docs:** [Setup Guide](../setup/SUPABASE_SETUP.md)
 
 ---
 

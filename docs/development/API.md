@@ -40,7 +40,7 @@ type UserStatus = 'active' | 'away' | 'busy'
 
 #### Methods
 
-Email/password sign-in and sign-up are disabled in this app. Use GitHub OAuth.
+Email/password sign-in and sign-up are disabled in this app. Use OAuth (GitHub, optional Google).
 
 **`updateProfile(updates: Partial<UserProfile>)`**
 ```typescript
@@ -136,46 +136,31 @@ await addReaction('message-id', '👍')
 
 ## Settings API
 
-### `useSupabaseSettings(user: UserInfo | null)`
+### `useSupabaseSettings()`
 
 User preferences and application settings management with localStorage persistence.
 
 ```typescript
 const {
-  theme,                    // Current color theme
-  setTheme,                // Set color theme
+  theme,                    // Current color theme (blue|green|purple|orange|red)
   isDarkMode,              // Dark mode state
-  setIsDarkMode,           // Toggle dark mode
   loading,                 // Settings loading state
-  updateSettings,          // Batch update settings
   settings,                // SettingsModal-compatible object
-  updateTheme,             // Theme mode updater (light/dark)
-  updateColorTheme         // Color theme updater
-} = useSupabaseSettings(user)
+  updateTheme,             // Theme mode updater (light|dark)
+  updateColorTheme,        // Color theme updater
+  toggleDarkMode           // Toggle dark mode
+} = useSupabaseSettings()
 ```
 
 **Features:**
-- **Immediate theme application** via localStorage on page refresh
-- **Database synchronization** for cross-device consistency  
-- **Real-time updates** across multiple sessions
-- **Offline support** with localStorage fallback
+- Immediate theme application via localStorage on page refresh
+- Local storage persistence for instant startup (DB sync planned)
 
 #### Methods
 
-**`setTheme(theme: string)`**
+**`updateColorTheme(color: string)`**
 ```typescript
-setTheme('blue') // 'blue' | 'green' | 'purple' | 'orange' | 'red'
-```
-
-**`updateSettings(updates: Partial<Settings>)`**
-```typescript
-await updateSettings({
-  theme: 'dark',
-  notificationSettings: {
-    ...notificationSettings,
-    soundEnabled: false
-  }
-})
+updateColorTheme('blue') // 'blue' | 'green' | 'purple' | 'orange' | 'red'
 ```
 
 **localStorage Keys:**

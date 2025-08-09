@@ -89,28 +89,17 @@ VITE_DEV_MODE=false
 
 #### `vite.config.ts`
 ```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react-swc";
+import { defineConfig } from "vite";
+import { resolve } from 'path'
+
+const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
-    },
-  },
-  define: {
-    // Expose environment variables
-    __APP_VERSION__: JSON.stringify(process.env.npm_package_version),
-  },
-  server: {
-    port: 3000,
-    host: true, // Expose to network
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: true,
+    alias: { '@': resolve(projectRoot, 'src') }
   },
 })
 ```

@@ -66,7 +66,6 @@ The application is designed specifically for Supabase and uses its features exte
 **Core Features:**
 - Real-time messaging with threading
 - Channel management (create, edit, delete)
-- Direct messaging
 - File attachments with preview
 - Emoji reactions
 - Rich text formatting
@@ -153,8 +152,7 @@ Security is implemented through multiple layers:
 
 **Authentication:**
 - JWT token-based authentication
-- OAuth integration (GitHub and Google)
-- Anonymous user support
+- OAuth integration (GitHub and optional Google)
 
 **Authorization:**
 - Row Level Security (RLS) policies

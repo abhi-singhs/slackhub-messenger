@@ -27,7 +27,7 @@ import { AuthComponent } from '@/components/AuthComponent'
 ```
 
 **Features:**
-- GitHub OAuth integration (only)
+- GitHub and Google OAuth integration
 - Theme color picker and dark mode toggle on the login screen
 - Configuration warning if Supabase env vars are missing/invalid
 - Error handling and responsive layout

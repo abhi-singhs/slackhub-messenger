@@ -67,7 +67,7 @@ src/
 ### Hooks
 - **useSupabaseData.ts**: Central data management for messages, channels, and reactions
 - **useSupabaseUserStatus.ts**: User presence and status management via Supabase Presence
-- **useSupabaseSettings.ts**: Theme and user preferences with local caching and DB sync
+- **useSupabaseSettings.ts**: Theme and preferences with local caching (DB sync planned)
 - **useKeyboardShortcuts.ts** / **useAppKeyboardShortcuts.ts**: Global keyboard shortcut handling
 
 ### Data Flow
