@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard, SignOut } from '@phosphor-icons/react'
+import { Hash, Plus, List, X, DotsThree, PencilSimple, Trash, Gear, Keyboard, SignOut, CaretDown } from '@phosphor-icons/react'
 import { Channel, UserInfo, UserStatus } from '@/types'
 import { getChannelUnreadCount } from '@/lib/utils'
 import { StatusIndicator } from '@/components/StatusIndicator'
@@ -86,6 +86,7 @@ export const Sidebar = ({
   const [hoveredChannel, setHoveredChannel] = useState<string | null>(null)
   const [openMenuChannel, setOpenMenuChannel] = useState<string | null>(null)
   const [settingsModalOpen, setSettingsModalOpen] = useState(false)
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   const handleCreateChannel = () => {
     if (!newChannelName.trim()) return
@@ -193,13 +194,23 @@ export const Sidebar = ({
               <AvatarFallback>{user?.login?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
             </Avatar>
             <div className="flex-1 flex items-center justify-between">
-              <DropdownMenu>
+              <DropdownMenu onOpenChange={setProfileMenuOpen}>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="h-auto p-0 justify-start text-sm text-muted-foreground hover:text-foreground"
+                    className="h-auto p-0 justify-start text-sm text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+                    aria-expanded={profileMenuOpen}
+                    aria-haspopup="menu"
+                    data-testid="profile-menu-trigger"
                   >
-                    {user?.login || 'Loading...'}
+                    <span className="truncate max-w-[8rem]" title={user?.login || ''}>
+                      {user?.login || 'Loading...'}
+                    </span>
+                    <CaretDown
+                      className={`h-3.5 w-3.5 transition-transform duration-200 ${profileMenuOpen ? 'rotate-180' : 'rotate-0'}`}
+                      aria-hidden="true"
+                      data-testid="profile-menu-arrow"
+                    />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-48">
