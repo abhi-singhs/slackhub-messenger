@@ -11,7 +11,7 @@ export const useAuth = () => {
 
   useEffect(() => {
     console.log('🔐 Auth effect starting...')
-    
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('🔐 Initial session:', session ? 'exists' : 'none')
@@ -37,7 +37,7 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔐 Auth state change:', event, session ? 'has session' : 'no session')
       setSession(session)
-      
+
       if (session?.user) {
         const id = session.user.id
         if (event === 'INITIAL_SESSION' && lastUserIdRef.current === id) {
@@ -141,7 +141,7 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'github',
       options: {
-        redirectTo: `${window.location.href}`,
+        redirectTo: window.location.href.replace(/#$/, ''),
       }
     })
 
@@ -152,38 +152,9 @@ export const useAuth = () => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.href}`,
+        redirectTo: window.location.href.replace(/#$/, ''),
       }
     })
-
-    return { data, error }
-  }
-
-  const signInAnonymously = async () => {
-    const { data, error } = await supabase.auth.signInAnonymously()
-    
-    // If anonymous sign in successful, create a user profile
-    if (!error && data?.user) {
-      // Generate a random username for anonymous users
-      const randomUsername = `Anonymous_${Math.random().toString(36).substr(2, 8)}`
-      
-      // Create user profile in users table
-      const { error: profileError } = await supabase
-        .from('users')
-        .upsert({
-          id: data.user.id,
-          username: randomUsername,
-          email: data.user.email || '',
-          avatar_url: '',
-          status: 'active',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        })
-      
-      if (profileError) {
-        console.error('Error creating anonymous user profile:', profileError)
-      }
-    }
 
     return { data, error }
   }
@@ -287,15 +258,15 @@ export const useAuth = () => {
     user,
     session,
     loading,
-  // Email/password methods intentionally disabled; not exposed in UI
-  // signUp,
-  // signIn,
+    // Email/password methods intentionally disabled; not exposed in UI
+    // signUp,
+    // signIn,
     signInWithGitHub,
-  signInWithGoogle,
+    signInWithGoogle,
     // Anonymous sign-in removed
     signOut,
     updateProfile,
-  updateUsername,
+    updateUsername,
     updateUserStatus,
     updateUserLocal
   }
