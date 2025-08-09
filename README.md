@@ -120,14 +120,36 @@ Backed by Supabase Realtime (Postgres CDC over WebSocket):
 
 ## Deployment
 
+### GitHub Pages (recommended quick start)
+
+This repo includes an Actions workflow to deploy to GitHub Pages on pushes to `main`.
+
+Steps:
+
+1) In GitHub, go to Settings → Pages and set Source to "GitHub Actions".
+
+2) Add repository secrets for Supabase (Settings → Secrets and variables → Actions → New repository secret):
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+
+3) Push to `main` (or click "Run workflow" in Actions). The site will deploy to:
+   - User/Org site: `https://<owner>.github.io/slackhub-messenger/`
+   - Repo Pages URL is also displayed in the deployment job summary.
+
+Notes:
+- The workflow auto-sets the Vite base path to `/<repo>/` and adds an SPA fallback (`404.html`).
+- For custom domains, configure Pages custom domain and keep the base path aligned.
+
+### Other hosting
+
 1. Build the project:
    ```bash
    npm run build
    ```
 
-2. Deploy to your preferred hosting platform (Vercel, Netlify, etc.)
+2. Serve the `dist/` folder on any static hosting (Vercel, Netlify, S3/CloudFront, etc.).
 
-3. Make sure to set the environment variables in your deployment platform
+3. Set environment variables/secrets on your hosting platform.
 
 ## Development
 
