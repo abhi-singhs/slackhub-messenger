@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Gear, Moon, Sun, Palette } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -21,6 +22,8 @@ interface SettingsModalProps {
   }
   updateTheme?: (theme: 'light' | 'dark') => void
   updateColorTheme?: (theme: string) => void
+  // Profile management
+  updateUsername?: (username: string) => Promise<{ ok: boolean; error?: string }>
 }
 
 export const SettingsModal = ({ 
@@ -30,7 +33,8 @@ export const SettingsModal = ({
   onOpenChange: externalOnOpenChange,
   settings: passedSettings,
   updateTheme: passedUpdateTheme,
-  updateColorTheme: passedUpdateColorTheme
+  updateColorTheme: passedUpdateColorTheme,
+  updateUsername
 }: SettingsModalProps) => {
   // Use only passed props - no hook calls to avoid conflicts with App.tsx
   const settings = passedSettings || { theme: 'light', colorTheme: 'blue' }
@@ -38,10 +42,20 @@ export const SettingsModal = ({
   const updateColorTheme = passedUpdateColorTheme || (() => {})
   
   const [internalOpen, setInternalOpen] = useState(false)
+  const [username, setUsername] = useState<string>(user?.login || '')
+  const [usernameError, setUsernameError] = useState<string | null>(null)
+  const [usernameSaved, setUsernameSaved] = useState(false)
+  const [savingUsername, setSavingUsername] = useState(false)
   
   // Use external state if provided, otherwise use internal state
   const open = externalOpen !== undefined ? externalOpen : internalOpen
   const setOpen = externalOnOpenChange || setInternalOpen
+
+  // Sync input when dialog opens or user changes
+  if (open && username === '' && (user?.login || '') !== '') {
+    // Initialize once on first open
+    setUsername(user?.login || '')
+  }
 
   const handleThemeToggle = (checked: boolean) => {
     console.log('🌓 Theme toggle clicked:', checked)
@@ -51,6 +65,31 @@ export const SettingsModal = ({
   const handleColorThemeChange = (value: string) => {
     console.log('🎨 Color theme changed:', value)
     updateColorTheme(value)
+  }
+
+  const handleSaveUsername = async () => {
+    if (!updateUsername) return
+    setUsernameError(null)
+    setUsernameSaved(false)
+    const value = username.trim()
+    if (!value) {
+      setUsernameError('Username is required')
+      return
+    }
+    const re = /^[a-zA-Z0-9_]{3,24}$/
+    if (!re.test(value)) {
+      setUsernameError('Use 3-24 letters, numbers, or _ only')
+      return
+    }
+    setSavingUsername(true)
+    const result = await updateUsername(value)
+    setSavingUsername(false)
+    if (!result.ok) {
+      setUsernameError(result.error || 'Failed to update username')
+      setUsernameSaved(false)
+    } else {
+      setUsernameSaved(true)
+    }
   }
 
   const defaultTrigger = (
@@ -74,6 +113,32 @@ export const SettingsModal = ({
         
         <ScrollArea className="h-[60vh] mt-6">
           <div className="space-y-6 pr-4">
+            {/* Profile: Username */}
+            <div className="space-y-2">
+              <Label htmlFor="username">Username</Label>
+              <div className="flex items-center gap-2">
+                <Input
+                  id="username"
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value)
+                    setUsernameError(null)
+                    setUsernameSaved(false)
+                  }}
+                  placeholder="your_username"
+                />
+                <Button onClick={handleSaveUsername} disabled={savingUsername || !updateUsername}>
+                  {savingUsername ? 'Saving…' : 'Save'}
+                </Button>
+              </div>
+              {usernameError && (
+                <p className="text-xs text-destructive">{usernameError}</p>
+              )}
+              {usernameSaved && !usernameError && (
+                <p className="text-xs text-green-600 dark:text-green-500">Username updated</p>
+              )}
+            </div>
+
             {/* Dark Mode Toggle */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">

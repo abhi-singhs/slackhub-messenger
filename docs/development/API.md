@@ -18,6 +18,7 @@ const {
   signInWithGoogle, // OAuth sign in
   signOut,        // Sign out current user
   updateProfile,  // Update user profile
+  updateUsername, // Update username with uniqueness validation
   updateUserStatus, // Update user status
   updateUserLocal // Update local user state
 } = useAuth()
@@ -47,6 +48,12 @@ const { data, error } = await updateProfile({
   username: 'newusername',
   avatar_url: 'https://example.com/avatar.jpg'
 })
+
+**`updateUsername(username: string)`**
+```typescript
+const { ok, error } = await updateUsername('new_handle')
+if (!ok) console.error(error)
+```
 ```
 
 ## Data Management API

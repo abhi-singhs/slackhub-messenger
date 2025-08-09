@@ -254,6 +254,7 @@ interface SettingsModalProps {
 - Notification preferences
 - Audio/video settings
 - Keyboard shortcuts configuration
+ - Username editing with uniqueness validation
 
 #### `<StatusSelector />`
 User status selection dropdown.

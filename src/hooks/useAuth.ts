@@ -219,6 +219,62 @@ export const useAuth = () => {
     return { data, error }
   }
 
+  // Update only the username with validation and uniqueness check
+  const updateUsername = async (newUsername: string): Promise<{ ok: boolean; error?: string }> => {
+    if (!user) return { ok: false, error: 'Not signed in' }
+
+    const username = (newUsername || '').trim()
+    if (!username) return { ok: false, error: 'Username is required' }
+
+    // Basic client-side validation: 3-24 chars, letters/numbers/underscore
+    const usernameRegex = /^[a-zA-Z0-9_]{3,24}$/
+    if (!usernameRegex.test(username)) {
+      return { ok: false, error: 'Use 3-24 letters, numbers, or _ only' }
+    }
+
+    // No-op if unchanged (case-sensitive compare to preserve user intent)
+    if (username === user.login) {
+      return { ok: true }
+    }
+
+    // Check availability
+    const { data: existing, error: selectError } = await supabase
+      .from('users')
+      .select('id')
+      .eq('username', username)
+      .limit(1)
+
+    if (selectError) {
+      console.warn('⚠️ Username availability check failed:', selectError.message)
+      // Fall through to attempt update which will still be guarded by DB unique constraint
+    }
+
+    if (existing && existing.length > 0 && existing[0]?.id !== user.id) {
+      return { ok: false, error: 'That username is taken' }
+    }
+
+    // Attempt update (DB has UNIQUE constraint as final guard)
+    const { data, error } = await supabase
+      .from('users')
+      .update({ username })
+      .eq('id', user.id)
+      .select('id, username, avatar_url, email, status')
+      .single()
+
+    if (error) {
+      // 23505 = unique_violation
+      const code = (error as any)?.code
+      if (code === '23505') return { ok: false, error: 'That username is taken' }
+      return { ok: false, error: error.message || 'Failed to update username' }
+    }
+
+    if (data) {
+      setUser(prev => prev ? { ...prev, login: data.username } : prev)
+    }
+
+    return { ok: true }
+  }
+
   const updateUserStatus = async (status: 'active' | 'away' | 'busy') => {
     return updateProfile({ status })
   }
@@ -239,6 +295,7 @@ export const useAuth = () => {
     // Anonymous sign-in removed
     signOut,
     updateProfile,
+  updateUsername,
     updateUserStatus,
     updateUserLocal
   }

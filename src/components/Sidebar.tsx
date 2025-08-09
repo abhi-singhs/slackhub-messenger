@@ -77,7 +77,7 @@ export const Sidebar = ({
   onlineUsers,
   channelPresence
 }: SidebarProps) => {
-  const { signOut } = useAuth()
+  const { signOut, updateUsername } = useAuth()
   const [newChannelName, setNewChannelName] = useState('')
   const [showChannelInput, setShowChannelInput] = useState(false)
   const [editingChannel, setEditingChannel] = useState<Channel | null>(null)
@@ -362,6 +362,7 @@ export const Sidebar = ({
               settings={settings}
               updateTheme={updateTheme}
               updateColorTheme={updateColorTheme}
+              updateUsername={updateUsername}
               trigger={
                 <Button
                   variant="ghost"
