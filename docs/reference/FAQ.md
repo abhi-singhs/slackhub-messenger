@@ -153,7 +153,7 @@ Security is implemented through multiple layers:
 
 **Authentication:**
 - JWT token-based authentication
-- OAuth integration (GitHub, Google, etc.)
+- OAuth integration (GitHub and Google)
 - Anonymous user support
 
 **Authorization:**

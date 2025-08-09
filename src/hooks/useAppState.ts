@@ -1,4 +1,5 @@
 import { useState, useCallback, useRef } from 'react'
+import type { RichTextEditorHandle } from '@/components/RichTextEditor'
 
 // Types for app state
 export type ViewState = 'channel' | 'search'
@@ -25,7 +26,7 @@ interface AppStateReturn {
   setShowKeyboardHelp: (show: boolean) => void
   
   // Refs
-  messageInputRef: React.RefObject<HTMLDivElement | null>
+  messageInputRef: React.RefObject<RichTextEditorHandle | null>
   searchInputRef: React.RefObject<HTMLInputElement>
   
   // Handlers
@@ -52,7 +53,7 @@ export function useAppState(): AppStateReturn {
   const [showKeyboardHelp, setShowKeyboardHelp] = useState(false)
   
   // Refs
-  const messageInputRef = useRef<HTMLDivElement>(null)
+  const messageInputRef = useRef<RichTextEditorHandle | null>(null)
   const searchInputRef = useRef<HTMLInputElement>(null!)
 
   // Handlers

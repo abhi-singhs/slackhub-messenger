@@ -14,7 +14,8 @@ const {
   session,        // Supabase session object
   loading,        // Authentication loading state
   // Email/password disabled
-  signInWithGitHub, // OAuth sign in (only supported method)
+  signInWithGitHub, // OAuth sign in
+  signInWithGoogle, // OAuth sign in
   signOut,        // Sign out current user
   updateProfile,  // Update user profile
   updateUserStatus, // Update user status

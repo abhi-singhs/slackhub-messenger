@@ -1,4 +1,5 @@
 import { useCallback } from 'react'
+import type { RichTextEditorHandle } from '@/components/RichTextEditor'
 
 interface KeyboardShortcutHandlers {
   handleQuickSwitcher: () => void
@@ -15,7 +16,7 @@ interface KeyboardShortcutHandlers {
 
 interface AppKeyboardShortcutsProps {
   // Refs
-  messageInputRef: React.RefObject<HTMLDivElement | null>
+  messageInputRef: React.RefObject<RichTextEditorHandle | null>
   searchInputRef: React.RefObject<HTMLInputElement>
   
   // State

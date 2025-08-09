@@ -51,11 +51,18 @@ This will create all necessary tables:
 2. Configure authentication:
    - **GitHub OAuth**: Add your GitHub OAuth app credentials (required)
 
-### GitHub OAuth Setup (Required)
+### GitHub OAuth Setup (Recommended)
 
 1. Create a GitHub OAuth App at [github.com/settings/developers](https://github.com/settings/developers)
 2. Authorization callback URL: `https://your-project-id.supabase.co/auth/v1/callback`
 3. Add the Client ID and Client Secret in Supabase under **Authentication > Providers > GitHub**, and enable the provider
+
+### Google OAuth Setup (Optional)
+
+1. Create OAuth credentials in Google Cloud Console (APIs & Services > Credentials)
+2. Authorized redirect URI: `https://your-project-id.supabase.co/auth/v1/callback`
+3. In Supabase, go to **Authentication > Providers > Google**, add Client ID and Client Secret, and enable the provider
+4. In Google Cloud, add your app origin to Authorized JavaScript origins (e.g., `http://localhost:5173` for dev)
 
 ## 6. Set Up Row Level Security (RLS)
 

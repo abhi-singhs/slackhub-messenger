@@ -1,5 +1,5 @@
 import { Channel, UserInfo, FileAttachment } from '@/types'
-import { RichTextEditor } from './RichTextEditor'
+import { RichTextEditor, RichTextEditorHandle } from './RichTextEditor'
 import { FileUpload } from './FileUpload'
 import { forwardRef, useState, useRef } from 'react'
 
@@ -16,7 +16,7 @@ interface MessageInputProps {
   onSendMessage: (attachments?: FileAttachment[]) => void
 }
 
-export const MessageInput = forwardRef<HTMLDivElement, MessageInputProps>(({
+export const MessageInput = forwardRef<RichTextEditorHandle, MessageInputProps>(({ 
   user,
   channels,
   currentChannel,

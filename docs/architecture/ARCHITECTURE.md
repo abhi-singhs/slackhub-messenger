@@ -53,7 +53,8 @@ graph TB
     end
     
     subgraph "External Services"
-        O[GitHub OAuth]
+    O[GitHub OAuth]
+    P2[Google OAuth]
         P[CDN/Storage]
     end
     
@@ -61,6 +62,7 @@ graph TB
     F --> L
     A --> M
     H --> O
+    H --> P2
     J --> P
     
     style A fill:#e1f5fe
@@ -299,7 +301,7 @@ sequenceDiagram
         A->>UI: Show Main App
     end
     
-    Note over A,S: JWT tokens automatically handled
+    Note over A,S: JWT tokens automatically handled (OAuth: GitHub, Google)
     Note over A,D: RLS policies enforce security
 ```
 

@@ -41,7 +41,11 @@ interface RichTextEditorProps {
   onFileUploadClick?: () => void
 }
 
-export const RichTextEditor = forwardRef<HTMLDivElement, RichTextEditorProps>(({
+export interface RichTextEditorHandle {
+  focus: () => void
+}
+
+export const RichTextEditor = forwardRef<RichTextEditorHandle, RichTextEditorProps>(({ 
   content,
   placeholder,
   showEmojiPicker,

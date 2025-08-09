@@ -3,18 +3,21 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, Github, AlertTriangle, Sun, Moon } from 'lucide-react'
+import { GoogleLogo } from '@phosphor-icons/react'
 import { useAuth } from '@/hooks/useAuth'
 import { isSupabaseConfigured, getConfigurationMessage } from '@/lib/supabase'
 import { useSupabaseSettings } from '@/hooks/useSupabaseSettings'
 
 export const AuthComponent = () => {
-  const { signInWithGitHub } = useAuth()
+  const { signInWithGitHub, signInWithGoogle } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [provider, setProvider] = useState<'github' | 'google' | null>(null)
   const [error, setError] = useState('')
   const { isDarkMode, toggleDarkMode, updateColorTheme, theme } = useSupabaseSettings()
 
   const handleGitHubSignIn = async () => {
     setLoading(true)
+    setProvider('github')
     setError('')
 
     try {
@@ -26,6 +29,25 @@ export const AuthComponent = () => {
       setError('Failed to sign in with GitHub')
     } finally {
       setLoading(false)
+      setProvider(null)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    setLoading(true)
+    setProvider('google')
+    setError('')
+
+    try {
+      const { error } = await signInWithGoogle()
+      if (error) {
+        setError(error.message)
+      }
+    } catch (err) {
+      setError('Failed to sign in with Google')
+    } finally {
+      setLoading(false)
+      setProvider(null)
     }
   }
 
@@ -38,7 +60,7 @@ export const AuthComponent = () => {
           <div className="flex items-center justify-between">
             <div className="text-left">
               <CardTitle className="text-2xl font-bold">Welcome to SlackHub Messenger</CardTitle>
-              <CardDescription>Sign in with your GitHub account</CardDescription>
+              <CardDescription>Sign in with GitHub or Google</CardDescription>
             </div>
             <Button
               variant="ghost"
@@ -101,16 +123,30 @@ export const AuthComponent = () => {
             <div className="space-y-2 mt-4">
               <Button 
                 variant="outline" 
-                className="w-full border-accent-7 text-foreground hover:bg-accent-9 hover:text-accent-contrast hover:border-accent-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-9 focus-visible:ring-offset-2 transition-colors"
+                className="w-full border-border dark:border-accent-6 bg-background dark:bg-secondary/40 text-foreground hover:!bg-accent-9 hover:!text-accent-contrast hover:!border-accent-9 dark:hover:!bg-accent-9 dark:hover:!text-accent-contrast dark:hover:!border-accent-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-9 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 onClick={handleGitHubSignIn}
                 disabled={loading}
               >
-                {loading ? (
+                {loading && provider === 'github' ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Github className="mr-2 h-4 w-4" />
                 )}
                 GitHub
+              </Button>
+
+              <Button 
+                variant="outline" 
+                className="w-full border-border dark:border-accent-6 bg-background dark:bg-secondary/40 text-foreground hover:!bg-accent-9 hover:!text-accent-contrast hover:!border-accent-9 dark:hover:!bg-accent-9 dark:hover:!text-accent-contrast dark:hover:!border-accent-9 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent-9 focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                onClick={handleGoogleSignIn}
+                disabled={loading}
+              >
+                {loading && provider === 'google' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <GoogleLogo className="mr-2 h-4 w-4" />
+                )}
+                Google
               </Button>
             </div>
           </div>

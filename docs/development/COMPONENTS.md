@@ -18,7 +18,7 @@ For architectural patterns and guidelines, see our [Copilot Instructions](../../
 ### Authentication Components
 
 #### `<AuthComponent />`
-Authentication screen with GitHub OAuth (only) plus theme controls.
+Authentication screen with GitHub and Google OAuth plus theme controls.
 
 ```typescript
 import { AuthComponent } from '@/components/AuthComponent'

@@ -4,11 +4,8 @@ This guide covers everything you need to know for developing SlackHub Messenger,
 
 ## Quick Reference
 
-- **Coding Standards**: See our [Copilot Instructions](../../.github/copilot-instructions.md) for comprehensive coding guidelines
-- **Component Patterns**: Reference [Component Library](./COMPONENTS.md) for UI component documentation
-- **API Reference**: Check [API Documentation](./API.md) for hook and utility usage
 
-## Prerequisites
+**Authentication**: GitHub and Google OAuth integration
 
 - **Node.js** 18+ and npm
 - **Git** for version control
