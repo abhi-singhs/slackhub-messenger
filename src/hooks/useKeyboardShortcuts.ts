@@ -24,6 +24,11 @@ interface KeyboardShortcutsConfig {
 
 export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
+  // Ignore while composing IME input
+  if ((event as any).isComposing) return
+
+  const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform)
+
     // Don't trigger shortcuts when typing in inputs or contenteditable
     const target = event.target as HTMLElement
     if (
@@ -61,13 +66,15 @@ export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
       return
     }
 
-    if (event.altKey && event.key === 'ArrowUp') {
+  // On macOS: Option + ArrowUp/Down
+  // On Windows/Linux: Alt + Shift + ArrowUp/Down (to avoid system conflicts)
+  if (event.altKey && event.key === 'ArrowUp' && (isMac || event.shiftKey)) {
       event.preventDefault()
       config.onPrevChannel?.()
       return
     }
 
-    if (event.altKey && event.key === 'ArrowDown') {
+  if (event.altKey && event.key === 'ArrowDown' && (isMac || event.shiftKey)) {
       event.preventDefault()
       config.onNextChannel?.()
       return
@@ -123,5 +130,11 @@ export const useKeyboardShortcuts = (config: KeyboardShortcutsConfig) => {
 
 // Helper to get the appropriate modifier key label based on platform
 export const getModifierKey = () => {
-  return navigator.platform.toLowerCase().includes('mac') ? '⌘' : 'Ctrl'
+  return /Mac|iPhone|iPad|iPod/i.test(navigator.platform) ? '⌘' : 'Ctrl'
 }
+
+export const getAltKey = () => {
+  return /Mac|iPhone|iPad|iPod/i.test(navigator.platform) ? '⌥' : 'Alt'
+}
+
+export const getShiftKey = () => 'Shift'

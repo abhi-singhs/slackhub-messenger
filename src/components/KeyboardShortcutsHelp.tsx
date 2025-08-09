@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { getModifierKey } from '@/hooks/useKeyboardShortcuts'
+import { getModifierKey, getAltKey, getShiftKey } from '@/hooks/useKeyboardShortcuts'
 import { KEYBOARD_SHORTCUTS } from '@/constants'
 
 interface KeyboardShortcutsHelpProps {
@@ -10,6 +10,9 @@ interface KeyboardShortcutsHelpProps {
 
 export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelpProps) => {
   const modKey = getModifierKey()
+  const altKey = getAltKey()
+  const shiftKey = getShiftKey()
+  const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform)
 
   const shortcuts = [
     {
@@ -17,8 +20,8 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
       items: [
         { keys: [`${modKey}`, 'K'], description: 'Quick channel switcher' },
         { keys: [`${modKey}`, 'F'], description: 'Search messages' },
-        { keys: ['Alt', '↑'], description: 'Previous channel' },
-        { keys: ['Alt', '↓'], description: 'Next channel' },
+  { keys: isMac ? [altKey, '↑'] : [altKey, shiftKey, '↑'], description: 'Previous channel' },
+  { keys: isMac ? [altKey, '↓'] : [altKey, shiftKey, '↓'], description: 'Next channel' },
         { keys: [`${modKey}`, '\\'], description: 'Toggle sidebar' },
       ]
     },
@@ -80,7 +83,7 @@ export const KeyboardShortcutsHelp = ({ isOpen, onClose }: KeyboardShortcutsHelp
         <div className="mt-6 p-4 bg-muted rounded-lg">
           <p className="text-xs text-muted-foreground">
             <strong>Note:</strong> Navigation shortcuts (C, R, T, E) work when not typing in input fields. 
-            Use {modKey}+Enter to send messages while typing.
+            Use {modKey}+Enter to send messages while typing. On Windows/Linux, channel navigation uses {altKey}+{shiftKey}+↑/↓.
           </p>
         </div>
       </DialogContent>
