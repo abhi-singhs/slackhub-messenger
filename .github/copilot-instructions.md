@@ -207,8 +207,6 @@ The project uses a comprehensive CSS variables system:
 - Use proper XSS prevention techniques
 - Implement rate limiting where appropriate
 
-**Reference**: See [Security Guidelines](../docs/security/SECURITY.md) for comprehensive security practices and threat mitigation strategies.
-
 ### Data Handling
 - Don't expose sensitive data in client-side code
 - Use proper authentication checks
@@ -332,12 +330,10 @@ Remember: Write code that is readable, maintainable, and follows the established
 
 For comprehensive information about the project:
 
-- **[Documentation Hub](../docs/README.md)** - Complete documentation index
 - **[Architecture Diagrams](../docs/architecture/ARCHITECTURE.md)** - Visual system design
 - **[API Reference](../docs/development/API.md)** - Complete API documentation
 - **[Setup Instructions](../docs/setup/SUPABASE_SETUP.md)** - Step-by-step setup guide
 - **[Deployment Guide](../docs/deployment/DEPLOYMENT_NOTES.md)** - Production deployment
-- **[Security Practices](../docs/security/SECURITY.md)** - Security guidelines
 - **[FAQ](../docs/reference/FAQ.md)** - Frequently asked questions
 
 These resources provide detailed context for development decisions and should be consulted when implementing new features or making architectural changes.
