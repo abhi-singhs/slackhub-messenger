@@ -2,6 +2,20 @@
 
 A modern Slack-like chat application built with React, TypeScript, and Supabase for authentication and real-time data storage.
 
+## Screenshots
+
+Below are automatic screenshots captured with Playwright from the running dev server:
+
+<div align="center">
+
+<img src="docs/assets/screenshots/light-desktop.png" alt="SlackHub - Light mode (desktop)" width="800" />
+
+<br/>
+
+<img src="docs/assets/screenshots/dark-desktop.png" alt="SlackHub - Dark mode (desktop)" width="800" />
+
+</div>
+
 ## Features
 
 - **Real-time messaging** with instant updates
