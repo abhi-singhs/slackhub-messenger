@@ -84,13 +84,17 @@ export function useNavigationHandlers({
   }, [deleteChannel, currentChannel, channels, setCurrentChannel])
 
   const handleSendMessage = useCallback((messageInput: string, attachments?: FileAttachment[]) => {
-    if (currentChannel && messageInput.trim()) {
+    const hasText = !!messageInput?.trim()
+    const hasAttachments = Array.isArray(attachments) && attachments.length > 0
+    if (currentChannel && (hasText || hasAttachments)) {
       sendMessage(messageInput, currentChannel, undefined, attachments)
     }
   }, [currentChannel, sendMessage])
 
   const handleSendThreadReply = useCallback((content: string, threadId: string, attachments?: FileAttachment[]) => {
-    if (currentChannel && content.trim()) {
+    const hasText = !!content?.trim()
+    const hasAttachments = Array.isArray(attachments) && attachments.length > 0
+    if (currentChannel && (hasText || hasAttachments)) {
       sendMessage(content, currentChannel, threadId, attachments)
     }
   }, [currentChannel, sendMessage])
